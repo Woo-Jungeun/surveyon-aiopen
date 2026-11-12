@@ -1,0 +1,120 @@
+
+Sub ApplyDropdowns()
+    Dim ws As Worksheet
+    Dim ws2 As Worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1")
+    Set ws2 = ThisWorkbook.Sheets("Sheet2")
+
+    Dim lastRowA As Long
+    Dim lastRowE As Long
+    Dim i As Long
+
+    ' 시트 보호 해제 및 셀 잠금 초기화
+    ws.Unprotect
+    ws.Cells.Locked = False
+
+    ' A열의 마지막 데이터 행
+    lastRowA = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+    ' Sheet2의 E열의 마지막 행
+    lastRowE = ws2.Cells(ws2.Rows.Count, "E").End(xlUp).Row
+
+    If lastRowE < 2 Then
+        MsgBox "Sheet2의 E2 이후에 드롭다운 목록이 없습니다.", vbExclamation
+        Exit Sub
+    End If
+
+    ' 드롭다운 목록 범위 정의
+    Dim listRange As String
+    listRange = "='Sheet2'!$E$2:$E$" & lastRowE ' 시트 이름 포함 필수!
+
+    ' 드롭다운 적용
+    For i = 5 To lastRowA
+        If ws.Cells(i, "A").Value <> "" Then
+            With ws.Cells(i, "F").Validation
+                .Delete
+                .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, _
+                     Operator:=xlBetween, Formula1:=listRange
+                .IgnoreBlank = True
+                .InCellDropdown = True
+                .ShowInput = True
+                .ShowError = True
+            End With
+        Else
+            ws.Cells(i, "F").Validation.Delete
+        End If
+    Next i
+
+    MsgBox "드롭다운 목록이 적용되었습니다.", vbInformation
+End Sub
+
+
+
+Sub CreateAddButtons()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' 시트명 조정
+
+    Dim i As Long
+    Dim lastRow As Long
+    Dim btn As Button
+    Dim cell As Range
+    Dim btnName As String
+
+    ws.Buttons.Delete ' 기존 버튼 제거
+
+    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
+
+    For i = 5 To lastRow ' 5행부터 마지막까지
+        If ws.Cells(i, "A").Value <> "" Then
+            Set cell = ws.Cells(i, "K")
+            btnName = "btnAdd_" & i
+
+            Set btn = ws.Buttons.Add(cell.Left + 2, cell.Top + 2, cell.Width - 4, cell.Height - 4)
+            With btn
+                .OnAction = "AddRowBelow"
+                .Name = btnName
+                .Characters.Text = "추가"
+            End With
+        End If
+    Next i
+
+    MsgBox "버튼이 생성되었습니다.", vbInformation
+End Sub
+
+
+Sub AddRowBelow()
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("Sheet1")
+
+    Dim clickedButton As String
+    Dim rowIndex As Long
+
+    If TypeName(Application.Caller) <> "String" Then
+        MsgBox "이 매크로는 버튼을 클릭해서만 실행할 수 있습니다.", vbExclamation
+        Exit Sub
+    End If
+
+    clickedButton = Application.Caller
+    rowIndex = CLng(Split(clickedButton, "_")(1))
+
+    ' 한 줄 삽입
+    ws.Rows(rowIndex + 1).Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+
+    ' A열 복사
+    ws.Cells(rowIndex + 1, "A").Value = ws.Cells(rowIndex, "A").Value
+    ws.Cells(rowIndex + 1, "B").Value = ws.Cells(rowIndex, "B").Value + 1
+    ws.Cells(rowIndex + 1, "C").Value = ws.Cells(rowIndex, "C").Value
+    ws.Cells(rowIndex + 1, "I").Value = ws.Cells(rowIndex, "I").Value
+    
+    ' ▶▶ 새 행에만 버튼 추가 (전체 재생성 안 함)
+    Dim btn As Button
+    Dim cell As Range
+    Set cell = ws.Cells(rowIndex + 1, "K")
+
+    Set btn = ws.Buttons.Add(cell.Left + 2, cell.Top + 2, cell.Width - 4, cell.Height - 4)
+    With btn
+        .OnAction = "AddRowBelow"
+        .Name = "btnAdd_" & (rowIndex + 1)
+        .Characters.Text = "추가"
+    End With
+End Sub
+

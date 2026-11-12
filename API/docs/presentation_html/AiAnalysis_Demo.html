@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 고객 군집 세그먼테이션 (AiAnalysis) 시연 발표</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #F59E0B; --secondary: #3B82F6; --bg: #F9FAFB; --surface: #FFFFFF; --text: #1F2937; --text-light: #6B7280; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; margin: 0; padding: 0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        header { border-bottom: 2px solid #E5E7EB; padding-bottom: 2rem; margin-bottom: 2rem; text-align: center; }
+        h1 { color: var(--primary); font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .subtitle { font-size: 1.2rem; color: var(--text-light); }
+        .section { background: var(--surface); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .section-title { font-size: 1.5rem; border-left: 4px solid var(--primary); padding-left: 1rem; margin-bottom: 1.5rem; color: var(--text); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .card { background: var(--bg); padding: 1.5rem; border-radius: 8px; border: 1px solid #E5E7EB; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; background: #FFFBEB; color: var(--primary); border-radius: 999px; font-size: 0.875rem; font-weight: 500; margin: 0.25rem; border: 1px solid #FCD34D; }
+        pre { background: #1F2937; color: #E5E7EB; padding: 1.5rem; border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 0.95rem; white-space: pre-wrap; }
+        .step-container { display: flex; flex-direction: column; gap: 1rem; }
+        .step { display: flex; align-items: stretch; background: var(--bg); border-radius: 8px; overflow: hidden; border: 1px solid #E5E7EB; }
+        .step-number { background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; width: 60px; font-size: 1.5rem; font-weight: bold; }
+        .step-content { padding: 1.5rem; flex: 1; }
+        .step-content h3 { margin-top: 0; margin-bottom: 0.5rem; color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>👥 AI 응답자 페르소나 세그먼테이션 (AiAnalysis)</h1>
+            <div class="subtitle">머신러닝(K-Means) 기반 고객 군집 자동 분류 및 페르소나 생성 파이프라인</div>
+        </header>
+
+        <div class="section">
+            <h2 class="section-title">1. 핵심 기능 및 목적</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>💡 머신러닝 데이터 군집화</h3>
+                    <p>수백 혹은 수만 명의 응답 데이터를 벡터화 한 뒤, Microsoft의 ML.NET 프레임워크를 기반으로 특징이 유사한 그룹끼리 묶어(Clustering) 줍니다.</p>
+                </div>
+                <div class="card">
+                    <h3>🚀 자동 페르소나 명명 (Persona Naming)</h3>
+                    <p>군집별 차이점이 극대화된 문항 데이터를 LLM에게 넘겨, 예를 들어 "단순 1그룹, 2그룹"이 아닌 "가성비를 최우선시 하는 20대 실속형 소비자" 등으로 네이밍해줍니다.</p>
+                </div>
+                <div class="card">
+                    <h3>🔍 극단값 필터링 및 전처리</h3>
+                    <p>누락된 데이터(결측치)를 채우거나 데이터 정규화를 진행하여 군집 알고리즘의 정확도를 극대화하는 파이프라인이 내장되어 있습니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">2. 처리 프로세스 흐름도 (Data Pipeline)</h2>
+            <div class="step-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>데이터 피처(Feature) 매핑</h3>
+                        <p>파케이 데이터로부터 분석에 사용할 문항들을 골라내어 숫자로 이루어진 특징 벡터(Feature Vector)로 변환/병합합니다.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>ML.NET K-Means 모델 훈련</h3>
+                        <p>사용자가 설정한 K값(예: 3개 그룹)에 따라 응답자 데이터를 K개의 클러스터로 훈련(Train)하고 매핑된 결과를 산출합니다.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>특성 추출 (Centroid Analysis)</h3>
+                        <p>각 그룹(세그먼트)별로 타 그룹과 구별되는 가장 두드러진 응답 패턴의 문항과 답변을 텍스트 요약 문서로 압축합니다.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>LLM 페르소나 생성 및 UI 응답</h3>
+                        <p>특성 요약 텍스트를 VLLM(대형 언어 모델)으로 보내어 매력적인 마케팅 페르소나를 도출하고, JSON 포맷화 하여 방사형(Polar Area) 차트 메타와 함께 프론트엔드로 반환합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">3. 프롬프트 엔지니어링 (System Prompt)</h2>
+            <pre>
+당신은 탁월한 데이터 사이언티스트이자 마케팅 페르소나 생성 전문가입니다.
+사용자들에게서 K-Means 알고리즘으로 추출한 [특정 군집의 주요 도드라진 응답 특징]이 주어집니다.
+
+[지시사항]
+1. 이 현상들의 교집합을 분석해, 이 군집을 단번에 이해할 수 있는 매력적이고 직관적인 **[페르소나 네이밍 (예: 합리적 소비 지향 30대 맘)]**을 도출하세요.
+2. 이 군집은 마케팅/비즈니스적으로 어떤 성향을 가지며, 향후 어떤 Action을 해야 하는지(Engagement Point)를 3줄 이내로 서술하세요.
+3. 데이터의 특징과 숫자를 가볍게 곁들이며 설득력 있는 어조로 작성하십시오.
+</pre>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">4. 적용 핵심 기술 (Tech Stack)</h2>
+            <div>
+                <span class="badge">.NET Core Web API</span>
+                <span class="badge">Microsoft.ML (ML.NET)</span>
+                <span class="badge">K-Means Clustering</span>
+                <span class="badge">Feature Vectorization</span>
+                <span class="badge">vLLM (OSS 120B 통신)</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

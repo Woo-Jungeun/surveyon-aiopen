@@ -1,0 +1,1947 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI오픈분석 — 분석</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css" />
+<style>
+  :root{
+    --brand:#F26522; --brand-dk:#D9500F; --brand-weak:#FFF3EC; --brand-line:#FBD4BE;
+    --info:#2F6FED; --info-weak:#EDF3FE; --info-line:#C6D9FB;
+    --ok:#0E9A6C; --ok-weak:#E7F7F1; --ok-line:#B7E5D4;
+    --warn:#B4740A; --warn-weak:#FDF5E5; --warn-line:#F0DCB0;
+    --red:#D9483B; --red-weak:#FDEEEC; --red-line:#F5C9C3;
+    --l1:#6B4CC4; --l1w:#F1ECFC; --l1l:#D9CCF6;
+    --l2:#0E7C8F; --l2w:#E6F5F7; --l2l:#B7E0E7;
+    --page:#F4F5F7; --head:#F7F7F9; --hover:#FAFAFB; --zebra:#FCFCFD;
+    --tx:#1A1C1F; --tx2:#5F646C; --tx3:#9AA0A7;
+    --line:#E5E6EA; --line2:#D5D7DC;
+    --font:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif;
+    --hdH:56px; --sbW:264px; --cbW:346px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--font);background:var(--page);color:var(--tx);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden}
+  .sp{flex:1} .dim{color:var(--tx3)}
+  button{font-family:inherit;font-size:12.5px;border:1px solid var(--line2);background:#fff;color:var(--tx);border-radius:6px;padding:6px 11px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;transition:.12s;white-space:nowrap}
+  button:hover{background:var(--hover);border-color:#c2c5cb}
+  button:active{transform:scale(.98)}
+  button:disabled{opacity:.35;cursor:not-allowed;transform:none}
+  button.br{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+  button.br:hover{background:var(--brand-dk);border-color:var(--brand-dk)}
+  button.bro{background:#fff;border-color:var(--brand);color:var(--brand);font-weight:600}
+  button.bro:hover{background:var(--brand-weak)}
+  button.gh{border-color:transparent;background:none;color:var(--tx2)}
+  button.gh:hover{background:#EFF0F3}
+  button.xs{font-size:11.5px;padding:4px 8px;border-radius:5px}
+  input,select,textarea{font-family:inherit}
+
+  .app{display:flex;height:100vh;overflow:hidden}
+  aside.sb{width:var(--sbW);flex-shrink:0;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column}
+  .brand{height:var(--hdH);display:flex;align-items:center;gap:11px;padding:0 17px;border-bottom:1px solid var(--line)}
+  .brand i{font-size:18px;color:var(--tx2);cursor:pointer}
+  .brand .lg{font-size:15.5px;font-weight:700}
+  .brand .lg em{color:var(--brand);font-style:normal}
+  .prj{margin:14px 14px 4px;background:var(--head);border:1px solid var(--line);border-radius:10px;padding:10px 11px;display:flex;align-items:center;gap:8px}
+  .prj .nm{font-size:12.5px;font-weight:600}
+  .prj .cd{font-size:10.5px;font-weight:600;color:var(--brand);background:var(--brand-weak);border:1px solid var(--brand-line);border-radius:5px;padding:1px 6px}
+  .prj i{color:var(--tx3);font-size:15px;cursor:pointer}
+  .navt{font-size:11.5px;color:var(--tx2);font-weight:600;padding:14px 18px 5px;display:flex;justify-content:space-between}
+  .nav{padding:0 11px}
+  .nv{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:var(--tx2);cursor:pointer;font-size:12.5px}
+  .nv:hover{background:var(--hover);color:var(--tx)}
+  .nv.on{background:var(--brand-weak);color:var(--brand);font-weight:600}
+  .nv i{font-size:16px}
+  .sbf{margin-top:auto;padding:14px}
+  .fcard{border:1px solid var(--line);border-radius:10px;padding:8px 9px 8px 12px;display:flex;align-items:center;gap:8px;font-size:12px}
+  .fcard+.fcard{margin-top:8px}
+  .fcard .lb{color:var(--brand);font-weight:600}
+  .fcard .vl{font-weight:700;font-variant-numeric:tabular-nums}
+  .fcard.bal{background:var(--brand-weak);border-color:var(--brand-line)}
+  .fcard.bal .vl{color:var(--brand)}
+  .usr{display:flex;align-items:center;gap:9px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;margin-top:8px;font-size:12px;font-weight:600}
+  .usr i{font-size:15px;color:var(--tx2)}
+
+  main{flex:1;min-width:0;display:flex;flex-direction:column}
+  header.top{height:var(--hdH);flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 18px;background:#fff;border-bottom:1px solid var(--line)}
+  header.top h1{font-size:16px;font-weight:700;display:flex;align-items:center;gap:9px}
+  header.top h1::before{content:'';width:3px;height:14px;border-radius:2px;background:var(--brand)}
+  /* 문항 이동 · 선택 */
+  .qnav{display:flex;align-items:center;gap:4px}
+  .qbtn{width:26px;height:26px;padding:0;border-radius:6px;flex-shrink:0}
+  .qbtn i{font-size:15px}
+  .qbtn:disabled{opacity:.3}
+  .qchip{display:flex;align-items:center;gap:7px;background:var(--head);border:1px solid var(--line);border-radius:8px;
+    padding:4px 8px 4px 10px;font-size:12px;cursor:pointer;max-width:420px}
+  .qchip:hover{border-color:var(--brand);background:var(--brand-weak)}
+  .qchip b{font-family:ui-monospace,Consolas,monospace;color:var(--info);font-weight:700;flex-shrink:0}
+  .qchip .sep{color:var(--line2);flex-shrink:0}
+  .qchip>span:not(.sep){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .qchip i.sel{font-size:14px;color:var(--tx3);flex-shrink:0}
+  .qpos{font-size:11px;color:var(--tx3);font-variant-numeric:tabular-nums;white-space:nowrap;margin-left:3px}
+  .qpop{position:fixed;z-index:88;width:400px;background:#fff;border:1px solid var(--line2);border-radius:10px;
+    box-shadow:0 14px 36px rgba(20,22,26,.18);display:none;overflow:hidden}
+  .qpop.on{display:block}
+  .qpop .qs2{padding:8px;border-bottom:1px solid var(--line)}
+  .qpop .qs2 input{width:100%;border:1px solid var(--line2);border-radius:6px;padding:7px 9px;font-size:12.5px;outline:none}
+  .qpop .qs2 input:focus{border-color:var(--brand)}
+  .qpop .ql{max-height:320px;overflow-y:auto;padding:5px}
+  .qrow{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;cursor:pointer;font-size:12.5px}
+  .qrow:hover{background:var(--brand-weak)}
+  .qrow.on{background:var(--brand-weak);box-shadow:inset 0 0 0 1px var(--brand-line)}
+  .qrow .qn{font-family:ui-monospace,Consolas,monospace;font-size:10.5px;font-weight:700;color:var(--info);
+    background:var(--info-weak);border:1px solid var(--info-line);border-radius:4px;padding:1px 6px;flex-shrink:0;min-width:66px;text-align:center}
+  .qrow .qt2{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .qrow.on .qt2{font-weight:700}
+  .qst{font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;flex-shrink:0;white-space:nowrap}
+  .qst.done{background:var(--ok-weak);color:var(--ok)}
+  .qst.run{background:var(--brand-weak);color:var(--brand-dk)}
+  .qst.wait{background:var(--head);color:var(--tx3)}
+  .qpop .qf{padding:7px 10px;border-top:1px solid var(--line);font-size:11px;color:var(--tx3);background:var(--head)}
+  .saved{font-size:11px;color:var(--ok);display:flex;align-items:center;gap:5px;font-weight:600}
+  .saved.dirty{color:var(--warn)}
+  .tgl{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--tx2);cursor:pointer;user-select:none;border:1px solid var(--line2);border-radius:7px;padding:5px 10px}
+  .tgl:hover{background:var(--hover)}
+  .tgl.on{background:var(--brand-weak);border-color:var(--brand-line);color:var(--brand-dk);font-weight:600}
+  .sw{width:14px;height:14px;border-radius:4px;border:1.5px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;background:#fff;flex-shrink:0}
+  .sw i{opacity:0}
+  .tgl.on .sw,.sw.on{background:var(--brand);border-color:var(--brand)}
+  .tgl.on .sw i,.sw.on i{opacity:1}
+
+  /* 상단 설정 */
+  .setbar{flex-shrink:0;height:46px;display:flex;align-items:center;gap:8px;padding:0 18px;background:#fff;border-bottom:1px solid var(--line)}
+  .setbtn{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;border:1px solid var(--line2);border-radius:7px;padding:6px 11px;cursor:pointer;user-select:none;background:#fff}
+  .setbtn:hover{background:var(--hover)}
+  .setbtn.on{background:var(--brand-weak);border-color:var(--brand-line);color:var(--brand-dk)}
+  .setbtn i.cv{transition:transform .16s;font-size:14px}
+  .setbtn.on i.cv{transform:rotate(180deg)}
+  /* 접힘 상태 요약 : 눈에 띄지 않게 흐린 한 줄 */
+  .sumline{min-width:0;overflow:hidden;font-size:11px;color:var(--tx3);white-space:nowrap;text-overflow:ellipsis;font-weight:400;letter-spacing:.01em}
+  .sumline .sep{color:var(--line2);margin:0 5px}
+  .setpanel{flex-shrink:0;display:none;background:#fff;border-bottom:1px solid var(--line);padding:0 18px 14px}
+  .setpanel.on{display:block}
+  .sgrid{display:grid;grid-template-columns:1fr 1.7fr 1.15fr .85fr;gap:14px;padding-top:12px}
+  .orow{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:11.5px;color:var(--tx2)}
+  .orow:last-child{margin-bottom:0}
+  .orow>span:first-child{width:62px;flex-shrink:0;font-weight:600}
+  .sl2{flex:1;min-width:0;border:1px solid var(--line2);border-radius:6px;padding:5px 7px;font-size:12px;outline:none;background:#fff;cursor:pointer;color:var(--tx)}
+  .sl2:focus{border-color:var(--brand)}
+  .orow input[type=range]{flex:1;min-width:0;accent-color:var(--brand);height:4px}
+  .orow b{font-variant-numeric:tabular-nums;font-size:11.5px;width:22px;text-align:right;color:var(--tx)}
+  .sf>label{display:block;font-size:11px;font-weight:700;color:var(--tx2);margin-bottom:5px}
+  .sf input.tx,.sf textarea{width:100%;border:1px solid var(--line2);border-radius:7px;padding:7px 9px;font-size:12.5px;outline:none;color:var(--tx)}
+  .sf textarea{min-height:74px;resize:vertical;line-height:1.6}
+  .sf input.tx:focus,.sf textarea:focus{border-color:var(--brand)}
+  .nums{display:flex;gap:7px;margin-bottom:9px}
+  .nums label{flex:1;font-size:10.5px;color:var(--tx2);font-weight:700;text-align:center}
+  .nums input{width:100%;margin-top:3px;border:1px solid var(--line2);border-radius:6px;padding:5px 3px;font-size:12px;text-align:center;outline:none}
+  .nums .l1c{color:var(--l1)} .nums .l2c{color:var(--l2)}
+  .opts{display:flex;flex-wrap:wrap;gap:5px}
+  .opt{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--tx2);cursor:pointer;border:1px solid var(--line);border-radius:20px;padding:3px 10px;background:#fff}
+  .opt.on{background:var(--brand-weak);border-color:var(--brand-line);color:var(--brand-dk);font-weight:600}
+  .console{margin-top:10px;background:#1B1D21;border-radius:8px;padding:9px 11px;height:78px;overflow-y:auto;font-family:ui-monospace,Consolas,monospace;font-size:10.5px;line-height:1.7;color:#C8CDD4;display:none}
+  .console.on{display:block}
+  .console .g{color:#5FD3A6} .console .b{color:#7FB0F5}
+
+  .body{flex:1;min-height:0;display:flex;padding:12px;gap:12px;overflow-x:auto}
+  .pane{background:#fff;border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
+  .work{flex:1;min-width:560px}
+  .cb{width:var(--cbW);flex-shrink:0}
+  .cb.gone{display:none}
+  .phd{height:40px;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 8px 0 13px;border-bottom:1px solid var(--line)}
+  .phd .t{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:7px}
+  .phd .t i{color:var(--brand);font-size:15px}
+  .cnt{font-size:10.5px;font-weight:700;color:var(--tx2);background:var(--head);border:1px solid var(--line);border-radius:20px;padding:1px 7px}
+
+  .wtool{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .segs{display:flex;background:var(--head);border:1px solid var(--line);padding:2px;border-radius:8px;gap:2px}
+  .seg{font-size:12.5px;padding:5px 12px;border-radius:6px;cursor:pointer;color:var(--tx2);user-select:none;display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .seg.on{background:#fff;color:var(--tx);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.07)}
+  .seg .n{font-size:11px;color:var(--tx3);font-variant-numeric:tabular-nums}
+  .seg.on .n{color:var(--brand)}
+  select.sl{font-size:12.5px;border:1px solid var(--line2);background:#fff;color:var(--tx);border-radius:7px;padding:5px 9px;outline:none;cursor:pointer}
+  .search{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line2);border-radius:7px;padding:5px 9px;width:180px}
+  .search:focus-within{border-color:var(--brand)}
+  .search input{border:none;background:none;flex:1;font-size:12.5px;color:var(--tx);outline:none;min-width:0}
+  .search i{color:var(--tx3);font-size:15px}
+  /* 상태줄 : 항상 한 줄 (좁으면 내부에서만 가로 스크롤) */
+  .wstat{flex-shrink:0;display:flex;align-items:center;gap:7px;padding:6px 12px;border-bottom:1px solid var(--line);
+    background:var(--zebra);flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
+  .wstat::-webkit-scrollbar{height:5px}
+  .wstat::-webkit-scrollbar-thumb{background:var(--line2);border-radius:3px}
+  .wstat>*{flex-shrink:0}
+  .prog{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx2);white-space:nowrap}
+  .prog b{font-variant-numeric:tabular-nums;color:var(--tx);font-weight:700}
+  .pbar{width:46px;height:5px;border-radius:3px;background:#E7E9ED;overflow:hidden}
+  .pbar span{display:block;height:100%;background:var(--ok);border-radius:3px}
+  .ppct{font-variant-numeric:tabular-nums;font-weight:700;color:var(--ok);min-width:30px;text-align:right}
+  .chips{display:flex;gap:4px;flex-wrap:nowrap}
+  .fchip{font-size:11px;padding:2px 8px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--tx2);
+    cursor:pointer;user-select:none;white-space:nowrap}
+  .fchip:hover{border-color:var(--line2)}
+  .fchip b{font-variant-numeric:tabular-nums;font-weight:700;color:var(--tx);margin-left:3px}
+  .fchip.warn b{color:var(--warn)} .fchip.red b{color:var(--red)}
+  .fchip.on{background:var(--tx);border-color:var(--tx);color:#fff;font-weight:600}
+  .fchip.on b{color:#fff}
+  .wstat .search.sm{width:132px;padding:3px 8px;background:#fff}
+  .wstat .search.sm input{font-size:12px}
+  .wstat .search.sm i{font-size:14px}
+  .wstat select.sl.xs{font-size:11.5px;padding:3px 6px}
+  .wstat button.xs{padding:4px 9px}
+  .vdv{width:1px;height:16px;background:var(--line2)}
+  /* 다중 선택 표시 (체크박스 없이) */
+  .selind{display:none;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--info);
+    background:var(--info-weak);border:1px solid var(--info-line);border-radius:6px;padding:2px 4px 2px 8px;white-space:nowrap}
+  .selind.on{display:inline-flex}
+  .selind button{border:none;background:none;color:var(--info);padding:0 2px;font-size:12px;border-radius:4px}
+  .selind button:hover{background:var(--info);color:#fff}
+  .helpi{font-size:14px;color:var(--tx3);cursor:help}
+  .helpi:hover{color:var(--brand)}
+
+  .twrap{flex:1;min-height:0;overflow:auto;position:relative;user-select:none}
+  table{border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%}
+  table.wide{min-width:1040px}
+  thead th{position:sticky;top:0;z-index:5;background:var(--head);font-size:11.5px;font-weight:600;color:var(--tx2);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line2);white-space:nowrap}
+  thead th.c{text-align:center} thead th.r{text-align:right}
+  tbody td{padding:6px 10px;border-bottom:1px solid var(--line);font-size:12.5px;vertical-align:middle}
+  tbody td.c{text-align:center} tbody td.r{text-align:right;font-variant-numeric:tabular-nums}
+  tbody tr:hover td{background:var(--hover)}
+  tbody tr.sel td{background:var(--info-weak)}
+  tbody tr.cur td{box-shadow:inset 0 0 0 1px var(--brand)}
+  tbody tr.m2 td:nth-child(2),tbody tr.m2 td:nth-child(3){color:var(--tx3)}
+  tbody tr.m2 td:first-child{position:relative}
+  tbody tr.m2 td:first-child::after{content:'';position:absolute;left:16px;top:0;bottom:50%;width:7px;border-left:1px solid var(--line2);border-bottom:1px solid var(--line2);border-bottom-left-radius:4px}
+  .ellip{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .ck{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--line2);display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#fff;cursor:pointer;background:#fff;vertical-align:middle}
+  .ck i{opacity:0}
+  .ck.on{background:var(--info);border-color:var(--info)}
+  .ck.on i{opacity:1}
+  .ck.part{background:var(--info);border-color:var(--info)}
+  .ck.part::after{content:'';width:8px;height:2px;background:#fff;border-radius:1px}
+  .same{opacity:0;border:none;background:none;color:var(--tx3);font-size:13px;padding:1px 3px;cursor:pointer;flex-shrink:0}
+  tr:hover .same{opacity:1}
+  .same:hover{color:var(--brand);background:var(--brand-weak);border-radius:4px}
+  .txcell{display:flex;align-items:center;gap:4px;min-width:0}
+  .edb{font-size:10px;color:var(--brand);background:var(--brand-weak);border:1px solid var(--brand-line);border-radius:4px;padding:0 5px;font-weight:700;flex-shrink:0}
+  .cchip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:2px 6px 2px 5px;border-radius:6px;background:#fff;border:1px solid var(--line2);max-width:100%;cursor:pointer}
+  .cchip:hover{border-color:var(--brand-line);background:var(--brand-weak)}
+  .cchip .path{font-family:ui-monospace,Consolas,monospace;font-size:10px;font-weight:700;color:#fff;background:var(--info);border-radius:4px;padding:1px 5px;flex-shrink:0}
+  .cchip .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .none{font-size:11.5px;color:var(--red);background:var(--red-weak);border:1px solid var(--red-line);border-radius:6px;padding:2px 8px;font-weight:600;cursor:pointer}
+  .sent{font-size:11.5px;padding:2px 8px;border-radius:20px;font-weight:600;border:1px solid transparent;cursor:pointer}
+  .sent.pos{background:var(--ok-weak);color:var(--ok);border-color:var(--ok-line)}
+  .sent.neg{background:var(--red-weak);color:var(--red);border-color:var(--red-line)}
+  .sent.neu{background:var(--head);color:var(--tx2);border-color:var(--line)}
+  .okbtn{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line2);background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:12px}
+  .okbtn i{opacity:0}
+  .okbtn.on{background:var(--ok);border-color:var(--ok)}
+  .okbtn.on i{opacity:1}
+  .rowact{display:flex;gap:4px;justify-content:center}
+  .badd{font-size:11px;padding:3px 9px;border-radius:5px;background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+  .badd:hover{background:var(--brand-dk);border-color:var(--brand-dk)}
+  .bdel{font-size:11px;padding:3px 9px;border-radius:5px;color:var(--red);border-color:var(--red-line);background:var(--red-weak);font-weight:600}
+  .bdel:hover{background:#FBDDD9;border-color:var(--red)}
+
+  /* 보기 데이터 3단 열 */
+  .cols{flex:1;min-height:0;display:flex}
+  .col{flex:1;min-width:0;display:flex;flex-direction:column;border-right:1px solid var(--line)}
+  .col:last-child{border-right:none}
+  .col.w2{flex:1.75}
+  .colh{height:36px;flex-shrink:0;display:flex;align-items:center;gap:7px;padding:0 10px 0 12px;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--tx2)}
+  .colh .dot{width:8px;height:8px;border-radius:3px}
+  .colh.h1 .dot{background:var(--l1)} .colh.h2 .dot{background:var(--l2)} .colh.h3 .dot{background:var(--info)}
+  .colh .cnt2{font-size:10.5px;font-weight:700;background:#fff;border:1px solid var(--line);border-radius:20px;padding:0 7px}
+  .collist{flex:1;min-height:0;overflow-y:auto;padding:6px}
+  .crow{display:flex;align-items:center;gap:7px;padding:5px 6px 5px 8px;border-radius:7px;cursor:pointer;position:relative}
+  .crow:hover{background:var(--hover)}
+  .crow.on{background:var(--brand-weak)}
+  .crow.on::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:2px;background:var(--brand)}
+  .ccode{font-family:ui-monospace,Consolas,monospace;font-size:10px;font-weight:700;border-radius:4px;padding:1px 5px;flex-shrink:0;min-width:26px;text-align:center}
+  .c1 .ccode{color:var(--l1);background:var(--l1w);border:1px solid var(--l1l)}
+  .c2 .ccode{color:var(--l2);background:var(--l2w);border:1px solid var(--l2l)}
+  .c3 .ccode{color:var(--info);background:var(--info-weak);border:1px solid var(--info-line)}
+  .cname{flex:1;min-width:0;border:1px solid transparent;background:none;border-radius:5px;padding:3px 6px;font-size:12.5px;outline:none;color:var(--tx)}
+  .cname:hover{border-color:var(--line2);background:#fff}
+  .cname:focus{border-color:var(--brand);background:#fff;box-shadow:0 0 0 2px var(--brand-weak)}
+  .cname[readonly]{color:var(--tx3);cursor:default}
+  .cname[readonly]:hover{border-color:transparent;background:none}
+  .cqty{font-size:10.5px;font-weight:700;color:var(--tx2);font-variant-numeric:tabular-nums;flex-shrink:0;min-width:20px;text-align:right}
+  .crow.zero .cqty,.crow.zero .cname{color:var(--tx3)}
+  .clock{font-size:13px;color:var(--tx3)}
+  .cdel{opacity:0;border:none;background:none;color:var(--tx3);padding:2px 4px}
+  .crow:hover .cdel{opacity:1}
+  .cdel:hover{color:var(--red);background:var(--red-weak)}
+  .addrow{width:100%;margin-top:4px;border:1px dashed var(--line2);background:none;color:var(--tx3);font-size:11.5px;padding:7px;border-radius:7px}
+  .addrow:hover{color:var(--brand);border-color:var(--brand-line);background:var(--brand-weak)}
+  .colempty{padding:28px 8px;text-align:center;color:var(--tx3);font-size:11.5px}
+  .colfoot{flex-shrink:0;border-top:1px solid var(--line);padding:8px 12px;background:var(--head);font-size:11px;color:var(--tx3);display:flex;align-items:center;gap:8px;flex-wrap:nowrap;overflow-x:auto}
+  .colfoot>*{flex-shrink:0}
+  .colfoot b{color:var(--tx2)}
+  /* 선택 상태 액션 바 */
+  .colfoot.act{background:#22252A;color:#fff;font-size:11.5px}
+  .colfoot.act .cn{font-weight:700;white-space:nowrap}
+  .colfoot.act .gl{font-size:10.5px;color:#9AA0A7;white-space:nowrap}
+  .colfoot.act button{background:#33373D;border-color:#44484F;color:#fff;font-size:11px;padding:4px 9px}
+  .colfoot.act button:hover{background:#3F444B;border-color:#565B63}
+  .colfoot.act button.s1{background:#1E3A6B;border-color:#2B5090}
+  .colfoot.act button.s2{background:#8A3D12;border-color:#B4551D}
+  .colfoot.act button.s3{background:#3D2E6B;border-color:#54408F}
+  .colfoot.act button.dg:hover{background:#7A2E26;border-color:#A03A30}
+  .colfoot.act .dv{width:1px;height:18px;background:#44484F}
+  /* 다중 선택 행 */
+  .crow.msel{background:var(--info-weak);box-shadow:inset 0 0 0 1px var(--info-line)}
+  .crow.msel.on{background:#E6EDFB}
+  .crow.msel::before{background:var(--info)}
+  /* 드래그 선택 핸들 (이 셀에서만 드래그 선택) */
+  .grip{width:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#DCDEE3;cursor:grab;font-size:13px;margin-left:-2px}
+  .crow:hover .grip{color:var(--tx3)}
+  .grip:active{cursor:grabbing}
+  .crow.msel .grip{color:var(--info)}
+  /* 코드값 인라인 편집 */
+  .ccodein{flex-shrink:0;width:38px;border:1px solid transparent;border-radius:4px;padding:1px 3px;text-align:center;
+    font-family:ui-monospace,Consolas,monospace;font-size:10px;font-weight:700;outline:none;background:none}
+  .ccodein:hover{border-color:var(--line2);background:#fff}
+  .ccodein:focus{border-color:var(--brand);background:#fff;box-shadow:0 0 0 2px var(--brand-weak)}
+  .c1 .ccodein{color:var(--l1)} .c2 .ccodein{color:var(--l2)} .c3 .ccodein{color:var(--info)}
+  .cpfx{font-family:ui-monospace,Consolas,monospace;font-size:10px;font-weight:700;color:var(--tx3);flex-shrink:0}
+  .allck{width:14px;height:14px;border-radius:3px;border:1.5px solid var(--line2);display:inline-flex;align-items:center;
+    justify-content:center;font-size:9px;color:#fff;cursor:pointer;background:#fff;flex-shrink:0}
+  .allck i{opacity:0}
+  .allck.on{background:var(--info);border-color:var(--info)}
+  .allck.on i{opacity:1}
+  .allck.part{background:var(--info);border-color:var(--info)}
+  .allck.part::after{content:'';width:7px;height:2px;background:#fff;border-radius:1px}
+  .colhint{font-size:10px;color:var(--tx3);margin-left:auto;white-space:nowrap}
+  /* 소분류 표시 범위 · 필터 */
+  .scopeseg{display:inline-flex;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:#fff;flex-shrink:0}
+  .scopeseg span{font-size:10px;padding:2px 8px;cursor:pointer;color:var(--tx2);user-select:none;white-space:nowrap}
+  .scopeseg span+span{border-left:1px solid var(--line2)}
+  .scopeseg span:hover{background:var(--hover)}
+  .scopeseg span.on{background:var(--info);color:#fff;font-weight:700}
+  .colfilt{flex-shrink:0;display:flex;align-items:center;gap:5px;padding:6px 9px;border-bottom:1px solid var(--line);
+    background:var(--zebra);flex-wrap:nowrap;overflow-x:auto}
+  .colfilt>*{flex-shrink:0}
+  .colfilt .fl{font-size:10px;font-weight:700;color:var(--tx3)}
+  .tfc{font-size:10px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);background:#fff;color:var(--tx2);
+    cursor:pointer;white-space:nowrap;user-select:none}
+  .tfc:hover{border-color:var(--line2)}
+  .tfc b{font-variant-numeric:tabular-nums;margin-left:3px;color:var(--tx)}
+  .tfc.on{background:var(--tx);border-color:var(--tx);color:#fff;font-weight:700}
+  .tfc.on b{color:#fff}
+  .tfc.s1.on{background:#2554A8;border-color:#2554A8}
+  .tfc.s2.on{background:var(--brand-dk);border-color:var(--brand-dk)}
+  .tfc.s3.on{background:var(--l1);border-color:var(--l1)}
+  .colfilt .scp{font-size:10px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+  .colfilt .scp b{color:var(--tx2)}
+
+  /* ===== 우측 : 분류 선택 + CRUD ===== */
+  .cbody{flex:1;min-height:0;display:flex;flex-direction:column}
+  .lvbox{padding:9px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+  .lvrow{display:flex;align-items:center;gap:5px}
+  .lvl{font-size:10px;font-weight:700;border-radius:4px;padding:2px 6px;flex-shrink:0;width:26px;text-align:center}
+  .lvl.a{color:var(--l1);background:var(--l1w);border:1px solid var(--l1l)}
+  .lvl.b{color:var(--l2);background:var(--l2w);border:1px solid var(--l2l)}
+  .lvsel{flex:1;min-width:0;font-size:12px;border:1px solid var(--line2);border-radius:6px;padding:5px 7px;outline:none;background:#fff;cursor:pointer}
+  .lvsel:focus{border-color:var(--brand)}
+  .lvin{flex:1;min-width:0;font-size:12px;border:1px solid var(--brand);border-radius:6px;padding:5px 7px;outline:none;box-shadow:0 0 0 2px var(--brand-weak)}
+  .lvb{width:24px;height:26px;padding:0;flex-shrink:0;border-radius:5px;color:var(--tx2)}
+  .lvb i{font-size:13px}
+  .lvb:hover{color:var(--brand);border-color:var(--brand-line);background:var(--brand-weak)}
+  .lvb.dg:hover{color:var(--red);border-color:var(--red-line);background:var(--red-weak)}
+  .assignhint{background:var(--brand);color:#fff;font-size:11px;font-weight:700;padding:6px 10px;border-radius:7px;margin:8px 8px 0;display:none;align-items:center;gap:6px}
+  .assignhint.on{display:flex}
+  .cbsearch{padding:0 10px 9px;flex-shrink:0}
+  .cblist{flex:1;min-height:0;overflow-y:auto;padding:5px 6px}
+  .cbrow{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:7px;cursor:pointer}
+  .cbrow:hover{background:var(--brand-weak)}
+  .cbrow .cno{font-family:ui-monospace,Consolas,monospace;font-size:10px;font-weight:700;color:var(--info);background:var(--info-weak);border:1px solid var(--info-line);border-radius:4px;padding:1px 5px;flex-shrink:0}
+  .cbrow .cin{flex:1;min-width:0;border:1px solid transparent;background:none;border-radius:5px;padding:2px 5px;font-size:12px;outline:none;color:var(--tx)}
+  .cbrow .cin:hover{border-color:var(--line2);background:#fff}
+  .cbrow .cin:focus{border-color:var(--brand);background:#fff}
+  .cbrow .cin[readonly]{color:var(--tx3)}
+  .cbrow .cqt{font-size:10.5px;color:var(--tx2);font-weight:700;flex-shrink:0;min-width:18px;text-align:right}
+  .cbrow .cx{opacity:0;border:none;background:none;color:var(--tx3);padding:1px 3px;font-size:12px}
+  .cbrow:hover .cx{opacity:1}
+  .cbrow .cx:hover{color:var(--red)}
+  .cbrow.zero .cqt{color:var(--tx3)}
+  .cbfoot{padding:8px 11px;border-top:1px solid var(--line);font-size:10.5px;color:var(--tx3);flex-shrink:0;background:var(--head)}
+  /* 검색 우선 분류 패널 */
+  kbd.k{font-family:ui-monospace,Consolas,monospace;background:#fff;border:1px solid var(--line2);border-bottom-width:2px;border-radius:4px;padding:0 4px;font-size:10px;color:var(--tx2)}
+  .pickhd{padding:9px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+  .bigsearch{width:100%;padding:7px 8px 7px 10px}
+  .bigsearch input{font-size:13px}
+  .prow{display:flex;align-items:center;gap:4px}
+  .prow .lvsel{flex:1;min-width:0}
+  .prow .srt{flex:0 0 78px}
+  .addnew{margin:6px 5px 8px;border:1.5px dashed var(--brand-line);background:var(--brand-weak);border-radius:8px;padding:8px 10px;cursor:pointer}
+  .addnew:hover,.addnew.k{background:#FFE8DA;border-color:var(--brand)}
+  .an1{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--brand-dk);font-weight:600}
+  .an1 b{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+  .an2{display:flex;align-items:center;gap:5px;margin-top:6px}
+  .an2 select{flex:1;min-width:0;font-size:11px;border:1px solid var(--brand-line);border-radius:5px;padding:4px 5px;background:#fff;outline:none}
+  .an2 button{flex-shrink:0;font-size:11px;padding:4px 9px}
+  .grph{display:flex;align-items:center;gap:4px;padding:6px 6px 5px 7px;margin-top:6px;border-top:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:2}
+  .grph:first-child{margin-top:0;border-top:none}
+  .gl1{font-size:10px;font-weight:700;color:var(--l1);background:var(--l1w);border:1px solid var(--l1l);border-radius:4px;padding:1px 6px;flex-shrink:0;max-width:82px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gname{flex:1;min-width:0;border:1px solid transparent;background:none;border-radius:5px;padding:2px 5px;font-size:11.5px;font-weight:700;color:var(--l2);outline:none}
+  .gname:hover{border-color:var(--l2l);background:#fff}
+  .gname:focus{border-color:var(--l2);background:#fff}
+  .gb{opacity:0;border:none;background:none;color:var(--tx3);padding:1px 3px;font-size:12px;flex-shrink:0}
+  .grph:hover .gb{opacity:1}
+  .gb:hover{color:var(--brand)}
+  .gb.dg:hover{color:var(--red)}
+  .gq{font-size:10px;color:var(--tx3);font-weight:700;flex-shrink:0}
+  .cbrow.k{background:var(--brand-weak);box-shadow:inset 0 0 0 1px var(--brand-line)}
+  .cbrow .cbc{font-size:9.5px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .cbrow.flat{flex-direction:column;align-items:stretch;gap:1px}
+  .cbrow .r1{display:flex;align-items:center;gap:6px}
+
+  /* 하단 선택 바 + 빠른 분류 팔레트 */
+
+  .pop{position:fixed;z-index:80;width:340px;background:#fff;border:1px solid var(--line2);border-radius:10px;box-shadow:0 14px 36px rgba(20,22,26,.18);display:none;overflow:hidden}
+  .pop.on{display:block}
+  .pop .ph{padding:8px 10px;background:var(--brand-weak);border-bottom:1px solid var(--brand-line);font-size:11.5px;font-weight:700;color:var(--brand-dk)}
+  .pop .ps{padding:8px;border-bottom:1px solid var(--line)}
+  .pop .ps input{width:100%;border:1px solid var(--line2);border-radius:6px;padding:7px 9px;font-size:12.5px;outline:none}
+  .pop .ps input:focus{border-color:var(--brand)}
+  .pop .pl2{max-height:270px;overflow-y:auto;padding:5px}
+  .pop .pi{display:flex;flex-direction:column;gap:2px;padding:6px 9px;border-radius:6px;cursor:pointer}
+  .pop .pi:hover,.pop .pi.k{background:var(--brand-weak)}
+  .pop .pi .r1{display:flex;align-items:center;gap:7px}
+  .pop .pi .cno{font-family:ui-monospace,Consolas,monospace;font-size:10px;font-weight:700;color:#fff;background:var(--info);border-radius:4px;padding:1px 5px;flex-shrink:0}
+  .pop .pi .nm{flex:1;min-width:0;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pop .pi .bc{font-size:10.5px;color:var(--tx3);padding-left:34px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pop .pf{padding:7px 10px;border-top:1px solid var(--line);font-size:11px;color:var(--tx3);background:var(--head)}
+  /* 폭 조정 스플리터 */
+  .splitter{width:8px;flex-shrink:0;cursor:col-resize;position:relative;border-radius:4px;transition:background .12s}
+  .splitter:hover,.splitter.drag{background:var(--brand-line)}
+  .splitter::after{content:'';position:absolute;left:3px;top:50%;transform:translateY(-50%);width:2px;height:34px;border-radius:2px;background:var(--line2)}
+  .splitter:hover::after,.splitter.drag::after{background:var(--brand)}
+  body.resizing{cursor:col-resize;user-select:none}
+
+  /* 컬럼 폭 조절 핸들 */
+  thead th{position:relative}
+  .rz{position:absolute;right:-3px;top:0;bottom:0;width:7px;cursor:col-resize;z-index:6}
+  .rz::after{content:'';position:absolute;left:3px;top:6px;bottom:6px;width:1px;background:var(--line2)}
+  .rz:hover::after,.rz.drag::after{background:var(--brand);width:2px;left:2.5px}
+  /* 셀 줄바꿈 */
+  .wrapx{white-space:normal;word-break:break-word;display:block;line-height:1.55}
+  .exb{opacity:0;border:none;background:none;color:var(--tx3);padding:0 2px;font-size:13px;flex-shrink:0;height:16px}
+  tr:hover .exb{opacity:1}
+  .exb:hover{color:var(--brand);background:var(--brand-weak);border-radius:4px}
+  .exb.on{opacity:1;color:var(--brand)}
+  .rawcell{display:flex;align-items:flex-start;gap:3px;min-width:0}
+  .rawcell>span{flex:1;min-width:0}
+  /* 헤더 필터 아이콘 */
+  /* 확인 헤더 일괄 적용 */
+  .okall{display:flex;gap:3px;justify-content:center;margin-top:3px}
+  .okall b{width:20px;height:16px;border-radius:4px;border:1px solid var(--line2);background:#fff;display:inline-flex;
+    align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:var(--tx3)}
+  .okall b.y:hover,.okall b.y.cur{background:var(--ok);border-color:var(--ok);color:#fff}
+  .okall b.n:hover,.okall b.n.cur{background:var(--tx2);border-color:var(--tx2);color:#fff}
+  th .fi,th .wi{font-size:12px;color:var(--tx3);cursor:pointer;margin-left:4px;vertical-align:-1px;border-radius:3px;padding:1px}
+  th .fi:hover,th .wi:hover{color:var(--brand);background:var(--brand-weak)}
+  th .fi.on,th .wi.on{color:#fff;background:var(--brand)}
+  th .wi{font-size:13px}
+  /* 대·중분류 셀 칩 */
+  .lchip{font-size:11px;padding:1px 6px;border-radius:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-block;max-width:100%;line-height:1.55}
+  .lchip.a{color:var(--l1);background:var(--l1w);border:1px solid var(--l1l)}
+  .lchip.b{color:var(--l2);background:var(--l2w);border:1px solid var(--l2l)}
+  /* 행 액션 (간소화) */
+  .ib{width:22px;height:22px;padding:0;border-radius:5px;flex-shrink:0}
+  .ib i{font-size:13px}
+  .ib.add{color:var(--brand);border-color:var(--brand-line);background:var(--brand-weak)}
+  .ib.add:hover{background:var(--brand);border-color:var(--brand);color:#fff}
+  .ib.del{color:var(--red);border-color:var(--red-line);background:var(--red-weak)}
+  .ib.del:hover{background:var(--red);border-color:var(--red);color:#fff}
+
+  /* 필터·컬럼 팝오버 */
+  .fpop{position:fixed;z-index:85;width:262px;background:#fff;border:1px solid var(--line2);border-radius:10px;box-shadow:0 14px 36px rgba(20,22,26,.18);display:none;overflow:hidden}
+  .fpop.on{display:block}
+  .fph{display:flex;align-items:center;gap:5px;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--head);font-size:12px}
+  .fps{padding:7px 8px;border-bottom:1px solid var(--line)}
+  .fps input{width:100%;border:1px solid var(--line2);border-radius:6px;padding:6px 8px;font-size:12px;outline:none}
+  .fps input:focus{border-color:var(--brand)}
+  .fpl{max-height:250px;overflow-y:auto;padding:5px}
+  .fi-row{display:flex;align-items:center;gap:8px;padding:5px 7px;border-radius:6px;cursor:pointer;font-size:12px}
+  .fi-row:hover{background:var(--brand-weak)}
+  .fi-row .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fi-row .n{font-size:10.5px;color:var(--tx3);font-variant-numeric:tabular-nums}
+  .fpf{display:flex;align-items:center;gap:6px;padding:7px 9px;border-top:1px solid var(--line);background:var(--head);font-size:10.5px;color:var(--tx3)}
+  /* ===== 보기유형 정책 ===== */
+  .srcbar{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);
+    background:var(--zebra);flex-wrap:nowrap;overflow-x:auto}
+  .srcbar>*{flex-shrink:0}
+  .srcbar .lbl{font-size:11px;font-weight:700;color:var(--tx2)}
+  .srccard{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 6px 4px 9px}
+  .srccard .nm{font-size:11.5px;font-weight:700;white-space:nowrap}
+  .srccard .n{font-size:10.5px;font-variant-numeric:tabular-nums;color:var(--tx3);font-weight:700}
+  .srccard.s1{border-color:#C6D9FB;background:#F6F9FF} .srccard.s1 .nm{color:#2554A8}
+  .srccard.s2{border-color:var(--brand-line);background:#FFF9F5} .srccard.s2 .nm{color:var(--brand-dk)}
+  .srccard.s3{border-color:#CFC6EF;background:#FAF8FE} .srccard.s3 .nm{color:var(--l1)}
+  .lkseg{display:inline-flex;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:#fff;white-space:nowrap}
+  .lkseg span{font-size:10.5px;padding:3px 8px;cursor:pointer;color:var(--tx2);user-select:none;display:inline-flex;align-items:center;gap:3px}
+  .lkseg span+span{border-left:1px solid var(--line2)}
+  .lkseg span:hover{background:var(--hover)}
+  .lkseg span.on{background:var(--tx2);color:#fff;font-weight:700}
+  .lkseg span.on.free{background:var(--brand);color:#fff}
+  .srcinfo{font-size:11px;color:var(--tx3)}
+  .srcinfo b{color:var(--tx2)}
+  .srcinfo .keep{color:#2554A8;font-weight:700} .srcinfo .regen{color:var(--brand-dk);font-weight:700}
+  /* 보기유형 · 수정여부 변경 팝오버 */
+  .srcpop{position:fixed;z-index:92;width:288px;background:#fff;border:1px solid var(--line2);border-radius:10px;
+    box-shadow:0 14px 36px rgba(20,22,26,.2);display:none;overflow:hidden}
+  .srcpop.on{display:block}
+  .sph{padding:9px 12px;border-bottom:1px solid var(--line);background:var(--head)}
+  .sph b{font-size:12px;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .spnow{font-size:10.5px;color:var(--tx3);margin-top:2px}
+  .spl{padding:5px}
+  .spsec{font-size:10px;font-weight:700;color:var(--tx3);padding:6px 8px 3px}
+  .spi{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;cursor:pointer;font-size:12.5px}
+  .spi:hover{background:var(--brand-weak)}
+  .spi.cur{background:var(--head);cursor:default}
+  .spi.cur:hover{background:var(--head)}
+  .spi .ck2{width:15px;flex-shrink:0;color:var(--brand);font-size:14px;text-align:center}
+  .spi .tt2{flex:1;min-width:0}
+  .spi .tt2 .d{display:block;font-size:10.5px;color:var(--tx3);margin-top:1px}
+  .spi.warn:hover{background:var(--warn-weak)}
+  .spf{display:flex;align-items:center;gap:6px;padding:7px 10px;border-top:1px solid var(--line);
+    background:var(--head);font-size:10.5px;color:var(--tx3)}
+  .spf i{font-size:13px}
+  /* 행 단위 유형·잠금 */
+  .sb{font-size:9.5px;font-weight:800;border-radius:4px;padding:1px 5px;flex-shrink:0;cursor:pointer;letter-spacing:.02em}
+  .sb.s1{color:#2554A8;background:var(--info-weak);border:1px solid var(--info-line)}
+  .sb.s2{color:var(--brand-dk);background:var(--brand-weak);border:1px solid var(--brand-line)}
+  .sb.s3{color:var(--l1);background:var(--l1w);border:1px solid var(--l1l)}
+  .sb .cv2{font-size:10px;opacity:.55;margin-left:2px;vertical-align:-1px}
+  .sb:hover{filter:brightness(.96)}
+  .lkb{border:none;background:none;padding:1px 3px;font-size:13px;flex-shrink:0;border-radius:4px;color:var(--tx3)}
+  .lkb.locked{color:#2554A8}
+  .lkb.free{color:var(--brand)}
+  .lkb:hover{background:var(--hover)}
+
+  /* ===== 저장 : DB 반영 비교 ===== */
+  .sbadge{display:none;margin-left:5px;background:#fff;color:var(--brand-dk);font-size:10px;font-weight:800;
+    border-radius:20px;padding:0 6px;font-variant-numeric:tabular-nums}
+  .sbadge.on{display:inline-block}
+  .ov2{position:fixed;inset:0;background:rgba(20,22,26,.38);z-index:95;display:none}
+  .ov2.on{display:block}
+  .svm{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.98);z-index:96;width:520px;max-width:calc(100vw - 40px);
+    background:#fff;border-radius:14px;box-shadow:0 20px 56px rgba(20,22,26,.26);display:none;flex-direction:column;overflow:hidden}
+  .svm.on{display:flex;animation:pop2 .16s cubic-bezier(.2,.8,.3,1) forwards}
+  @keyframes pop2{to{transform:translate(-50%,-50%) scale(1)}}
+  .svhd{display:flex;align-items:center;gap:9px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .svhd>i{font-size:19px;color:var(--brand)}
+  .svhd b{font-size:15px;font-weight:700}
+  .svsub{font-size:11.5px;color:var(--tx3);margin-top:1px}
+  .svbd{padding:16px 18px}
+  .svft{display:flex;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--line);background:var(--head)}
+  .svlast{font-size:11px;color:var(--tx3)}
+  /* 비교표 */
+  .cmp{border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .cmpr{display:flex;align-items:center;font-size:12.5px;border-bottom:1px solid var(--line)}
+  .cmpr:last-child{border-bottom:none}
+  .cmpr.h{background:var(--head);font-size:11px;font-weight:700;color:var(--tx2)}
+  .cmpr>span{padding:8px 10px}
+  .cmpr .lb{flex:1;min-width:0}
+  .cmpr .v1,.cmpr .v2{width:88px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+  .cmpr .v2{color:var(--tx2)}
+  .cmpr .dl{width:96px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums}
+  .cmpr.ok .v1{color:var(--ok)} .cmpr.warn .v1{color:var(--warn)}
+  .dl.plus{color:var(--ok);font-weight:700} .dl.zero{color:var(--tx3)}
+  .brk{display:flex;gap:5px;flex-wrap:wrap;margin-top:11px}
+  .bk{font-size:11px;padding:2px 9px;border-radius:20px;border:1px solid var(--line);background:#fff;color:var(--tx2);white-space:nowrap}
+  .bk b{font-variant-numeric:tabular-nums;color:var(--tx);margin-left:3px}
+  .bk.n b{color:var(--ok)} .bk.c b{color:var(--brand-dk)}
+  .note{display:flex;gap:8px;padding:9px 11px;border-radius:8px;font-size:11.5px;line-height:1.55;margin-top:12px}
+  .note.ok{background:var(--ok-weak);color:var(--ok)}
+  .note.wr{background:var(--warn-weak);color:var(--warn)}
+  .note i{font-size:14px;flex-shrink:0;margin-top:1px}
+  .uncbox{display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;border:1px solid var(--line2);
+    border-radius:9px;cursor:pointer;font-size:12.5px;user-select:none}
+  .uncbox:hover{border-color:var(--brand-line);background:var(--brand-weak)}
+  .uncbox.on{border-color:var(--brand);background:var(--brand-weak)}
+  .uncbox.dis{opacity:.45;pointer-events:none}
+  .uncbox .ut{flex:1;min-width:0}
+  .uncbox .ut b{color:var(--warn)}
+  .uncbox select{font-size:11.5px;border:1px solid var(--line2);border-radius:6px;padding:4px 6px;background:#fff;outline:none;max-width:190px}
+  .empty{padding:48px 0;text-align:center;color:var(--tx3);font-size:13px}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(170%);z-index:90;background:#22252A;color:#fff;font-size:12.5px;padding:10px 16px;border-radius:10px;display:flex;align-items:center;gap:8px;box-shadow:0 10px 28px rgba(0,0,0,.26);transition:transform .22s}
+  .toast.on{transform:translateX(-50%) translateY(0)}
+  .toast i{color:#5FD3A6;font-size:15px}
+</style>
+</head>
+<body>
+<a href="../index.html" title="설문온 기획안 메인으로" style="position:fixed;left:14px;bottom:14px;z-index:9999;display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:100px;background:#6C4CE0;color:#fff;font:700 12.5px 'Pretendard','Malgun Gothic',sans-serif;text-decoration:none;box-shadow:0 6px 18px rgba(76,60,180,.35)">&#127968; 기획안 홈</a>
+<div class="app">
+  <aside class="sb">
+    <div class="brand"><i class="ti ti-home"></i><i class="ti ti-menu-2"></i><span class="lg"><em>AI</em>오픈분석</span></div>
+    <div class="prj"><span class="nm">H-ASOS</span><span class="cd">m990001_001</span><div class="sp"></div><i class="ti ti-settings"></i></div>
+    <div class="navt">분석 설정 <i class="ti ti-chevron-up"></i></div>
+    <div class="nav">
+      <div class="nv" onclick="location.href='문항목록_개선시안.html'"><i class="ti ti-file-text"></i>문항 목록</div>
+      <div class="nv on"><i class="ti ti-adjustments-alt"></i>분석</div>
+      <div class="nv"><i class="ti ti-chart-bar"></i>토큰 사용 내역</div>
+    </div>
+    <div class="sbf">
+      <div class="fcard"><span class="lb">누적액 $</span><div class="sp"></div><span class="vl">360</span><button class="br xs">업데이트</button></div>
+      <div class="fcard bal"><i class="ti ti-sparkles" style="color:var(--brand)"></i><span>OPEN AI 잔액</span><div class="sp"></div><span class="vl">약 $335.32</span></div>
+      <div class="usr"><i class="ti ti-user-circle"></i>홍소연님</div>
+    </div>
+  </aside>
+
+  <main>
+    <header class="top">
+      <h1>분석</h1>
+      <div class="qnav">
+        <button class="qbtn" id="qPrev" onclick="qMove(-1)" title="이전 문항"><i class="ti ti-chevron-left"></i></button>
+        <div class="qchip" id="qChip" onclick="openQPick(event)" title="문항 선택">
+          <b id="qNo"></b><span class="sep">·</span><span id="qTt"></span><i class="ti ti-selector sel"></i></div>
+        <button class="qbtn" id="qNext" onclick="qMove(1)" title="다음 문항"><i class="ti ti-chevron-right"></i></button>
+        <span class="qpos" id="qPos"></span>
+      </div>
+      <div class="sp"></div>
+      <span class="saved" id="saveState"><i class="ti ti-cloud-check"></i>자동 저장됨 19:16</span>
+      <span class="tgl" onclick="this.classList.toggle('on');toast('중복코드 제거 '+(this.classList.contains('on')?'적용':'해제'))">
+        <span class="sw"><i class="ti ti-check"></i></span>중복코드 제거</span>
+      <button class="br" onclick="openSave()"><i class="ti ti-device-floppy"></i>저장<span class="sbadge" id="sBadge"></span></button>
+    </header>
+
+    <div class="setbar">
+      <span class="setbtn" id="setBtn" onclick="tglSet()"><i class="ti ti-settings-automation"></i>분석 설정<i class="ti ti-chevron-down cv"></i></span>
+      <div class="sumline" id="sumline"></div>
+      <div class="sp"></div>
+      <button class="br" onclick="runAnalyze()"><i class="ti ti-player-play"></i>보기분석 실행</button>
+      <button onclick="toast('번역 실행')">번역</button>
+      <button onclick="toast('응답자분석 실행')">응답자분석</button>
+      <button onclick="toast('빈셀·기타 처리')">빈셀·기타</button>
+      <button class="gh" onclick="const c=$('console');c.classList.toggle('on');if(c.classList.contains('on')){$('setpanel').classList.add('on');$('setBtn').classList.add('on')}"><i class="ti ti-terminal-2"></i></button>
+    </div>
+
+    <div class="setpanel" id="setpanel">
+      <div class="sgrid">
+        <div class="sf"><label>문항명</label><input class="tx" id="qName" value="[무선스틱청소기] 전반적 평가" oninput="sumUp()" /></div>
+        <div class="sf"><label>프롬프트 지침 <button class="xs" style="float:right;margin-top:-3px" onclick="toast('기존 지침을 불러왔습니다')">기존</button></label>
+          <textarea>1. 대분류(Brand) 4개 브랜드[삼성, LG, 다이슨, 샤크] 중 선택하기.
+2. 중분류(KBF) 10개 KBF로 분류하기.</textarea></div>
+        <div class="sf"><label>옵션</label>
+          <div class="orow"><span>결과언어</span>
+            <select class="sl2" id="oLang" onchange="sumUp()">
+              <option>한국어 (Korean)</option><option>English</option><option>日本語</option><option>中文 (简体)</option></select></div>
+          <div class="orow"><span>모델선택</span>
+            <select class="sl2" id="oModel" onchange="sumUp()">
+              <option>GPT-5.2</option><option>GPT-5.2-mini</option><option>Claude Opus 4.8</option><option>Claude Sonnet 5</option></select></div>
+          <div class="orow"><span>창의성 조절</span>
+            <input type="range" id="oTemp" min="0" max="1" step="0.1" value="0.2" oninput="sumUp()" /><b id="tempV">0.2</b></div>
+        </div>
+        <div class="sf"><label>분류 개수 설정 <span class="dim" style="font-weight:400">대/중분류 0 = 제외</span></label>
+          <div class="nums">
+            <label>소분류<input id="nS" value="0~50" oninput="sumUp()" /></label>
+            <label class="l2c">중분류<input id="nM" value="0" oninput="sumUp()" /></label>
+            <label class="l1c">대분류<input id="nL" value="0" oninput="sumUp()" /></label>
+          </div></div>
+      </div>
+      <div class="console" id="console"></div>
+    </div>
+
+    <div class="body">
+      <section class="pane work">
+        <div class="wtool">
+          <div class="segs">
+            <div class="seg on" id="tab1" onclick="setTab('resp')">응답 데이터<span class="n" id="n1">0</span></div>
+            <div class="seg" id="tab2" onclick="setTab('code')">보기 데이터<span class="n" id="n2">0</span></div>
+            <div class="seg" id="tab3" onclick="setTab('raw')">rawdata<span class="n" id="n3">0</span></div>
+          </div>
+          <div class="sp"></div>
+          <button id="fClr" onclick="clearF()" style="display:none"><i class="ti ti-filter-off"></i>필터 해제 <b id="fCnt"></b></button>
+          <button onclick="toast('엑셀 다운로드')"><i class="ti ti-download"></i>엑셀</button>
+          <button onclick="toast('엑셀 업로드')"><i class="ti ti-upload"></i>업로드</button>
+          <button onclick="toast('보기 불러오기')"><i class="ti ti-file-import"></i>보기 불러오기</button>
+        </div>
+
+        <div class="wstat" id="wstat">
+          <button id="colBtn" class="xs" onclick="openCols(event)"><i class="ti ti-columns-3"></i>컬럼</button>
+          <select class="sl xs" id="lvSel" onchange="draw()" title="분류 단계 — 3단계: 대·중·소 / 2단계: 중·소 / 1단계: 소분류">
+            <option value="3">3단계</option><option value="2">2단계</option><option value="1">1단계</option>
+          </select>
+          <div class="search sm"><i class="ti ti-search"></i><input id="q" placeholder="응답·분류 검색" oninput="draw()" /></div>
+          <span class="vdv"></span>
+          <div class="prog" id="progBox"><span>확인</span><b id="pTx">0/0</b>
+            <span class="pbar"><span id="pBar" style="width:0%"></span></span><span class="ppct" id="pPct">0%</span></div>
+          <div class="sp"></div>
+          <span class="selind" id="selInd"></span>
+          <div class="chips" id="chips"></div>
+          <i class="ti ti-help-circle helpi" title="드래그 · Shift+클릭 · Ctrl+클릭 으로 여러 행을 선택한 뒤, 우측 분류를 클릭하면 일괄 지정됩니다. ↑↓ 이동 · Enter 확인 · / 분류 검색"></i>
+        </div>
+
+        <!-- 보기유형 정책 (보기 데이터 탭) -->
+        <div class="srcbar" id="srcbar" style="display:none"></div>
+
+        <div class="twrap" id="twrap">
+          <table id="tbl"></table>
+          <div class="cols" id="cols" style="display:none">
+            <div class="col" id="colA0"><div class="colh h1"><span class="dot"></span>대분류<span class="cnt2" id="cA">0</span></div><div class="collist" id="colA"></div></div>
+            <div class="col" id="colB0"><div class="colh h2"><span class="dot"></span>중분류<span class="cnt2" id="cB">0</span></div><div class="collist" id="colB"></div></div>
+            <div class="col w2">
+              <div class="colh h3"><span class="dot"></span>소분류<span class="cnt2" id="cC">0</span>
+                <div class="sp"></div><span class="scopeseg" id="scopeSeg"></span></div>
+              <div class="colfilt" id="colFilt"></div>
+              <div class="collist" id="colC"></div>
+            </div>
+          </div>
+          <div class="empty" id="empty" style="display:none">조건에 맞는 항목이 없습니다.</div>
+
+        </div>
+        <div class="colfoot" id="colfoot" style="display:none"></div>
+      </section>
+
+      <div class="splitter" id="split" title="드래그하여 폭 조정 · 더블클릭 시 초기화"></div>
+
+      <aside class="pane cb" id="cb">
+        <div class="phd"><span class="t"><i class="ti ti-category-2"></i>분류 선택 · 편집 <span class="cnt" id="cbCnt">0</span></span>
+          <div class="sp"></div><span class="dim" style="font-size:10.5px"><kbd class="k">/</kbd> 검색</span></div>
+        <div class="cbody">
+          <div class="pickhd">
+            <div class="search bigsearch"><i class="ti ti-search"></i>
+              <input id="cbQ" placeholder="검색 · 없으면 새 분류로 추가" oninput="drawPick()" onkeydown="pickKey(event)" />
+              <button class="gh xs" onclick="$('cbQ').value='';drawPick()" title="지우기"><i class="ti ti-x"></i></button></div>
+            <div class="prow">
+              <select class="lvsel" id="fA" onchange="pkA=this.value===''?null:+this.value;drawPick()"></select>
+              <button class="lvb" onclick="editA()" title="대분류명 수정"><i class="ti ti-pencil"></i></button>
+              <button class="lvb" onclick="addA()" title="대분류 추가"><i class="ti ti-plus"></i></button>
+              <button class="lvb dg" onclick="delA()" title="대분류 삭제"><i class="ti ti-trash"></i></button>
+              <select class="lvsel srt" id="cbSort" onchange="drawPick()">
+                <option value="freq">빈도순</option><option value="code">코드순</option><option value="recent">최근순</option>
+              </select>
+            </div>
+            <input class="lvin" id="iA" style="display:none" onkeydown="aKey(event)" onblur="saveA()" />
+          </div>
+          <div class="cblist" id="cbList"></div>
+          <div class="cbfoot" id="cbFoot"></div>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<div class="pop" id="pop">
+  <div class="ph" id="popHd"></div>
+  <div class="ps"><input id="popQ" placeholder="소분류명 · 코드 · 대/중분류 검색" oninput="drawPop()" onkeydown="popKey(event)" /></div>
+  <div class="pl2" id="popList"></div>
+  <div class="pf">↑↓ 이동 · Enter 지정 · Esc 닫기</div>
+</div>
+<!-- 저장 : DB 반영 비교 -->
+<div class="ov2" id="ov2" onclick="closeSave()"></div>
+<div class="svm" id="mSave">
+  <div class="svhd"><i class="ti ti-device-floppy"></i>
+    <div><b>저장 — DB 반영 비교</b><div class="svsub" id="svSub"></div></div>
+    <div class="sp"></div><button class="gh xs" onclick="closeSave()"><i class="ti ti-x"></i></button></div>
+  <div class="svbd">
+    <div class="cmp" id="svCmp"></div>
+    <div id="svNote"></div>
+    <div class="uncbox" id="svUncBox" onclick="svUnc=!svUnc;drawSave()">
+      <span class="sw" id="svUncSw"><i class="ti ti-check"></i></span>
+      <span class="ut">미코딩 <b id="svUncN">0</b>건도 함께 저장</span>
+      <select id="svUncCode" onclick="event.stopPropagation()"></select>
+    </div>
+  </div>
+  <div class="svft"><span class="svlast" id="svLast"></span><div class="sp"></div>
+    <button onclick="closeSave()">취소</button>
+    <button class="br" id="svGo" onclick="runSave()"><i class="ti ti-database-import"></i>저장 실행</button></div>
+</div>
+
+<!-- 보기유형 · 수정여부 변경 (신중 적용) -->
+<div class="srcpop" id="srcpop">
+  <div class="sph"><b id="spTitle"></b><div class="spnow" id="spNow"></div></div>
+  <div class="spl" id="spList"></div>
+  <div class="spf"><i class="ti ti-alert-circle"></i><span>선택한 항목을 클릭해야 적용됩니다 · Esc 취소</span></div>
+</div>
+
+<!-- 문항 선택 팝오버 -->
+<div class="qpop" id="qpop">
+  <div class="qs2"><input id="qpQ" placeholder="문항번호 · 문항명 검색" oninput="drawQPick()" onkeydown="if(event.key==='Escape')closeQPick()" /></div>
+  <div class="ql" id="qpList"></div>
+  <div class="qf" id="qpFoot"></div>
+</div>
+
+<!-- 컬럼 필터 / 표시설정 공용 팝오버 -->
+<div class="fpop" id="fpop">
+  <div class="fph"><b id="fpTitle"></b><div class="sp"></div>
+    <button class="xs" onclick="fAll(true)">전체</button><button class="xs" onclick="fAll(false)">해제</button></div>
+  <div class="fps" id="fpSearchBox"><input id="fpQ" placeholder="값 검색" oninput="drawF()" /></div>
+  <div class="fpl" id="fpList"></div>
+  <div class="fpf"><span id="fpInfo"></span><div class="sp"></div><button class="br xs" onclick="closeF()">확인</button></div>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toastTx"></span></div>
+
+<script>
+/* ===== 보기 데이터 : 대 > 중 > 소 ===== */
+let TREE=[
+ {c:1,n:'LG',ch:[
+   {c:1,n:'AS 및 사후관리 용이성',ch:[
+     {c:1,n:'교체형 배터리로 장기 운영이 유리',ty:'edit'},{c:2,n:'모터 장기 보증으로 브랜드 신뢰가 높음',ty:'edit'},
+     {c:3,n:'무게감으로 장시간 사용 시 피로가 생김',ty:'edit'},{c:4,n:'전국 서비스센터로 AS 접근성이 좋음',ty:'edit'},
+     {c:5,n:'프리미엄 가격으로 구성별 가성비 편차가 큼',ty:'edit'}]},
+   {c:2,n:'디자인 및 인테리어 조화',ch:[
+     {c:6,n:'올인원 스팀 등 액세서리 확장성이 큼',ty:'edit'},{c:7,n:'오브제 디자인이 거실 인테리어와 잘 어울림',ty:'edit'},
+     {c:8,n:'카펫 청소는 전용 헤드 포함 여부에 좌우됨',ty:'edit'}]},
+   {c:3,n:'먼지날림 및 먼지자동/필터 관리 편의성',ch:[
+     {c:9,n:'물걸레·먼지 흡입 소모품 유지비 부담이 있음',ty:'edit'},{c:10,n:'먼지통 자동비움이 편리함',ty:'lock'}]}]},
+ {c:2,n:'삼성',ch:[
+   {c:1,n:'흡입력/모터출력 성능',ch:[{c:11,n:'강력한 흡입력으로 카펫 청소가 만족스러움',ty:'edit'},{c:12,n:'최대 모드에서 소음이 큰 편',ty:'edit'}]},
+   {c:2,n:'제품무게 및 사용편의도',ch:[{c:13,n:'가벼워 한 손 사용이 편함',ty:'edit'},{c:14,n:'거치대 결합이 간편함',ty:'lock'}]},
+   {c:3,n:'배터리 지속시간',ch:[{c:15,n:'배터리 지속시간이 충분함',ty:'edit'},{c:16,n:'충전 속도가 느린 편',ty:'edit'}]}]},
+ {c:3,n:'다이슨',ch:[
+   {c:1,n:'흡입력/모터출력 성능',ch:[{c:17,n:'흡입력은 최고 수준이라 만족',ty:'edit'},{c:18,n:'미세먼지 필터 성능이 뛰어남',ty:'edit'}]},
+   {c:2,n:'가격 및 가성비',ch:[{c:19,n:'가격이 비싸 부담됨',ty:'edit'},{c:20,n:'소모품 가격이 높음',ty:'edit'}]}]},
+ {c:4,n:'샤크',ch:[
+   {c:1,n:'제품무게 및 사용편의도',ch:[{c:21,n:'접히는 구조로 보관이 편리함',ty:'edit'},{c:22,n:'물걸레 겸용이라 활용도가 높음',ty:'edit'}]},
+   {c:2,n:'AS 및 사후관리 용이성',ch:[{c:23,n:'서비스센터가 적어 AS가 불편함',ty:'edit'}]}]},
+ {c:9,n:'기타',ch:[{c:9,n:'기타',ch:[{c:99,n:'DK / 무응답',ty:'lock'}]}]}
+];
+/* ===== 보기유형 : 설문지 / 자동분석 / 트래킹 =====
+   lock=true(수정불가) → 보기분석 실행 시 그대로 유지, 추가 보기만 새로 생성
+   lock=false(수정가능) → 보기분석 실행 시 삭제 후 새로 생성 */
+const SRCT=['설문지','자동분석','트래킹'];
+const SRCN={'설문지':'설문지보기','자동분석':'자동분석보기','트래킹':'트래킹보기'};
+const SRCC={'설문지':'s1','자동분석':'s2','트래킹':'s3'};
+let SRCLOCK={'설문지':true,'자동분석':false,'트래킹':true};   /* 유형별 기본 정책 */
+(function seedSrc(){let i=0;
+  TREE.forEach(a=>a.ch.forEach(b=>b.ch.forEach(c=>{
+    c.src = c.ty==='lock' ? '설문지' : (i%6===2 ? '트래킹' : '자동분석');
+    c.lock = SRCLOCK[c.src]; delete c.ty; i++;
+  })));
+})();
+let IDX={};
+function reindex(){IDX={};TREE.forEach(a=>a.ch.forEach(b=>b.ch.forEach(c=>{
+  IDX[c.c]={c1:a.c,c2:b.c,c3:c.c,n1:a.n,n2:b.n,n3:c.n,src:c.src,lock:c.lock,ref:c}})))}
+reindex();
+const leaves=()=>{const o=[];TREE.forEach(a=>a.ch.forEach(b=>b.ch.forEach(c=>o.push({a,b,c}))));return o};
+const srcCnt=s=>leaves().filter(x=>x.c.src===s).length;
+function setSrcLock(s,v){
+  if(SRCLOCK[s]===v)return;
+  const n=leaves().filter(x=>x.c.src===s&&x.c.lock!==v).length;
+  const warn=v?'':'\n\n※ 수정가능으로 두면 보기분석 실행 시 해당 보기가 모두 삭제되고 새로 생성됩니다.';
+  if(n&&!confirm(`[${SRCN[s]}] 정책을 ${v?'수정불가':'수정가능'} 로 바꿉니다.\n적용 대상 소분류 ${n}개.${warn}\n\n계속할까요?`))return;
+  SRCLOCK[s]=v; leaves().forEach(x=>{if(x.c.src===s)x.c.lock=v});
+  reindex();touch();draw();
+  toast(`${SRCN[s]} → ${v?'수정불가 (실행 시 유지)':'수정가능 (실행 시 재생성)'}`);
+}
+/* ===== 보기유형 · 수정여부 : 클릭 한 번으로 바뀌지 않도록 선택 메뉴로 적용 ===== */
+let spFor=null;
+function openSrcPop(e,c3){
+  const x=IDX[c3]; if(!x)return;
+  spFor=c3;
+  $('spTitle').textContent=`${x.c1}·${x.c2}·${x.c3} ${x.n3}`;
+  $('spNow').innerHTML=`현재 <b style="color:var(--tx2)">${SRCN[x.src]}</b> · ${x.lock?'수정불가':'수정가능'}`;
+  drawSrcPop();
+  const p=$('srcpop'), r=e.target.getBoundingClientRect();
+  p.style.left=Math.min(Math.max(8,r.left-60),innerWidth-300)+'px';
+  p.style.top=(r.bottom+6+270>innerHeight?Math.max(8,r.top-270):r.bottom+6)+'px';
+  p.classList.add('on');
+}
+function drawSrcPop(){
+  const x=IDX[spFor]; if(!x)return;
+  $('spList').innerHTML=
+    `<div class="spsec">보기유형</div>`+
+    SRCT.map(s=>{const cur=x.src===s;
+      return `<div class="spi ${cur?'cur':''}" ${cur?'':`onclick="applySrc('${s}')"`}>
+        <span class="ck2">${cur?'<i class="ti ti-check"></i>':''}</span>
+        <span class="tt2"><span class="sb ${SRCC[s]}" style="cursor:default">${s}</span> ${SRCN[s]}
+          <span class="d">기본 정책 · ${SRCLOCK[s]?'수정불가':'수정가능'}</span></span></div>`}).join('')+
+    `<div class="spsec">수정 여부</div>`+
+    [[true,'수정불가','보기분석 실행 시 그대로 유지됩니다'],[false,'수정가능','보기분석 실행 시 삭제 후 재생성됩니다']]
+    .map(([v,n,d])=>{const cur=x.lock===v;
+      return `<div class="spi ${cur?'cur':''} ${v?'':'warn'}" ${cur?'':`onclick="applyLock(${v})"`}>
+        <span class="ck2">${cur?'<i class="ti ti-check"></i>':''}</span>
+        <span class="tt2"><i class="ti ti-lock${v?'':'-open'}" style="font-size:12px;color:${v?'#2554A8':'var(--brand)'}"></i> ${n}
+          <span class="d">${d}</span></span></div>`}).join('');
+}
+function applySrc(s){
+  const x=IDX[spFor]; if(!x)return;
+  x.ref.src=s; x.ref.lock=SRCLOCK[s];
+  reindex();touch();closeSrcPop();draw();
+  toast(`[${x.c3}] 보기유형 → ${SRCN[s]} (${SRCLOCK[s]?'수정불가':'수정가능'})`);
+}
+function applyLock(v){
+  const x=IDX[spFor]; if(!x)return;
+  x.ref.lock=v; reindex();touch();closeSrcPop();draw();
+  toast(v?`[${x.c3}] 수정불가 — 실행 시 유지`:`[${x.c3}] 수정가능 — 실행 시 재생성`);
+}
+function closeSrcPop(){$('srcpop').classList.remove('on');spFor=null}
+document.addEventListener('click',e=>{if(!e.target.closest('#srcpop')&&!e.target.closest('.sb')&&!e.target.closest('.lkb'))closeSrcPop()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSrcPop()});
+
+/* ===== 응답 데이터 : 1행 = (응답 × 멀티) · 코드 1개 ===== */
+const SRC=[
+ ['배터리를 갈아끼울 수 있어서 오래 쓸 수 있음','교체형 배터리로 장기 운영 유리',[1],'pos',1],
+ ['모터 10년 보증이라 믿고 삼','모터 장기 보증으로 신뢰 높음',[2],'pos',1],
+ ['무거워서 오래 들고있으면 팔아픔','무게로 장시간 사용 시 피로',[3],'neg',1],
+ ['서비스센터가 많아서 편해요','전국 서비스센터로 AS 접근성 좋음',[4],'pos',1],
+ ['비싼데 구성따라 가성비가 들쭉날쭉','가격 대비 구성별 가성비 편차',[5],'neg',1],
+ ['스팀청소기까지 붙일 수 있어 좋음','액세서리 확장성 큼',[6],'pos',1],
+ ['오브제라 거실에 두기 예뻐요','디자인이 인테리어와 조화',[7],'pos',1],
+ ['카펫헤드 없으면 카펫청소 별로','카펫 청소는 전용 헤드에 좌우',[8],'neu',1],
+ ['소모품값이 계속 들어감','소모품 유지비 부담',[9],'neg',1],
+ ['먼지통 자동으로 비워져서 편함','먼지통 자동비움 편리',[10],'pos',1],
+ ['흡입력 좋아서 카펫도 잘 빨림','흡입력 우수, 카펫 만족',[11],'pos',1],
+ ['최대로 하면 너무 시끄러움','최대 모드 소음 큼',[12],'neg',1],
+ ['가벼워서 한손으로 됨','가벼워 한 손 사용 편함',[13],'pos',1],
+ ['거치대에 그냥 꽂으면 됨','거치대 결합 간편',[14],'pos',1],
+ ['한번 충전으로 집 다 치움','배터리 지속시간 충분',[15],'pos',1],
+ ['충전이 좀 오래걸려요','충전 속도 느림',[16],'neg',1],
+ ['흡입력 하나는 진짜 최고','흡입력 최고 수준',[17],'pos',1],
+ ['필터가 미세먼지까지 잡아줌','미세먼지 필터 성능 우수',[18],'pos',1],
+ ['너무 비쌈','가격 부담',[19],'neg',1],
+ ['필터값이 사악함','소모품 가격 높음',[20],'neg',1],
+ ['접어서 보관하니 자리 안차지함','접이 구조로 보관 편리',[21],'pos',1],
+ ['물걸레도 되니까 활용도 좋음','물걸레 겸용 활용도 높음',[22],'pos',1],
+ ['as센터가 없어서 불편','서비스센터 부족으로 AS 불편',[23],'neg',1],
+ ['가볍고 흡입력도 좋아요','가볍고 흡입력 우수',[13,11],'pos',0],
+ ['디자인 예쁜데 무거움','디자인 만족하나 무거움',[7,3],'neu',0],
+ ['배터리 오래가고 as도 좋음','배터리 지속·AS 모두 만족',[15,4],'pos',0],
+ ['그냥 그래요','그냥 그렇다',[],'neu',0],
+ ['ㅇㅇ','ㅇㅇ',[99],'neu',0],
+ ['.','.',[99],'neu',1],
+ ['없음','없음',[99],'neu',1],
+ ['소음만 좀 줄면 완벽','소음 개선 필요',[12],'neg',0],
+ ['싸고 좋아요','가성비 좋음',[],'pos',0],
+ ['가벼워서 좋아요','가벼워 한 손 사용 편함',[],'pos',0],
+ ['가벼운게 최고','가벼워 한 손 사용 편함',[],'pos',0],
+ ['소음이 좀 큽니다','최대 모드 소음 큼',[],'neg',0],
+ ['시끄러워요','최대 모드 소음 큼',[],'neg',0]
+];
+let R=[], RID=0, SEQ=0;
+SRC.forEach(([raw,tx,cs,se,ok])=>{
+  RID++;
+  const list=cs.length?cs:[null];
+  list.forEach((c,i)=>R.push({id:++SEQ,rid:RID,m:i+1,raw,tx,c,se,ok:!!ok,ed:false,low:!ok&&!c}));
+});
+
+/* ===== 상태 ===== */
+let tab='resp', filt='all', cur=null, dirty=false;
+let sel=new Set(), anchor=null, dragging=false;
+let selA=1, selB=1, recent=[13,11,12,15,4,99];
+let popFor=null, popIdx=0, editing=0;
+
+const $=id=>document.getElementById(id);
+const fmt=n=>n.toLocaleString();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){$('toastTx').textContent=m;$('toast').classList.add('on');clearTimeout(window._t);window._t=setTimeout(()=>$('toast').classList.remove('on'),1900)}
+function touch(){dirty=true}
+/* ===== 최종 DB 반영 상태 =====
+   map : PID행 → DB에 저장된 코드. 응답이 차수별로 추가되면 DB에 없는 행이 생긴다 */
+let DB={at:'2026-03-16 19:16', round:1, map:new Map()};
+let svUnc=false;
+/* 1차 저장 시점의 DB 상태를 재현 :
+   - 최근 코딩분 일부는 아직 DB에 없음 (2차로 추가된 응답)
+   - 일부는 DB에 다른 코드로 들어가 있음 (재코딩된 건) */
+function seedDB(){
+  const coded=R.filter(r=>r.c);
+  coded.forEach((r,i)=>{
+    if(i>=coded.length-5)return;
+    DB.map.set(r.id, i%9===0?99:r.c);
+  });
+}
+function diffDB(){
+  const coded=R.filter(r=>r.c), unc=R.filter(r=>!r.c);
+  let neu=0,chg=0,same=0;
+  coded.forEach(r=>{const d=DB.map.get(r.id);
+    if(d===undefined)neu++; else if(d!==r.c)chg++; else same++});
+  const dbNew=R.filter(r=>!DB.map.has(r.id)).length;      /* DB 미등록(추가 차수) */
+  return {total:R.length,coded:coded.length,unc:unc.length,
+          dbCoded:R.filter(r=>DB.map.has(r.id)).length,neu,chg,same,dbNew,
+          pending:neu+chg+unc.length};
+}
+function updSaved(){
+  const d=diffDB(), b=$('sBadge');
+  b.classList.toggle('on',d.pending>0);
+  b.textContent=d.pending||'';
+  if(d.pending===0&&!dirty){$('saveState').className='saved';
+    $('saveState').innerHTML=`<i class="ti ti-cloud-check"></i>DB 반영 완료 ${DB.at}`}
+  else{$('saveState').className='saved dirty';
+    $('saveState').innerHTML=`<i class="ti ti-cloud-exclamation"></i>DB 미반영 ${d.pending}건`}
+}
+function openSave(){
+  const q=QLIST[qIdx];
+  $('svSub').textContent=`${q.no} · ${q.t}`;
+  svUnc=false; drawSave();
+  $('ov2').classList.add('on'); $('mSave').classList.add('on');
+}
+function closeSave(){$('ov2').classList.remove('on');$('mSave').classList.remove('on')}
+function drawSave(){
+  const d=diffDB();
+  $('svCmp').innerHTML=
+    `<div class="cmpr h"><span class="lb">구분</span><span class="v1">분석 결과</span><span class="v2">최종 DB</span><span class="dl">이번 반영</span></div>
+     <div class="cmpr ok"><span class="lb">코딩 완료</span><span class="v1">${fmt(d.coded)}</span><span class="v2">${fmt(DB.map.size)}</span>
+       <span class="dl ${d.neu+d.chg?'plus':'zero'}">${d.neu+d.chg?'+'+fmt(d.neu+d.chg):'—'}</span></div>
+     <div class="cmpr ${d.unc?'warn':''}"><span class="lb">미코딩</span><span class="v1">${fmt(d.unc)}</span><span class="v2">${fmt(d.unc)}</span>
+       <span class="dl ${svUnc&&d.unc?'plus':'zero'}">${svUnc&&d.unc?'+'+fmt(d.unc):'—'}</span></div>
+     <div class="cmpr"><span class="lb">전체 PID</span><span class="v1">${fmt(d.total)}</span><span class="v2">${fmt(DB.map.size+d.unc)}</span>
+       <span class="dl zero">${d.dbNew?`신규 ${fmt(d.dbNew)}`:'—'}</span></div>`;
+  $('svCmp').insertAdjacentHTML('afterend','');
+  const brk=`<div class="brk"><span class="bk n">신규<b>${fmt(d.neu)}</b></span><span class="bk c">변경<b>${fmt(d.chg)}</b></span>
+    <span class="bk">동일<b>${fmt(d.same)}</b></span>${d.dbNew?`<span class="bk">DB 미등록<b>${fmt(d.dbNew)}</b></span>`:''}</div>`;
+  $('svNote').innerHTML=brk+(d.unc
+    ? `<div class="note wr"><i class="ti ti-alert-triangle"></i><div><b>미코딩 ${fmt(d.unc)}건</b>은 코드가 없어 DB에 반영되지 않습니다.
+        아래를 체크하면 지정한 코드로 함께 저장되고, 체크하지 않으면 다음에 <b>저장</b>을 다시 눌러 처리할 수 있습니다.</div></div>`
+    : `<div class="note ok"><i class="ti ti-circle-check"></i><div>모든 PID에 코드가 지정되어 있습니다. 저장 시 DB와 완전히 일치합니다.</div></div>`);
+  const box=$('svUncBox');
+  box.classList.toggle('dis',!d.unc); box.classList.toggle('on',svUnc&&!!d.unc);
+  $('svUncSw').classList.toggle('on',svUnc&&!!d.unc);
+  $('svUncN').textContent=fmt(d.unc);
+  if(!$('svUncCode').options.length)
+    $('svUncCode').innerHTML=Object.values(IDX).map(x=>`<option value="${x.c3}" ${x.c3===99?'selected':''}>${x.c1}·${x.c2}·${x.c3} ${esc(x.n3)}</option>`).join('');
+  $('svLast').textContent=`최근 저장 ${DB.at} (${DB.round}차) · 반영 대기 ${fmt(d.pending)}건`;
+  $('svGo').disabled=d.pending===0;
+}
+function runSave(){
+  const d=diffDB(); let n=0,u=0;
+  R.filter(r=>r.c).forEach(r=>{if(DB.map.get(r.id)!==r.c){DB.map.set(r.id,r.c);n++}});
+  if(svUnc&&d.unc){const fc=+$('svUncCode').value;
+    R.filter(r=>!r.c).forEach(r=>{r.c=fc;r.ed=true;DB.map.set(r.id,fc);u++})}
+  const t=new Date(); DB.at=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')} ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+  DB.round++; dirty=false; closeSave(); draw();
+  const left=diffDB().unc;
+  toast(u?`저장 완료 — 코드 ${fmt(n)}건 반영, 미코딩 ${fmt(u)}건 처리`
+        :`저장 완료 — 코드 ${fmt(n)}건 반영${left?` · 미코딩 ${fmt(left)}건 남음 (저장 다시 실행 가능)`:''}`);
+}
+function tglSet(){const p=$('setpanel');p.classList.toggle('on');$('setBtn').classList.toggle('on',p.classList.contains('on'))}
+
+/* ===== 문항 이동 · 선택 ===== */
+const QLIST=[
+ {no:'청소기Q1', t:'[무선스틱청소기] 사용 브랜드',    st:'done'},
+ {no:'청소기Q2', t:'[무선스틱청소기] 구입 결정 요인', st:'done'},
+ {no:'청소기Q3', t:'[무선스틱청소기] 구입 이유',      st:'done'},
+ {no:'청소기Q4', t:'[무선스틱청소기] 불만 사항',      st:'done'},
+ {no:'청소기Q5', t:'[무선스틱청소기] 전반적 평가',    st:'run'},
+ {no:'청소기Q6', t:'[무선스틱청소기] 개선 희망 사항', st:'wait'},
+ {no:'청소기Q7', t:'[무선스틱청소기] 추천 이유',      st:'wait'},
+ {no:'청소기Q8', t:'[무선스틱청소기] 비추천 이유',    st:'wait'},
+ {no:'청소기Q9', t:'[로봇청소기] 병행 사용 이유',     st:'wait'},
+ {no:'청소기Q10',t:'[로봇청소기] 전반적 평가',        st:'wait'}
+];
+let qIdx=4;
+function qDraw(){
+  const q=QLIST[qIdx];
+  $('qNo').textContent=q.no; $('qTt').textContent=q.t;
+  $('qChip').title=`${q.no} · ${q.t} — 클릭하여 문항 선택`;
+  $('qPos').textContent=`${qIdx+1} / ${QLIST.length}`;
+  $('qPrev').disabled=qIdx===0; $('qNext').disabled=qIdx===QLIST.length-1;
+  const el=$('qName'); if(el&&el.value!==q.t){el.value=q.t;sumUp()}
+}
+function qGo(i){
+  if(i<0||i>=QLIST.length||i===qIdx)return;
+  qIdx=i; qDraw();
+  /* 문항 전환 시 작업 상태 초기화 (실제로는 해당 문항 데이터를 불러옵니다) */
+  filt='all'; $('q').value=''; sel.clear(); anchor=null; cur=null;
+  Object.values(colF).forEach(S=>S.clear());
+  draw(); toast(`${QLIST[i].no} · ${QLIST[i].t}`);
+}
+function qMove(d){qGo(qIdx+d)}
+function openQPick(){
+  const p=$('qpop'), r=$('qChip').getBoundingClientRect();
+  p.style.left=Math.min(Math.max(8,r.left),innerWidth-412)+'px';
+  p.style.top=(r.bottom+6)+'px';
+  p.classList.add('on'); $('qpQ').value=''; drawQPick();
+  setTimeout(()=>$('qpQ').focus(),0);
+}
+function drawQPick(){
+  const q=$('qpQ').value.trim().toLowerCase();
+  const list=QLIST.map((x,i)=>({...x,i})).filter(x=>!q||(x.no+' '+x.t).toLowerCase().includes(q));
+  $('qpList').innerHTML=list.map(x=>`<div class="qrow ${x.i===qIdx?'on':''}" onclick="qGo(${x.i});closeQPick()">
+    <span class="qn">${esc(x.no)}</span><span class="qt2">${esc(x.t)}</span>
+    <span class="qst ${x.st}">${x.st==='done'?'완료':x.st==='run'?'진행중':'대기'}</span></div>`).join('')
+    ||'<div class="empty" style="padding:24px 0">일치하는 문항이 없습니다.</div>';
+  $('qpFoot').textContent=`전체 ${QLIST.length}개 · 완료 ${QLIST.filter(x=>x.st==='done').length} · 진행중 ${QLIST.filter(x=>x.st==='run').length} · 대기 ${QLIST.filter(x=>x.st==='wait').length}`;
+}
+function closeQPick(){$('qpop').classList.remove('on')}
+document.addEventListener('click',e=>{if(!e.target.closest('#qpop')&&!e.target.closest('#qChip'))closeQPick()});
+
+const lv=()=>+$('lvSel').value;
+const leafCnt=c=>R.filter(r=>r.c===c).length;
+const l2Cnt=b=>b.ch.reduce((s,c)=>s+leafCnt(c.c),0);
+const l1Cnt=a=>a.ch.reduce((s,b)=>s+l2Cnt(b),0);
+const pathTx=c=>{const x=IDX[c];return x?`${x.n1} › ${x.n2} › ${x.n3}`:''};
+const pathNo=c=>{const x=IDX[c];return x?(lv()===3?`${x.c1}·${x.c2}·${x.c3}`:lv()===2?`${x.c2}·${x.c3}`:`${x.c3}`):''};
+const A=()=>TREE.find(a=>a.c===selA)||TREE[0];
+const B=()=>A()?.ch.find(b=>b.c===selB)||A()?.ch[0];
+const mCount=rid=>R.filter(r=>r.rid===rid).length;
+
+/* 접힘 상태 요약 — 무엇이 설정돼 있는지만 흐리게 안내 */
+function sumUp(){
+  $('tempV').textContent=(+$('oTemp').value).toFixed(1);
+  const s=$('nS').value,m=$('nM').value,l=$('nL').value;
+  const cls=[l!=='0'&&l?`대 ${l}`:null, m!=='0'&&m?`중 ${m}`:null, `소 ${s}`].filter(Boolean).join(' / ');
+  $('sumline').innerHTML=[$('oLang').value.replace(/\s*\(.*\)/,''),$('oModel').value,
+    `창의성 ${(+$('oTemp').value).toFixed(1)}`,cls].join('<span class="sep">·</span>');
+  $('sumline').title=`결과언어 ${$('oLang').value} · 모델 ${$('oModel').value} · 창의성 ${(+$('oTemp').value).toFixed(1)} · 분류 ${cls}`;
+}
+
+/* ===== 컬럼 정의 · 표시여부 · 컬럼별 필터 ===== */
+const COLS=[
+ {k:'raw',n:'원본 응답',  w:176, wr:1},
+ {k:'tx', n:'클리닝 응답',w:176, wr:1},
+ {k:'m',  n:'멀티',      w:44, c:1, f:1},
+ {k:'l1', n:'대분류',    w:92,      f:1},
+ {k:'l2', n:'중분류',    w:124,     f:1},
+ {k:'l3', n:'소분류',    w:0,       f:1},
+ {k:'se', n:'감성',      w:64, c:1, f:1},
+ {k:'ok', n:'확인',      w:62, c:1, f:1}
+];
+const COLS0=Object.fromEntries(COLS.map(c=>[c.k,c.w]));   /* 기본 폭 (더블클릭 복원용) */
+let colVis={raw:1,tx:1,m:1,l1:1,l2:1,l3:1,se:1,ok:1};
+let wrapCol={raw:0,tx:0}, expRows=new Set();          /* 컬럼별 줄바꿈 */
+function togExpRow(id){expRows.has(id)?expRows.delete(id):expRows.add(id);draw()}
+function togWrap(k){wrapCol[k]=wrapCol[k]?0:1;draw();toast(`${COLS.find(c=>c.k===k).n} ${wrapCol[k]?'줄바꿈':'한 줄 보기'}`)}
+let colF={m:new Set(),l1:new Set(),l2:new Set(),l3:new Set(),se:new Set(),ok:new Set()};
+let fFor=null;
+/* 행 → 컬럼별 필터 값(라벨) */
+function fKey(k,r){
+  if(k==='m') return String(r.m);
+  if(k==='se')return r.se==='pos'?'긍정':r.se==='neg'?'부정':'중립';
+  if(k==='ok')return r.ok?'확인':'미확인';
+  if(!r.c)   return '(미분류)';
+  const x=IDX[r.c];
+  return k==='l1'?`${x.c1}. ${x.n1}`:k==='l2'?`${x.c2}. ${x.n2}`:`${x.c3}. ${x.n3}`;
+}
+const fActive=()=>Object.keys(colF).filter(k=>colF[k].size);
+
+function match(r){
+  const q=$('q').value.trim().toLowerCase();
+  if(q&&!(r.raw+r.tx+(r.c?r.c+pathTx(r.c):'')).toLowerCase().includes(q))return false;
+  for(const k of Object.keys(colF)) if(colF[k].size&&!colF[k].has(fKey(k,r))) return false;
+  if(filt==='un')return !r.ok;
+  if(filt==='none')return !r.c;
+  if(filt==='ed')return !!r.ed;
+  if(filt==='multi')return mCount(r.rid)>1;
+  return true;
+}
+const vis=()=>R.filter(match);
+
+/* ===== 렌더 ===== */
+function draw(){
+  $('n1').textContent=fmt(R.length);
+  $('n2').textContent=fmt(Object.keys(IDX).length);
+  $('n3').textContent=fmt(R.length);
+  const isCode=tab==='code';
+  $('cb').classList.toggle('gone',isCode);
+  $('wstat').style.display=isCode?'none':'flex';
+  $('srcbar').style.display=isCode?'flex':'none';
+  if(isCode)drawSrcBar();
+  $('tbl').style.display=isCode?'none':'';
+  $('cols').style.display=isCode?'flex':'none';
+  $('colfoot').style.display=isCode?'flex':'none';
+
+  const okN=R.filter(r=>r.ok).length,p=R.length?Math.round(okN/R.length*100):0;
+  $('pTx').textContent=`${fmt(okN)}/${fmt(R.length)}`;$('pBar').style.width=p+'%';$('pPct').textContent=p+'%';
+  $('progBox').title=`확인 완료 ${fmt(okN)}건 / 전체 ${fmt(R.length)}건 (${p}%)`;
+  const c={all:R.length,un:R.filter(r=>!r.ok).length,none:R.filter(r=>!r.c).length,
+           ed:R.filter(r=>r.ed).length,multi:R.filter(r=>mCount(r.rid)>1).length};
+  $('chips').innerHTML=[['all','전체',''],['un','미확인','warn'],['none','미분류','red'],['ed','수정됨',''],['multi','멀티','']]
+    .map(([k,n,cl])=>`<span class="fchip ${cl} ${filt===k?'on':''}" onclick="filt='${k}';draw()">${n} <b>${c[k]}</b></span>`).join('');
+
+  isCode?drawCols():tab==='resp'?drawResp():drawRaw();
+  if(!isCode)drawPick();
+  syncSel(); updSaved();
+}
+
+function cell(k,r){
+  const x=r.c?IDX[r.c]:null;
+  const w=!!(wrapCol[k]||expRows.has(r.id)), tc=w?'wrapx':'ellip';
+  switch(k){
+    case 'raw':return r.m>1?'<span class="dim" style="font-size:11px">〃</span>'
+      :`<div class="rawcell"><span class="${tc} dim" ${w?'':`title="${esc(r.raw)}"`}>${esc(r.raw)}</span>
+        ${wrapCol.raw?'':`<button class="exb ${expRows.has(r.id)?'on':''}" title="이 행만 펼치기/접기" onclick="event.stopPropagation();togExpRow(${r.id})"><i class="ti ti-chevron-${expRows.has(r.id)?'up':'down'}"></i></button>`}</div>`;
+    case 'tx':return `<div class="txcell"><span class="${tc}" ${w?'':`title="${esc(r.tx)}"`}>${esc(r.tx)}</span>${r.ed?'<span class="edb">수정</span>':''}</div>`;
+    case 'm':return mCount(r.rid)>1?`<b>${r.m}</b>`:'<span class="dim">1</span>';
+    case 'l1':return x?`<span class="lchip a" title="${esc(x.n1)}">${x.c1}. ${esc(x.n1)}</span>`:'<span class="dim">—</span>';
+    case 'l2':return x?`<span class="lchip b" title="${esc(x.n2)}">${x.c2}. ${esc(x.n2)}</span>`:'<span class="dim">—</span>';
+    case 'l3':return x?`<span class="cchip" title="${esc(pathTx(r.c))}" onclick="event.stopPropagation();openPop(event,${r.id})">
+        <span class="path">${pathNo(r.c)}</span><span class="nm">${esc(x.n3)}</span></span>`
+      :`<span class="none" onclick="event.stopPropagation();openPop(event,${r.id})">미분류 · 클릭하여 지정</span>`;
+    case 'se':return `<span class="sent ${r.se}" onclick="event.stopPropagation();cycSent(${r.id})">${r.se==='pos'?'긍정':r.se==='neg'?'부정':'중립'}</span>`;
+    case 'ok':return `<span class="okbtn ${r.ok?'on':''}" onclick="event.stopPropagation();togOk(${r.id})"><i class="ti ti-check"></i></span>`;
+  }
+  return '';
+}
+/* 확인 헤더 : 선택 행(없으면 필터된 행) 일괄 확인 / 해제 */
+function okAllHead(rows){
+  const t=sel.size?R.filter(r=>sel.has(r.id)):rows, lb=sel.size?`선택 ${t.length}건`:`필터된 ${t.length}건`;
+  const on=t.length&&t.every(r=>r.ok), off=t.length&&t.every(r=>!r.ok);
+  return `<span class="okall">
+    <b class="y ${on?'cur':''}" title="${lb} 모두 확인" onclick="event.stopPropagation();bulkOk(true)"><i class="ti ti-check"></i></b>
+    <b class="n ${off?'cur':''}" title="${lb} 확인 해제" onclick="event.stopPropagation();bulkOk(false)"><i class="ti ti-x"></i></b></span>`;
+}
+function bulkOk(v){
+  const t=sel.size?R.filter(r=>sel.has(r.id)):vis();
+  if(!t.length){toast('대상 행이 없습니다');return}
+  const lb=sel.size?`선택 ${t.length}건`:`필터된 ${t.length}건`;
+  let n=0; t.forEach(r=>{if(r.ok!==v){r.ok=v;n++}});
+  touch();
+  if(sel.size)clearSel(); else draw();
+  toast(n?`${lb} 중 ${n}건을 ${v?'확인':'확인 해제'} 처리했습니다`:`이미 모두 ${v?'확인':'미확인'} 상태입니다`);
+}
+
+function drawResp(){
+  const rows=vis(), cs=COLS.filter(c=>colVis[c.k]);
+  let h='<colgroup>'+cs.map(c=>c.w?`<col style="width:${c.w}px">`:'<col>').join('')+'<col style="width:62px"></colgroup>';
+  h+='<thead><tr>'
+    +cs.map(c=>`<th class="${c.c?'c':''}">${c.n}`
+      +(c.wr?`<i class="ti ti-text-wrap wi ${wrapCol[c.k]?'on':''}" title="${wrapCol[c.k]?'한 줄 보기로':'줄바꿈(전체 펼치기)'}" onclick="event.stopPropagation();togWrap('${c.k}')"></i>`:'')
+      +(c.f?`<i class="ti ti-filter fi ${colF[c.k].size?'on':''}" title="${c.n} 필터" onclick="event.stopPropagation();openF(event,'${c.k}')"></i>`:'')
+      +(c.k==='ok'?okAllHead(rows):'')
+      +`<span class="rz" data-k="${c.k}" title="드래그하여 폭 조정"></span></th>`).join('')
+    +'<th class="c"><i class="ti ti-dots" title="행 추가 / 삭제"></i></th></tr></thead><tbody>';
+  rows.forEach(r=>{
+    h+=`<tr data-id="${r.id}" class="${sel.has(r.id)?'sel':''} ${cur===r.id?'cur':''} ${r.m>1?'m2':''}">`
+      +cs.map(c=>`<td class="${c.c?'c':''}">${cell(c.k,r)}</td>`).join('')
+      +`<td class="c"><div class="rowact">
+        <button class="ib add" title="멀티 행 추가" onclick="event.stopPropagation();addMulti(${r.id})"><i class="ti ti-plus"></i></button>
+        ${r.m>=2?`<button class="ib del" title="이 멀티 행 삭제" onclick="event.stopPropagation();delMulti(${r.id})"><i class="ti ti-minus"></i></button>`:''}
+      </div></td></tr>`;
+  });
+  $('tbl').className='wide';$('tbl').innerHTML=h+'</tbody>';
+  $('empty').style.display=rows.length?'none':'block';
+  const fa=fActive();
+  $('fClr').style.display=fa.length?'inline-flex':'none';
+  $('fCnt').textContent=fa.length?`(${fa.length})`:'';
+}
+
+/* ===== 컬럼 폭 드래그 조절 ===== */
+$('tbl').addEventListener('mousedown',e=>{
+  const rz=e.target.closest('.rz'); if(!rz)return;
+  e.preventDefault(); e.stopPropagation();
+  const k=rz.dataset.k, col=COLS.find(c=>c.k===k), th=rz.closest('th');
+  const cs=COLS.filter(c=>colVis[c.k]);
+  /* colgroup 은 보이는 컬럼 + 마지막 작업열 순서. 앞에 붙는 열이 없으므로 인덱스가 그대로다 */
+  const idx=cs.findIndex(c=>c.k===k);
+  const colEl=$('tbl').querySelectorAll('col')[idx];
+  if(!colEl)return;
+  /* 드래그 중에는 모든 열을 고정폭으로 잡아, 유연폭 열이 폭을 뺏어가지 않게 한다 */
+  const els=$('tbl').querySelectorAll('col'), ws=[...document.querySelectorAll('#tbl thead th')].map(t=>t.offsetWidth);
+  cs.forEach((c,i)=>{if(!c.w){c.w=ws[i];els[i].style.width=ws[i]+'px'}});
+  const w0=th.offsetWidth, x0=e.clientX;
+  rz.classList.add('drag'); document.body.classList.add('resizing');
+  const mm=ev=>{const w=Math.max(56,w0+(ev.clientX-x0));col.w=w;colEl.style.width=w+'px'};
+  const mu=()=>{rz.classList.remove('drag');document.body.classList.remove('resizing');
+    document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);draw()};
+  document.addEventListener('mousemove',mm);document.addEventListener('mouseup',mu);
+});
+/* 핸들 더블클릭 = 내용에 맞춰 자동 폭 */
+$('tbl').addEventListener('dblclick',e=>{
+  const rz=e.target.closest('.rz'); if(!rz)return;
+  const k=rz.dataset.k, col=COLS.find(c=>c.k===k);
+  if(k==='raw'||k==='tx'){
+    const max=Math.max(...vis().map(r=>(k==='raw'?r.raw:r.tx).length));
+    col.w=Math.min(460,Math.max(120,max*8.4+40));
+  }else col.w=COLS0[k];
+  draw(); toast('컬럼 폭을 자동 조정했습니다');
+});
+
+/* ===== 컬럼 필터 / 표시설정 팝오버 ===== */
+function openF(e,k){
+  fFor=k; $('fpQ').value='';
+  const col=COLS.find(c=>c.k===k);
+  $('fpTitle').textContent=`${col.n} 필터`;
+  $('fpSearchBox').style.display='block';
+  place(e); drawF(); setTimeout(()=>$('fpQ').focus(),0);
+}
+function openCols(e){
+  fFor='__cols'; $('fpTitle').textContent='표시할 컬럼';
+  $('fpSearchBox').style.display='none';
+  place(e); drawF();
+}
+function place(e){
+  const p=$('fpop'), r=e.target.getBoundingClientRect();
+  p.style.left=Math.min(Math.max(8,r.left-100),innerWidth-274)+'px';
+  p.style.top=(r.bottom+6+320>innerHeight?Math.max(8,r.top-320):r.bottom+6)+'px';
+  p.classList.add('on');
+}
+function drawF(){
+  if(fFor==='__cols'){
+    $('fpList').innerHTML=COLS.map(c=>`<div class="fi-row" onclick="colVis['${c.k}']=colVis['${c.k}']?0:1;drawF();draw()">
+      <span class="ck ${colVis[c.k]?'on':''}"><i class="ti ti-check"></i></span><span class="nm">${c.n}</span></div>`).join('');
+    $('fpInfo').textContent=`${COLS.filter(c=>colVis[c.k]).length} / ${COLS.length}개 표시`;
+    return;
+  }
+  const q=$('fpQ').value.trim().toLowerCase(), m=new Map();
+  R.forEach(r=>{const v=fKey(fFor,r);m.set(v,(m.get(v)||0)+1)});
+  let list=[...m].map(([v,n])=>({v,n}));
+  list.sort((a,b)=>a.v==='(미분류)'?-1:b.v==='(미분류)'?1:b.n-a.n);
+  if(q)list=list.filter(x=>x.v.toLowerCase().includes(q));
+  const S=colF[fFor];
+  $('fpList').innerHTML=list.map(x=>`<div class="fi-row" onclick="togF('${esc(x.v).replace(/'/g,"\\'")}')">
+    <span class="ck ${S.has(x.v)?'on':''}"><i class="ti ti-check"></i></span>
+    <span class="nm">${esc(x.v)}</span><span class="n">${fmt(x.n)}</span></div>`).join('')
+    ||'<div class="empty" style="padding:20px 0">값이 없습니다.</div>';
+  $('fpInfo').textContent=S.size?`${S.size}개 선택 (필터 적용)`:'선택 없음 = 전체 표시';
+}
+function togF(v){const S=colF[fFor];S.has(v)?S.delete(v):S.add(v);drawF();draw()}
+function fAll(v){
+  if(fFor==='__cols'){COLS.forEach(c=>colVis[c.k]=v?1:0);drawF();draw();return}
+  const S=colF[fFor];S.clear();
+  if(v){const m=new Set();R.forEach(r=>m.add(fKey(fFor,r)));m.forEach(x=>S.add(x))}
+  drawF();draw();
+}
+function clearF(){Object.values(colF).forEach(S=>S.clear());draw();toast('컬럼 필터를 모두 해제했습니다')}
+function closeF(){$('fpop').classList.remove('on');fFor=null}
+document.addEventListener('click',e=>{if(!e.target.closest('#fpop')&&!e.target.closest('.fi')&&!e.target.closest('#colBtn'))closeF()});
+
+function drawRaw(){
+  const q=$('q').value.trim().toLowerCase();
+  let list=R.map(r=>({pid:(900000+r.rid*937+r.m*13)%999999,qn:'q050_op1',m:r.m,raw:r.raw,tx:r.tx,c:r.c,se:r.se}));
+  if(q)list=list.filter(x=>(x.tx+x.raw+x.pid+(x.c?pathTx(x.c):'')).toLowerCase().includes(q));
+  let h=`<colgroup><col style="width:84px"><col style="width:88px"><col style="width:46px"><col><col><col style="width:196px"><col style="width:60px"></colgroup>
+  <thead><tr><th class="r">PID</th><th>문번호</th><th class="c">멀티</th><th>원본 내용</th><th>응답 내용</th><th>소분류</th><th class="c">감성</th></tr></thead><tbody>`;
+  list.forEach(x=>{h+=`<tr><td class="r">${x.pid}</td><td class="dim">${x.qn}</td><td class="c">${x.m}</td>
+    <td><span class="ellip" title="${esc(x.raw)}">${esc(x.raw)}</span></td>
+    <td><span class="ellip" title="${esc(x.tx)}">${esc(x.tx)}</span></td>
+    <td>${x.c?`<span class="cchip"><span class="path">${pathNo(x.c)}</span><span class="nm">${esc(IDX[x.c]?.n3||'')}</span></span>`:'<span class="dim">—</span>'}</td>
+    <td class="c"><span class="sent ${x.se}">${x.se==='pos'?'긍정':x.se==='neg'?'부정':'중립'}</span></td></tr>`});
+  $('tbl').className='wide';$('tbl').innerHTML=h+'</tbody>';
+  $('empty').style.display=list.length?'none':'block';
+}
+
+/* ============================================================
+   보기 데이터 : 3열 다중 선택 (드래그 · Shift · Ctrl)
+   ============================================================ */
+let cSel={a:new Set(),b:new Set(),c:new Set()}, cAnchor={a:null,b:null,c:null}, cDrag=null;
+/* 소분류 표시 범위 · 필터 : b=선택 중분류 / a=선택 대분류 / all=전체 */
+let cScope='b', cTypeF=new Set(), cLockF=null;
+function setScope(s){cScope=s;draw()}
+function togTypeF(s){cTypeF.has(s)?cTypeF.delete(s):cTypeF.add(s);draw()}
+function togLockF(v){cLockF=(cLockF===v?null:v);draw()}
+function clearColFilt(){cTypeF.clear();cLockF=null;$('q').value='';draw();toast('소분류 필터를 해제했습니다')}
+function drawScope(sc,shown,tot){
+  const L=lv();
+  $('scopeSeg').innerHTML=[['b','선택 중분류'],['a','선택 대분류'],['all','전체']]
+    .filter(([k])=>!(L===2&&k==='b')&&!(L===1&&k!=='all'))
+    .map(([k,n])=>`<span class="${sc===k?'on':''}" onclick="setScope('${k}')">${n}</span>`).join('');
+  const a=A(),b=B();
+  const path=sc==='b'?`${esc(a?.n||'')} › ${esc(b?.n||'')}`
+    :sc==='a'?`${esc(a?.n||'')} › 중분류 전체 (${a?.ch.length||0})`
+    :`대분류 전체 (${TREE.length}) › 중분류 전체 (${TREE.reduce((s,x)=>s+x.ch.length,0)})`;
+  const cnt=s=>{
+    let all=[];
+    if(sc==='all')TREE.forEach(x=>x.ch.forEach(y=>all.push(...y.ch)));
+    else if(sc==='a')(a?a.ch:[]).forEach(y=>all.push(...y.ch));
+    else if(b)all=b.ch;
+    return all.filter(c=>c.src===s).length;
+  };
+  const has=cTypeF.size||cLockF!=null||$('q').value.trim();
+  $('colFilt').innerHTML=
+    `<span class="scp"><i class="ti ti-filter" style="font-size:11px"></i> <b>${path}</b></span>
+     <span class="vdv"></span><span class="fl">유형</span>
+     ${SRCT.map(s=>`<span class="tfc ${SRCC[s]} ${cTypeF.has(s)?'on':''}" onclick="togTypeF('${s}')">${s}<b>${cnt(s)}</b></span>`).join('')}
+     <span class="vdv"></span>
+     <span class="tfc ${cLockF===true?'on':''}" onclick="togLockF(true)"><i class="ti ti-lock" style="font-size:10px"></i> 수정불가</span>
+     <span class="tfc ${cLockF===false?'on':''}" onclick="togLockF(false)"><i class="ti ti-lock-open" style="font-size:10px"></i> 수정가능</span>
+     ${has?`<span class="vdv"></span><span class="tfc" onclick="clearColFilt()"><i class="ti ti-filter-off" style="font-size:10px"></i> 해제 (${shown}/${tot})</span>`:''}`;
+}
+const COLID={a:'colA',b:'colB',c:'colC'};
+const colKeys=lvk=>[...document.querySelectorAll(`#${COLID[lvk]} .crow`)].map(r=>r.dataset.key);
+function clearCSel(){cSel.a.clear();cSel.b.clear();cSel.c.clear();cAnchor={a:null,b:null,c:null};draw()}
+function togAllCol(lvk){
+  const keys=colKeys(lvk),S=cSel[lvk];
+  keys.every(k=>S.has(k))?keys.forEach(k=>S.delete(k)):keys.forEach(k=>S.add(k));
+  draw();
+}
+function rangeC(lvk,from,to){
+  const keys=colKeys(lvk),i=keys.indexOf(from),j=keys.indexOf(to);
+  if(i<0||j<0)return;
+  for(let k=Math.min(i,j);k<=Math.max(i,j);k++)cSel[lvk].add(keys[k]);
+}
+function paintC(){
+  document.querySelectorAll('#cols .crow').forEach(r=>
+    r.classList.toggle('msel',cSel[r.dataset.lv].has(r.dataset.key)));
+  drawColFoot();
+}
+function navTo(lvk,key){
+  if(lvk==='a'){selA=+key;selB=(TREE.find(x=>x.c===selA)?.ch[0]||{}).c}
+  else if(lvk==='b'){const [ac,bc]=key.split('-').map(Number);selA=ac;selB=bc}
+}
+/* 선택 규칙
+   · 그립(⣿) 에서 mousedown → 드래그 스윕 선택
+   · Shift / Ctrl + 아무 곳     → 구간 · 개별 선택 (입력 포커스는 막음)
+   · 행 여백 클릭               → 이동(대·중) + 단일 선택
+   · 코드 · 이름 입력 클릭      → 그대로 편집 */
+$('cols').addEventListener('mousedown',e=>{
+  const row=e.target.closest('.crow'); if(!row)return;
+  if(e.target.closest('button')||e.target.closest('.sb')||e.target.closest('.lkb'))return;
+  const mod=e.shiftKey||e.ctrlKey||e.metaKey;
+  const onGrip=!!e.target.closest('.grip');
+  if(!onGrip&&!mod&&e.target.closest('input'))return;      /* 편집 허용 */
+  e.preventDefault();
+  const lvk=row.dataset.lv,key=row.dataset.key,S=cSel[lvk];
+  if(e.shiftKey&&cAnchor[lvk]!=null){rangeC(lvk,cAnchor[lvk],key)}
+  else if(e.ctrlKey||e.metaKey){S.has(key)?S.delete(key):S.add(key);cAnchor[lvk]=key}
+  else{
+    cSel.a.clear();cSel.b.clear();cSel.c.clear();S.add(key);cAnchor[lvk]=key;
+    if(onGrip)cDrag=lvk; else navTo(lvk,key);
+  }
+  draw();
+});
+$('cols').addEventListener('mouseover',e=>{
+  if(!cDrag)return;
+  const row=e.target.closest('.crow'); if(!row||row.dataset.lv!==cDrag)return;
+  cSel[cDrag].add(row.dataset.key); paintC();
+});
+document.addEventListener('mouseup',()=>{if(cDrag){cDrag=null;draw()}});
+/* 선택 → 소분류 목록 (대·중분류는 하위 전체) */
+function selLeaves(){
+  const out=new Set();
+  cSel.c.forEach(k=>out.add(+k));
+  cSel.b.forEach(k=>{const [ac,bc]=k.split('-').map(Number);
+    TREE.find(a=>a.c===ac)?.ch.find(b=>b.c===bc)?.ch.forEach(c=>out.add(c.c))});
+  cSel.a.forEach(k=>TREE.find(a=>a.c===+k)?.ch.forEach(b=>b.ch.forEach(c=>out.add(c.c))));
+  return [...out];
+}
+function bulkSrc(s){
+  const ls=selLeaves(); if(!ls.length){toast('선택된 항목이 없습니다');return}
+  const chg=ls.filter(c=>IDX[c]&&IDX[c].src!==s).length;
+  const lkChg=ls.filter(c=>IDX[c]&&IDX[c].lock!==SRCLOCK[s]).length;
+  if(!chg&&!lkChg){toast(`이미 모두 ${SRCN[s]} 입니다`);return}
+  if(!confirm(`소분류 ${ls.length}개를 [${SRCN[s]}] 로 변경합니다.\n\n· 보기유형 변경 : ${chg}개\n· 수정여부 변경 : ${lkChg}개 → ${SRCLOCK[s]?'수정불가 (실행 시 유지)':'수정가능 (실행 시 삭제 후 재생성)'}\n\n계속할까요?`))return;
+  ls.forEach(c=>{const x=IDX[c];if(x){x.ref.src=s;x.ref.lock=SRCLOCK[s]}});
+  reindex();touch();draw();toast(`${ls.length}개 보기유형 → ${SRCN[s]}`);
+}
+function bulkLockSet(v){
+  const ls=selLeaves(); if(!ls.length){toast('선택된 항목이 없습니다');return}
+  const chg=ls.filter(c=>IDX[c]&&IDX[c].lock!==v).length;
+  if(!chg){toast(`이미 모두 ${v?'수정불가':'수정가능'} 입니다`);return}
+  const warn=v?'':'\n\n※ 수정가능 보기는 보기분석 실행 시 삭제 후 새로 생성됩니다.';
+  if(!confirm(`소분류 ${chg}개를 [${v?'수정불가':'수정가능'}] 로 변경합니다.${warn}\n\n계속할까요?`))return;
+  ls.forEach(c=>{if(IDX[c])IDX[c].ref.lock=v});
+  reindex();touch();draw();toast(`${chg}개 → ${v?'수정불가 (실행 시 유지)':'수정가능 (실행 시 재생성)'}`);
+}
+function bulkDelNodes(){
+  const nA=cSel.a.size,nB=cSel.b.size,nC=cSel.c.size,ls=selLeaves();
+  if(!ls.length&&!nA&&!nB&&!nC)return;
+  if(!confirm(`선택한 대 ${nA} · 중 ${nB} · 소 ${nC}개를 삭제합니다.\n하위 소분류 ${ls.length}개와 지정된 응답의 분류도 함께 해제됩니다.`))return;
+  const rm=new Set(ls);
+  cSel.a.forEach(k=>{TREE=TREE.filter(a=>a.c!==+k)});
+  cSel.b.forEach(k=>{const [ac,bc]=k.split('-').map(Number);
+    const a=TREE.find(x=>x.c===ac); if(a)a.ch=a.ch.filter(b=>b.c!==bc)});
+  cSel.c.forEach(k=>TREE.forEach(a=>a.ch.forEach(b=>{b.ch=b.ch.filter(c=>c.c!==+k)})));
+  R.forEach(r=>{if(rm.has(r.c)){r.c=null;r.ed=true}});
+  if(!TREE.find(a=>a.c===selA))selA=TREE[0]?.c;
+  if(!A()?.ch.find(b=>b.c===selB))selB=A()?.ch[0]?.c;
+  cSel.a.clear();cSel.b.clear();cSel.c.clear();
+  reindex();touch();draw();toast(`${nA+nB+nC}개 항목을 삭제했습니다`);
+}
+
+/* ===== 보기유형 정책 스트립 ===== */
+function drawSrcBar(){
+  const ls=leaves(), keep=ls.filter(x=>x.c.lock).length, regen=ls.length-keep;
+  $('srcbar').innerHTML=`<span class="lbl">보기유형</span>`+
+    SRCT.map(s=>{const n=srcCnt(s),v=SRCLOCK[s];
+      return `<span class="srccard ${SRCC[s]}"><span class="nm">${SRCN[s]}</span><span class="n">${n}</span>
+        <span class="lkseg">
+          <span class="${v?'on':''}" onclick="setSrcLock('${s}',true)"><i class="ti ti-lock"></i>수정불가</span>
+          <span class="${v?'':'on free'}" onclick="setSrcLock('${s}',false)"><i class="ti ti-lock-open"></i>수정가능</span>
+        </span></span>`}).join('')+
+    `<span class="vdv"></span>
+     <span class="srcinfo"><i class="ti ti-player-play" style="font-size:12px"></i>
+       보기분석 실행 시 · <span class="keep">유지 ${keep}</span> / <span class="regen">삭제 후 재생성 ${regen}</span></span>`;
+}
+
+/* ===== 보기 데이터 3단 열 ===== */
+function drawCols(){
+  const L=lv(),q=$('q').value.trim().toLowerCase();
+  $('colA0').style.display=L===3?'flex':'none';
+  $('colB0').style.display=L>=2?'flex':'none';
+  const scNow = L===1 ? 'all' : L===2 ? (cScope==='b'?'a':cScope) : cScope;
+  $('cA').textContent=TREE.length;
+  $('colA').innerHTML=TREE.map(a=>{const n=l1Cnt(a),k=String(a.c);
+    return `<div class="crow c1 ${(scNow!=='all'&&a.c===selA)?'on':''} ${cSel.a.has(k)?'msel':''} ${n?'':'zero'}" data-lv="a" data-key="${k}">
+      <span class="grip" title="드래그하여 여러 행 선택"><i class="ti ti-grip-vertical"></i></span>
+      <input class="ccodein" value="${a.c}" title="대분류 코드 — 수정 가능" onchange="renCode(1,${a.c},this.value)" />
+      <input class="cname" value="${esc(a.n)}" onchange="renL(1,${a.c},this.value)" />
+      <span class="cqty">${fmt(n)}</span><button class="cdel" onclick="event.stopPropagation();delL(1,${a.c})"><i class="ti ti-trash"></i></button></div>`}).join('')
+    +`<button class="addrow" onclick="addLv(1)"><i class="ti ti-plus"></i>대분류 추가</button>`;
+  /* 중분류 열 : 전체 범위면 모든 대분류의 중분류를 함께 제시 */
+  const a=A();
+  let bs=[];
+  if(scNow==='all') TREE.forEach(x=>bs.push(...x.ch.map(b=>({a:x,b}))));
+  else if(a) bs=a.ch.map(b=>({a,b}));
+  $('cB').textContent=bs.length;
+  $('colB').innerHTML=bs.map(({a:pa,b})=>{const n=l2Cnt(b),k=`${pa.c}-${b.c}`;
+    return `<div class="crow c2 ${(scNow==='b'&&b.c===selB&&pa.c===selA)?'on':''} ${cSel.b.has(k)?'msel':''} ${n?'':'zero'}" data-lv="b" data-key="${k}"
+      title="${esc(pa.n)} › ${esc(b.n)}">
+      <span class="grip" title="드래그하여 여러 행 선택"><i class="ti ti-grip-vertical"></i></span>
+      ${scNow==='all'?`<span class="cpfx">${pa.c}·</span>`:''}
+      <input class="ccodein" value="${b.c}" title="중분류 코드 — 수정 가능" onchange="renCode2(${pa.c},${b.c},this.value)" />
+      <input class="cname" value="${esc(b.n)}" onchange="renMid(${pa.c},${b.c},this.value)" />
+      <span class="cqty">${fmt(n)}</span>
+      <button class="cdel" onclick="event.stopPropagation();delMid(${pa.c},${b.c})"><i class="ti ti-trash"></i></button></div>`}).join('')
+    +`<button class="addrow" onclick="addLv(2)"><i class="ti ti-plus"></i>중분류 추가 <span class="dim">(${esc(A()?.n||'')})</span></button>`;
+  /* ---- 소분류 표시 범위 : 선택 중분류 / 선택 대분류 / 전체 ---- */
+  const sc = scNow;
+  let ls=[];
+  if(sc==='all') TREE.forEach(x=>x.ch.forEach(y=>ls.push(...y.ch.map(c=>({c,a:x,b:y})))));
+  else if(sc==='a') (a?a.ch:[]).forEach(y=>ls.push(...y.ch.map(c=>({c,a,b:y}))));
+  else if(B()) ls=B().ch.map(c=>({c,a,b:B()}));
+  const tot=ls.length;
+  if(cTypeF.size) ls=ls.filter(x=>cTypeF.has(x.c.src));
+  if(cLockF!=null) ls=ls.filter(x=>x.c.lock===cLockF);
+  if(q) ls=ls.filter(x=>(x.c.n+x.c.c+x.a.n+x.b.n).toLowerCase().includes(q));
+  const flat = sc!=='b';
+  $('cC').textContent = ls.length===tot?tot:`${ls.length}/${tot}`;
+  drawScope(sc,ls.length,tot);
+  $('colC').innerHTML=(ls.map(x=>{const n=leafCnt(x.c.c),lk=x.c.lock,k=String(x.c.c);
+    return `<div class="crow c3 ${cSel.c.has(k)?'msel':''} ${n?'':'zero'}" data-lv="c" data-key="${k}"
+      title="${esc(x.a.n)} › ${esc(x.b.n)} › ${esc(x.c.n)}">
+      <span class="grip" title="드래그하여 여러 행 선택"><i class="ti ti-grip-vertical"></i></span>
+      ${flat?`<span class="cpfx">${x.a.c}·${x.b.c}·</span>`:''}
+      <input class="ccodein" value="${x.c.c}" title="소분류 코드 — 수정 가능" onchange="renCode(3,${x.c.c},this.value)" />
+      <input class="cname" value="${esc(x.c.n)}" onchange="renL(3,${x.c.c},this.value)" />
+      <span class="sb ${SRCC[x.c.src]}" title="${SRCN[x.c.src]} — 클릭하면 변경 메뉴가 열립니다" onclick="event.stopPropagation();openSrcPop(event,${x.c.c})">${x.c.src}<i class="ti ti-chevron-down cv2"></i></span>
+      <button class="lkb ${lk?'locked':'free'}" title="${lk?'수정불가 — 실행 시 유지':'수정가능 — 실행 시 재생성'} · 클릭하면 변경 메뉴" onclick="event.stopPropagation();openSrcPop(event,${x.c.c})"><i class="ti ti-lock${lk?'':'-open'}"></i></button>
+      <span class="cqty">${fmt(n)}</span>
+      <button class="cdel" onclick="delL(3,${x.c.c})"><i class="ti ti-trash"></i></button></div>`}).join('')
+    ||`<div class="colempty">${q||cTypeF.size||cLockF!=null?'조건에 맞는 소분류가 없습니다.':'중분류를 선택하세요.'}</div>`)
+    +(B()?`<button class="addrow" onclick="addLv(3)"><i class="ti ti-plus"></i>소분류 추가 <span class="dim">(${esc(A()?.n||'')} › ${esc(B()?.n||'')})</span></button>`:'');
+  drawColHeads();
+  drawColFoot();
+  $('empty').style.display='none';
+}
+/* 열 머리 : 일괄 선택 체크 */
+function drawColHeads(){
+  [['a','cA','colA'],['b','cB','colB'],['c','cC','colC']].forEach(([lvk,cntId,colId])=>{
+    const keys=colKeys(lvk), S=cSel[lvk];
+    const all=keys.length&&keys.every(k=>S.has(k)), some=keys.some(k=>S.has(k));
+    const h=$(cntId).parentNode;
+    let ck=h.querySelector('.allck');
+    if(!ck){ck=document.createElement('span');ck.className='allck';ck.innerHTML='<i class="ti ti-check"></i>';
+      ck.title='이 열 전체 선택 / 해제';ck.onclick=e=>{e.stopPropagation();togAllCol(lvk)};
+      h.insertBefore(ck,h.firstChild.nextSibling)}
+    ck.className='allck '+(all?'on':some?'part':'');
+  });
+}
+function drawColFoot(){
+  const f=$('colfoot'), n=cSel.a.size+cSel.b.size+cSel.c.size;
+  if(!n){
+    f.className='colfoot';
+    const all=Object.keys(IDX).length,used=Object.keys(IDX).filter(c=>leafCnt(+c)).length;
+    f.innerHTML=`<i class="ti ti-info-circle"></i><span>대 <b>${TREE.length}</b> · 중 <b>${TREE.reduce((s,x)=>s+x.ch.length,0)}</b> · 소 <b>${all}</b>개 (사용 ${used} / 미사용 ${all-used})</span>
+      <div class="sp"></div><span>드래그 · <b>Shift</b> · <b>Ctrl</b>+클릭 다중 선택 · 이름 클릭 → 수정</span>`;
+    return;
+  }
+  const parts=[];
+  if(cSel.a.size)parts.push(`대분류 ${cSel.a.size}`);
+  if(cSel.b.size)parts.push(`중분류 ${cSel.b.size}`);
+  if(cSel.c.size)parts.push(`소분류 ${cSel.c.size}`);
+  const lf=selLeaves().length;
+  f.className='colfoot act';
+  f.innerHTML=`<span class="cn">${parts.join(' · ')} 선택</span>
+    <span class="gl">→ 소분류 ${lf}개에 적용</span><span class="dv"></span>
+    <span class="gl">보기유형</span>
+    ${SRCT.map(s=>`<button class="${SRCC[s]}" onclick="bulkSrc('${s}')">${s}</button>`).join('')}
+    <span class="dv"></span>
+    <button onclick="bulkLockSet(true)"><i class="ti ti-lock"></i>수정불가</button>
+    <button onclick="bulkLockSet(false)"><i class="ti ti-lock-open"></i>수정가능</button>
+    <span class="dv"></span>
+    <button class="dg" onclick="bulkDelNodes()"><i class="ti ti-trash"></i>삭제</button>
+    <div class="sp"></div>
+    <button onclick="clearCSel()"><i class="ti ti-x"></i>해제</button>`;
+}
+
+/* ============================================================
+   우측 : 검색 우선 분류 패널
+   - 대/중 선택을 강제하지 않음. 전체 소분류가 항상 평면으로 보임
+   - 검색어가 기존 분류와 안 맞으면 그 자리에서 생성 → 즉시 지정
+   ============================================================ */
+let pkA=null, pkIdx=-1, lastB=null, pickList=[];
+const rIdx=c=>{const i=recent.indexOf(c);return i<0?999:i};
+
+function drawPick(){
+  const q=$('cbQ').value.trim(), ql=q.toLowerCase(), sort=$('cbSort').value;
+  /* 대분류 = 강제 단계가 아니라 선택형 필터 */
+  $('fA').innerHTML=`<option value="">대분류 전체 (${TREE.length})</option>`+
+    TREE.map(a=>`<option value="${a.c}" ${pkA===a.c?'selected':''}>${a.c}. ${esc(a.n)} (${l1Cnt(a)})</option>`).join('');
+
+  /* 그룹(대›중) 단위로 모아 정렬 */
+  let groups=[];
+  TREE.forEach(a=>{ if(pkA!=null&&a.c!==pkA)return;
+    a.ch.forEach(b=>{
+      let ls=b.ch.map(c=>({c,n:leafCnt(c.c)}));
+      if(ql) ls=ls.filter(x=>(x.c.c+' '+x.c.n+' '+b.n+' '+a.n).toLowerCase().includes(ql));
+      if(!ls.length&&ql) return;
+      const key=sort==='freq'?(x,y)=>y.n-x.n||x.c.c-y.c.c
+        :sort==='recent'?(x,y)=>rIdx(x.c.c)-rIdx(y.c.c)||y.n-x.n
+        :(x,y)=>x.c.c-y.c.c;
+      ls.sort(key);
+      groups.push({a,b,ls,tot:ls.reduce((s,x)=>s+x.n,0),rec:Math.min(999,...ls.map(x=>rIdx(x.c.c)))});
+    })});
+  if(sort==='freq') groups.sort((x,y)=>y.tot-x.tot);
+  else if(sort==='recent') groups.sort((x,y)=>x.rec-y.rec||y.tot-x.tot);
+  else groups.sort((x,y)=>x.a.c-y.a.c||x.b.c-y.b.c);
+
+  /* 새 분류 즉시 추가 행 */
+  const exact=Object.values(IDX).some(x=>x.n3.toLowerCase()===ql);
+  const showAdd=!!q&&!exact;
+  let h='';
+  if(showAdd){
+    if(!lastB) lastB=`${groups[0]?.a.c||TREE[0].c}-${groups[0]?.b.c||TREE[0].ch[0].c}`;
+    const opts=[];TREE.forEach(a=>a.ch.forEach(b=>opts.push(`<option value="${a.c}-${b.c}" ${lastB===`${a.c}-${b.c}`?'selected':''}>${esc(a.n)} › ${esc(b.n)}</option>`)));
+    h+=`<div class="addnew ${pkIdx===-1?'k':''}" onclick="quickAdd()">
+      <div class="an1"><i class="ti ti-plus"></i><b>"${esc(q)}"</b> 새 소분류로 추가${sel.size?` · ${sel.size}건 즉시 지정`:''}</div>
+      <div class="an2"><select id="anB" onclick="event.stopPropagation()" onchange="lastB=this.value">${opts.join('')}</select>
+        <button class="br" onclick="event.stopPropagation();quickAdd()">추가 ⏎</button></div></div>`;
+  }
+
+  pickList=[];
+  groups.forEach(g=>{
+    h+=`<div class="grph"><span class="gl1" title="${esc(g.a.n)}">${esc(g.a.n)}</span>
+      <input class="gname" value="${esc(g.b.n)}" onchange="renMid(${g.a.c},${g.b.c},this.value)" title="중분류명 — 클릭해 수정" />
+      <span class="gq">${fmt(g.tot)}</span>
+      <button class="gb" onclick="addLeafTo(${g.a.c},${g.b.c})" title="이 중분류에 소분류 추가"><i class="ti ti-plus"></i></button>
+      <button class="gb dg" onclick="delMid(${g.a.c},${g.b.c})" title="중분류 삭제"><i class="ti ti-trash"></i></button></div>`;
+    g.ls.forEach(x=>{
+      const lk=x.c.lock, i=pickList.length; pickList.push(x.c.c);
+      h+=`<div class="cbrow ${x.n?'':'zero'} ${pkIdx===i?'k':''}" onclick="leafClick(${x.c.c})" title="${esc(g.a.n)} › ${esc(g.b.n)} · ${SRCN[x.c.src]}">
+        <span class="cno">${g.a.c}·${g.b.c}·${x.c.c}</span>
+        <input class="cin" value="${esc(x.c.n)}" onclick="event.stopPropagation()" onchange="renL(3,${x.c.c},this.value)" />
+        <span class="sb ${SRCC[x.c.src]}" title="${SRCN[x.c.src]} — 클릭하면 변경 메뉴" onclick="event.stopPropagation();openSrcPop(event,${x.c.c})">${x.c.src}<i class="ti ti-chevron-down cv2"></i></span>
+        <button class="lkb ${lk?'locked':'free'}" title="${lk?'수정불가':'수정가능'} · 클릭하면 변경 메뉴" onclick="event.stopPropagation();openSrcPop(event,${x.c.c})"><i class="ti ti-lock${lk?'':'-open'}"></i></button>
+        <span class="cqt">${fmt(x.n)}</span>
+        <button class="cx" onclick="event.stopPropagation();delL(3,${x.c.c})"><i class="ti ti-trash"></i></button></div>`;
+    });
+  });
+  $('cbList').innerHTML=h||'<div class="empty" style="padding:26px 0">일치하는 분류가 없습니다.</div>';
+  $('cbCnt').textContent=pickList.length;
+  const all=Object.keys(IDX).length,used=Object.keys(IDX).filter(c=>leafCnt(+c)).length;
+  $('cbFoot').textContent=q?`검색 ${pickList.length}개 / 전체 ${all}개`
+    :`대 ${TREE.length} · 중 ${TREE.reduce((s,x)=>s+x.ch.length,0)} · 소 ${all}개 · 사용 ${used}`;
+}
+
+/* 검색창 키보드 : ↑↓ 이동 · Enter 지정/생성 */
+function pickKey(e){
+  const max=pickList.length-1, q=$('cbQ').value.trim();
+  const hasAdd=!!q&&!Object.values(IDX).some(x=>x.n3.toLowerCase()===q.toLowerCase());
+  if(e.key==='ArrowDown'){pkIdx=Math.min(pkIdx+1,max);drawPick();scrollK();e.preventDefault()}
+  else if(e.key==='ArrowUp'){pkIdx=Math.max(pkIdx-1,hasAdd?-1:0);drawPick();scrollK();e.preventDefault()}
+  else if(e.key==='Enter'){
+    if(pkIdx<0&&hasAdd)quickAdd();
+    else if(pickList[Math.max(0,pkIdx)]!=null)leafClick(pickList[Math.max(0,pkIdx)]);
+    e.preventDefault();
+  }
+  else if(e.key==='Escape'){$('cbQ').value='';pkIdx=-1;drawPick();e.target.blur()}
+  else setTimeout(()=>{pkIdx=hasAdd?-1:0},0);
+}
+function scrollK(){const el=$('cbList').querySelector('.k');if(el)el.scrollIntoView({block:'nearest'})}
+
+/* 검색어로 소분류 즉시 생성 (+ 선택 행이 있으면 바로 지정) */
+function quickAdd(){
+  const q=$('cbQ').value.trim(); if(!q)return;
+  const key=($('anB')?.value)||lastB||`${TREE[0].c}-${TREE[0].ch[0].c}`;
+  const [ac,bc]=key.split('-').map(Number);
+  const a=TREE.find(x=>x.c===ac), b=a?.ch.find(x=>x.c===bc);
+  if(!b){toast('추가할 중분류를 선택하세요');return}
+  const c=Math.max(0,...Object.keys(IDX).map(Number).filter(x=>x!==99))+1;
+  b.ch.push({c,n:q,src:'자동분석',lock:SRCLOCK['자동분석']}); lastB=key; reindex(); touch();
+  $('cbQ').value=''; pkIdx=-1;
+  if(sel.size){const n=sel.size;assignSel(c);toast(`[${ac}·${bc}·${c}] ${q} 생성 → ${n}건 지정`);return}
+  draw(); toast(`[${ac}·${bc}·${c}] ${q} 를 추가했습니다`);
+}
+function addLeafTo(ac,bc){
+  const b=TREE.find(x=>x.c===ac)?.ch.find(x=>x.c===bc); if(!b)return;
+  const c=Math.max(0,...Object.keys(IDX).map(Number).filter(x=>x!==99))+1;
+  b.ch.push({c,n:'새 소분류',src:'자동분석',lock:SRCLOCK['자동분석']}); lastB=`${ac}-${bc}`; reindex(); touch(); draw();
+  const el=[...$('cbList').querySelectorAll('.cin')].find(i=>i.value==='새 소분류');
+  if(el){el.focus();el.select();el.scrollIntoView({block:'nearest'})}
+  toast('소분류를 추가했습니다 — 이름을 입력하세요');
+}
+/* 중분류 (그룹 헤더) 편집 */
+function renMid(ac,bc,v){v=v.trim();if(!v)return draw();
+  const b=TREE.find(x=>x.c===ac)?.ch.find(x=>x.c===bc);if(!b)return;
+  b.n=v;reindex();touch();draw();toast('중분류명을 수정했습니다')}
+function delMid(ac,bc){
+  const a=TREE.find(x=>x.c===ac),b=a?.ch.find(x=>x.c===bc);if(!b)return;
+  if(!confirm(`중분류 [${b.n}] 와 하위 소분류 ${b.ch.length}개를 삭제합니다.`))return;
+  const rm=b.ch.map(x=>x.c); a.ch=a.ch.filter(x=>x.c!==bc);
+  R.forEach(r=>{if(rm.includes(r.c)){r.c=null;r.ed=true}});
+  if(selB===bc)selB=a.ch[0]?.c; reindex();touch();draw();toast('중분류를 삭제했습니다')}
+/* 대분류 (필터 셀렉트 옆) 편집 */
+function curA(){return pkA!=null?TREE.find(a=>a.c===pkA):null}
+function editA(){const a=curA();if(!a){toast('수정할 대분류를 먼저 선택하세요');return}
+  const i=$('iA');i.value=a.n;i.style.display='block';i.focus();i.select();editing=1}
+function aKey(e){if(e.key==='Enter')e.target.blur();else if(e.key==='Escape'){editing=0;$('iA').style.display='none'}}
+function saveA(){if(!editing)return;editing=0;
+  const i=$('iA'),a=curA(),v=i.value.trim();i.style.display='none';
+  if(a&&v&&a.n!==v){a.n=v;reindex();touch();toast('대분류명을 수정했습니다')}
+  draw()}
+function addA(){const c=Math.max(0,...TREE.map(x=>x.c===9?0:x.c))+1;
+  TREE.push({c,n:'새 대분류',ch:[{c:1,n:'새 중분류',ch:[]}]});pkA=c;selA=c;selB=1;reindex();touch();draw();
+  toast('대분류를 추가했습니다 — 이름을 수정하세요');setTimeout(()=>editA(),0)}
+function delA(){const a=curA();if(!a){toast('삭제할 대분류를 먼저 선택하세요');return}
+  if(!confirm(`대분류 [${a.n}] 와 하위 전체를 삭제합니다.`))return;
+  const rm=[];a.ch.forEach(b=>b.ch.forEach(c=>rm.push(c.c)));
+  TREE=TREE.filter(x=>x.c!==a.c);R.forEach(r=>{if(rm.includes(r.c)){r.c=null;r.ed=true}});
+  pkA=null;selA=TREE[0]?.c;selB=TREE[0]?.ch[0]?.c;reindex();touch();draw();toast('대분류를 삭제했습니다')}
+/* 3단 열 편집기용 */
+function pickA(c){selA=c;selB=(TREE.find(x=>x.c===c)?.ch[0]||{}).c;draw()}
+function pickB(c){selB=c;draw()}
+function addLv(l){
+  if(l===1){const c=Math.max(0,...TREE.map(x=>x.c===9?0:x.c))+1;
+    TREE.push({c,n:'새 대분류',ch:[{c:1,n:'새 중분류',ch:[]}]});selA=c;selB=1;}
+  else if(l===2){const a=A();const c=Math.max(0,...a.ch.map(x=>x.c))+1;a.ch.push({c,n:'새 중분류',ch:[]});selB=c}
+  else{const b=B();if(!b){toast('중분류를 먼저 선택하세요');return}
+    const c=Math.max(0,...Object.keys(IDX).map(Number).filter(x=>x!==99))+1;b.ch.push({c,n:'새 소분류',src:'자동분석',lock:SRCLOCK['자동분석']})}
+  reindex();touch();draw();
+  toast(`${l===1?'대':l===2?'중':'소'}분류를 추가했습니다`);
+  if(l===3){const ins=$('cbList').querySelectorAll('.cin');const el=ins[ins.length-1];if(el){el.focus();el.select()}}
+}
+function delLv(l){
+  const t=l===1?A():B();if(!t){return}
+  if(!confirm(`${l===1?'대':'중'}분류 [${t.n}] 와 하위 항목을 모두 삭제합니다.`))return;
+  const rm=[];
+  if(l===1){t.ch.forEach(b=>b.ch.forEach(c=>rm.push(c.c)));TREE=TREE.filter(x=>x.c!==t.c);selA=TREE[0]?.c;selB=TREE[0]?.ch[0]?.c}
+  else{t.ch.forEach(c=>rm.push(c.c));const a=A();a.ch=a.ch.filter(x=>x.c!==t.c);selB=a.ch[0]?.c}
+  R.forEach(r=>{if(rm.includes(r.c)){r.c=null;r.ed=true}});
+  reindex();touch();draw();toast('삭제했습니다');
+}
+/* 중분류 코드 수정 (부모 대분류 지정 — 전체 범위에서도 정확히 동작) */
+function renCode2(ac,oldC,v){
+  const nv=parseInt(String(v).replace(/[^0-9]/g,''),10);
+  if(!nv||nv<1){toast('1 이상의 숫자 코드를 입력하세요');return draw()}
+  if(nv===oldC)return draw();
+  const a=TREE.find(x=>x.c===ac); if(!a)return draw();
+  if(a.ch.some(b=>b.c===nv)){toast(`중분류 코드 ${nv} 는 [${a.n}] 안에서 이미 사용 중입니다`);return draw()}
+  const b=a.ch.find(x=>x.c===oldC); if(!b)return draw();
+  b.c=nv;
+  if(selA===ac&&selB===oldC)selB=nv;
+  if(lastB===`${ac}-${oldC}`)lastB=`${ac}-${nv}`;
+  if(cSel.b.delete(`${ac}-${oldC}`))cSel.b.add(`${ac}-${nv}`);
+  reindex();touch();draw();toast(`중분류 코드 ${oldC} → ${nv}`);
+}
+/* 코드값 수정 — 중복 검사 후 하위·응답 참조까지 함께 갱신 */
+function renCode(l,oldC,v){
+  const nv=parseInt(String(v).replace(/[^0-9]/g,''),10);
+  if(!nv||nv<1){toast('1 이상의 숫자 코드를 입력하세요');return draw()}
+  if(nv===oldC)return draw();
+  if(l===1){
+    if(TREE.some(a=>a.c===nv)){toast(`대분류 코드 ${nv} 는 이미 사용 중입니다`);return draw()}
+    const a=TREE.find(x=>x.c===oldC); if(!a)return draw();
+    a.c=nv; if(selA===oldC)selA=nv; if(pkA===oldC)pkA=nv;
+    cSel.a.clear(); cSel.b.clear();
+  }else if(l===2){
+    const a=A(); if(!a)return draw();
+    if(a.ch.some(b=>b.c===nv)){toast(`중분류 코드 ${nv} 는 [${a.n}] 안에서 이미 사용 중입니다`);return draw()}
+    const b=a.ch.find(x=>x.c===oldC); if(!b)return draw();
+    b.c=nv; if(selB===oldC)selB=nv;
+    if(lastB===`${a.c}-${oldC}`)lastB=`${a.c}-${nv}`;
+    cSel.b.clear();
+  }else{
+    if(IDX[nv]){toast(`소분류 코드 ${nv} 는 이미 사용 중입니다 (${IDX[nv].n3})`);return draw()}
+    const x=IDX[oldC]; if(!x)return draw();
+    x.ref.c=nv;
+    R.forEach(r=>{if(r.c===oldC){r.c=nv;r.ed=true}});     /* 응답의 지정 코드 이동 */
+    recent=recent.map(c=>c===oldC?nv:c);
+    if(cSel.c.delete(String(oldC)))cSel.c.add(String(nv));
+  }
+  reindex();touch();draw();
+  toast(`${l===1?'대':l===2?'중':'소'}분류 코드 ${oldC} → ${nv}`);
+}
+/* 공통 이름 수정 / 삭제 (열 편집기 · 우측 공용) */
+function renL(l,c,v){
+  v=v.trim();if(!v)return draw();
+  if(l===1){const t=TREE.find(x=>x.c===c);t.n=v}
+  else if(l===2){const t=A().ch.find(x=>x.c===c);t.n=v}
+  else{let f=null;TREE.forEach(a=>a.ch.forEach(b=>b.ch.forEach(x=>{if(x.c===c)f=x})));if(f)f.n=v}
+  reindex();touch();draw();toast(`${l===1?'대':l===2?'중':'소'}분류명을 수정했습니다`);
+}
+function delL(l,c){
+  if(l===3){let f=null;TREE.forEach(a=>a.ch.forEach(b=>b.ch.forEach(x=>{if(x.c===c)f=x})));
+    if(!confirm(`소분류 [${f.n}] 를 삭제합니다. 지정된 응답의 분류도 해제됩니다.`))return;
+    TREE.forEach(a=>a.ch.forEach(b=>{b.ch=b.ch.filter(y=>y.c!==c)}));
+    R.forEach(r=>{if(r.c===c){r.c=null;r.ed=true}});
+  }else if(l===1){selA=c;delLv(1);return}
+  else{selB=c;delLv(2);return}
+  reindex();touch();draw();toast('소분류를 삭제했습니다');
+}
+
+/* ===== 다중 선택 (체크박스 없이 : 드래그 · Shift · Ctrl) ===== */
+function rangeSel(a,b){
+  const v=vis().map(r=>r.id),i=v.indexOf(a),j=v.indexOf(b);
+  if(i<0||j<0)return;
+  for(let k=Math.min(i,j);k<=Math.max(i,j);k++)sel.add(v[k]);
+}
+function paintSel(){
+  document.querySelectorAll('#tbl tbody tr[data-id]').forEach(tr=>{
+    const id=+tr.dataset.id;
+    tr.classList.toggle('sel',sel.has(id));
+    tr.classList.toggle('cur',cur===id);
+  });
+  syncSel();
+}
+function syncSel(){
+  const el=$('selInd');if(!el)return;
+  el.classList.toggle('on',sel.size>0&&tab==='resp');
+  el.innerHTML=`${sel.size}건 선택<button onclick="clearSel()" title="선택 해제"><i class="ti ti-x"></i></button>`;
+}
+function clearSel(){sel.clear();anchor=null;draw()}
+$('twrap').addEventListener('mousedown',e=>{
+  if(tab!=='resp')return;
+  const tr=e.target.closest('tr[data-id]');if(!tr)return;
+  if(e.target.closest('button')||e.target.closest('.sent')||e.target.closest('.okbtn')
+     ||e.target.closest('.cchip')||e.target.closest('.none'))return;
+  e.preventDefault();
+  const id=+tr.dataset.id;
+  if(e.shiftKey&&anchor!=null){rangeSel(anchor,id);cur=id;paintSel();return}
+  if(e.ctrlKey||e.metaKey){sel.has(id)?sel.delete(id):sel.add(id);anchor=id;cur=id;paintSel();return}
+  sel.clear();sel.add(id);anchor=id;cur=id;dragging=true;paintSel();
+});
+$('twrap').addEventListener('mouseover',e=>{
+  if(!dragging)return;
+  const tr=e.target.closest('tr[data-id]');if(!tr)return;
+  const id=+tr.dataset.id;sel.add(id);cur=id;paintSel();
+});
+document.addEventListener('mouseup',()=>{if(dragging){dragging=false;syncSel()}});
+
+/* ===== 분류 지정 ===== */
+function pushRecent(c){recent=[c,...recent.filter(x=>x!==c)].slice(0,6)}
+function assignSel(c){
+  let n=0;R.filter(r=>sel.has(r.id)).forEach(r=>{if(r.c!==c){r.c=c;r.ed=true;r.low=false;n++}});
+  pushRecent(c);touch();sel.clear();anchor=null;draw();
+  toast(n?`${n}건에 [${pathNo(c)}] ${IDX[c].n3} 지정`:'이미 지정된 분류입니다');
+}
+function leafClick(c){
+  if(sel.size)assignSel(c);
+  else{$('q').value=IDX[c].n3;filt='all';draw();toast(`[${pathNo(c)}] 로 필터`)}
+}
+function togOk(id){const r=R.find(x=>x.id===id);r.ok=!r.ok;if(r.ok)r.low=false;touch();draw()}
+function cycSent(id){const r=R.find(x=>x.id===id);r.se=r.se==='neu'?'pos':r.se==='pos'?'neg':'neu';touch();draw()}
+/* 멀티 행 추가 / 삭제 */
+function addMulti(id){
+  const r=R.find(x=>x.id===id),i=R.indexOf(r);
+  const m=Math.max(...R.filter(x=>x.rid===r.rid).map(x=>x.m))+1;
+  const last=R.map((x,k)=>x.rid===r.rid?k:-1).filter(k=>k>=0).pop();
+  R.splice(last+1,0,{id:++SEQ,rid:r.rid,m,raw:r.raw,tx:r.tx,c:null,se:r.se,ok:false,ed:true,low:false});
+  touch();draw();toast(`멀티 ${m} 행을 추가했습니다 — 분류를 지정하세요`);
+}
+function delMulti(id){
+  const r=R.find(x=>x.id===id);
+  R=R.filter(x=>x.id!==id);renumber();touch();draw();toast('멀티 행을 삭제했습니다');
+}
+function renumber(){const seen={};R.forEach(r=>{seen[r.rid]=(seen[r.rid]||0)+1;r.m=seen[r.rid]})}
+
+/* ===== 팝오버 (단건 · 일괄 공용) ===== */
+function openPop(e,id){
+  popFor=id;popIdx=0;$('popQ').value='';
+  $('popHd').textContent=(id&&sel.has(id)&&sel.size>1)?`선택한 ${sel.size}건에 분류 지정`:'이 응답의 분류 지정';
+  const p=$('pop'),r=(e.target.closest('button')||e.target).getBoundingClientRect();
+  p.style.left=Math.min(Math.max(8,r.left),innerWidth-352)+'px';
+  p.style.top=(r.bottom+6+340>innerHeight?Math.max(8,r.top-340):r.bottom+6)+'px';
+  p.classList.add('on');drawPop();setTimeout(()=>$('popQ').focus(),0);
+}
+function popCands(){const q=$('popQ').value.trim().toLowerCase();
+  return Object.values(IDX).filter(x=>!q||(x.c3+' '+x.n3+' '+x.n2+' '+x.n1).toLowerCase().includes(q))}
+function drawPop(){
+  const l=popCands();popIdx=Math.min(popIdx,Math.max(0,l.length-1));
+  $('popList').innerHTML=l.map((x,i)=>`<div class="pi ${i===popIdx?'k':''}" onclick="pickCode(${x.c3})">
+    <div class="r1"><span class="cno">${x.c1}·${x.c2}·${x.c3}</span><span class="nm">${esc(x.n3)}</span>
+    <span class="dim" style="font-size:10px">${fmt(leafCnt(x.c3))}</span></div>
+    <div class="bc">${esc(x.n1)} › ${esc(x.n2)}</div></div>`).join('')||'<div class="empty" style="padding:22px 0">일치하는 분류가 없습니다.</div>';
+}
+function popKey(e){const l=popCands();
+  if(e.key==='ArrowDown'){popIdx=Math.min(popIdx+1,l.length-1);drawPop();e.preventDefault()}
+  else if(e.key==='ArrowUp'){popIdx=Math.max(popIdx-1,0);drawPop();e.preventDefault()}
+  else if(e.key==='Enter'&&l[popIdx]){pickCode(l[popIdx].c3);e.preventDefault()}
+  else if(e.key==='Escape')closePop()}
+function pickCode(c){
+  const id=popFor;                 /* closePop() 이 popFor 를 비우므로 먼저 보관 */
+  closePop();
+  if(id==null)return;
+  if(sel.has(id)&&sel.size>1){assignSel(c);return}
+  const r=R.find(x=>x.id===id);if(!r)return;
+  r.c=c;r.ed=true;r.low=false;pushRecent(c);touch();draw();toast(`[${pathNo(c)}] 지정`);
+}
+function closePop(){$('pop').classList.remove('on');popFor=null}
+document.addEventListener('click',e=>{if(!e.target.closest('#pop')&&!e.target.closest('.cchip')&&!e.target.closest('.none')&&!e.target.closest('.pri'))closePop()});
+
+/* 보기분석 실행
+   - 수정불가(lock) 보기 : 코드·이름 그대로 유지, 지정된 응답도 유지
+   - 수정가능 보기      : 삭제 후 새 코드로 재생성 (같은 응답은 재매핑)
+   - 신규 보기          : 미분류 응답에서 새 분류를 추가 생성 */
+function runAnalyze(){
+  const ls=leaves(), keep=ls.filter(x=>x.c.lock), drop=ls.filter(x=>!x.c.lock);
+  if(drop.length&&!confirm(`수정가능 보기 ${drop.length}개는 삭제 후 새로 생성됩니다.\n수정불가 보기 ${keep.length}개는 그대로 유지됩니다.\n실행할까요?`))return;
+  let next=Math.max(0,...Object.keys(IDX).map(Number).filter(x=>x!==99))+1;
+  const remap=new Map();
+  /* 수정가능 보기 제거 */
+  TREE.forEach(a=>a.ch.forEach(b=>{b.ch=b.ch.filter(c=>c.lock)}));
+  /* 같은 위치에 새 코드로 재생성 */
+  drop.forEach(x=>{
+    const b=TREE.find(a=>a.c===x.a.c)?.ch.find(y=>y.c===x.b.c); if(!b)return;
+    const nc=next++;
+    b.ch.push({c:nc,n:x.c.n,src:'자동분석',lock:SRCLOCK['자동분석']});
+    remap.set(x.c.c,nc);
+  });
+  /* 미분류에서 신규 보기 2개 추가 (수정불가 보기는 건드리지 않고 추가만) */
+  const nb=TREE[0].ch[0], add=[];
+  ['기타 사용성 의견','가격·프로모션 관련 의견'].forEach(n=>{
+    const nc=next++; nb.ch.push({c:nc,n,src:'자동분석',lock:SRCLOCK['자동분석']}); add.push(nc);
+  });
+  /* 응답 재매핑 */
+  let moved=0;
+  R.forEach(r=>{ if(r.c!=null&&remap.has(r.c)){r.c=remap.get(r.c);r.ed=true;moved++} });
+  reindex(); touch();
+
+  const c=$('console');c.classList.add('on');$('setpanel').classList.add('on');$('setBtn').classList.add('on');
+  const lines=[`<span class="b">[1/4]</span> 응답 로드 … ${R.length}행`,
+   `<span class="b">[2/4]</span> 수정불가 보기 <b>${keep.length}</b>개 유지 (설문지·트래킹)`,
+   `<span class="b">[3/4]</span> 수정가능 보기 <b>${drop.length}</b>개 삭제 후 재생성 · 응답 ${moved}건 재매핑`,
+   `<span class="g">[4/4] 완료</span> 신규 보기 ${add.length}개 추가 · 총 ${Object.keys(IDX).length}개`];
+  c.innerHTML='';let i=0;
+  const t=setInterval(()=>{c.innerHTML+=lines[i]+'<br>';c.scrollTop=c.scrollHeight;
+    if(++i>=lines.length){clearInterval(t);
+      toast(`보기분석 완료 — 유지 ${keep.length} · 재생성 ${drop.length} · 신규 ${add.length}`);
+      setTab('code');draw()}},340);
+}
+function setTab(t){tab=t;['tab1','tab2','tab3'].forEach((x,i)=>$(x).classList.toggle('on',i===['resp','code','raw'].indexOf(t)));cur=null;sel.clear();anchor=null;draw()}
+
+/* ===== 키보드 ===== */
+document.addEventListener('keydown',e=>{
+  if($('pop').classList.contains('on'))return;
+  if(/input|textarea|select/i.test(e.target.tagName))return;
+  /* '/' → 분류 검색창으로 이동 */
+  if(e.key==='/'&&tab!=='code'){pkIdx=-1;$('cbQ').focus();$('cbQ').select();e.preventDefault();return}
+  if(tab!=='resp')return;
+  const v=vis();if(!v.length)return;
+  const i=v.findIndex(r=>r.id===cur);
+  if(e.key==='ArrowDown'||e.key==='j'){
+    cur=v[Math.min(i+1,v.length-1)]?.id??v[0].id;
+    if(e.shiftKey&&anchor!=null)rangeSel(anchor,cur);else{anchor=cur;sel.clear();sel.add(cur)}
+    draw();e.preventDefault()}
+  else if(e.key==='ArrowUp'||e.key==='k'){
+    cur=v[Math.max(i-1,0)]?.id??v[0].id;
+    if(e.shiftKey&&anchor!=null)rangeSel(anchor,cur);else{anchor=cur;sel.clear();sel.add(cur)}
+    draw();e.preventDefault()}
+  else if(e.key===' '&&cur!=null){sel.has(cur)?sel.delete(cur):sel.add(cur);draw();e.preventDefault()}
+  else if(e.key==='a'&&(e.ctrlKey||e.metaKey)){v.forEach(r=>sel.add(r.id));draw();e.preventDefault()}
+  else if(e.key==='Enter'&&cur!=null){togOk(cur);e.preventDefault()}
+  else if(e.key==='Escape'){sel.clear();anchor=null;cur=null;draw()}
+});
+
+/* ===== 응답데이터 ↔ 분류패널 폭 조정 ===== */
+const CBW0=346; let cbW=CBW0;
+function setCbW(w){cbW=Math.max(250,Math.min(760,w));$('cb').style.width=cbW+'px'}
+$('split').addEventListener('mousedown',e=>{
+  e.preventDefault();
+  const x0=e.clientX,w0=cbW,sp=$('split');
+  sp.classList.add('drag');document.body.classList.add('resizing');
+  const mm=ev=>setCbW(w0-(ev.clientX-x0));
+  const mu=()=>{sp.classList.remove('drag');document.body.classList.remove('resizing');
+    document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu)};
+  document.addEventListener('mousemove',mm);document.addEventListener('mouseup',mu);
+});
+$('split').addEventListener('dblclick',()=>{setCbW(CBW0);toast('폭을 초기화했습니다')});
+
+seedDB();qDraw();sumUp();draw();setCbW(CBW0);
+</script>
+</body>
+</html>

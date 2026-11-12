@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI오픈분석 — 문항 목록</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.7.0/dist/tabler-icons.min.css" />
+<style>
+  :root{
+    --brand:#F26522; --brand-dk:#D9500F; --brand-weak:#FFF3EC; --brand-line:#FBD4BE;
+    --info:#2F6FED; --info-weak:#EDF3FE; --info-line:#C6D9FB;
+    --ok:#0E9A6C; --ok-weak:#E7F7F1; --ok-line:#B7E5D4;
+    --warn:#B4740A; --warn-weak:#FDF5E5; --warn-line:#F0DCB0;
+    --page:#F4F5F7; --card:#FFFFFF; --head:#F7F7F9; --hover:#FAFAFB; --zebra:#FCFCFD;
+    --tx:#1A1C1F; --tx2:#5F646C; --tx3:#9AA0A7;
+    --line:#E5E6EA; --line2:#D5D7DC;
+    --r:8px; --font:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif;
+    --hdH:60px; --sbW:272px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--font);background:var(--page);color:var(--tx);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden}
+  .sp{flex:1}
+  button{font-family:inherit;font-size:12.5px;border:1px solid var(--line2);background:#fff;color:var(--tx);border-radius:6px;padding:6px 11px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;transition:.12s;white-space:nowrap}
+  button:hover{background:var(--hover);border-color:#c2c5cb}
+  button:active{transform:scale(.98)}
+  button:disabled{opacity:.35;cursor:not-allowed;transform:none}
+  button.br{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+  button.br:hover{background:var(--brand-dk);border-color:var(--brand-dk)}
+  button.bro{background:#fff;border-color:var(--brand);color:var(--brand);font-weight:600}
+  button.bro:hover{background:var(--brand-weak)}
+  button.brl{background:var(--brand-weak);border-color:var(--brand-line);color:var(--brand-dk);font-weight:600}  /* 완료 = 연한 톤 */
+  button.brl:hover{background:#FFE8DA;border-color:var(--brand)}
+  button.gh{border-color:transparent;background:none;color:var(--tx2)}
+  button.gh:hover{background:#EFF0F3}
+  button.xs{font-size:11.5px;padding:4px 8px;border-radius:5px}
+
+  /* ===== 레이아웃 ===== */
+  .app{display:flex;height:100vh;overflow:hidden}
+
+  /* 사이드바 */
+  aside{width:var(--sbW);flex-shrink:0;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column}
+  .brand{height:var(--hdH);display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid var(--line)}
+  .brand i{font-size:19px;color:var(--tx2);cursor:pointer}
+  .brand .lg{font-size:16px;font-weight:700;letter-spacing:-.01em}
+  .brand .lg em{color:var(--brand);font-style:normal}
+  .prj{margin:16px 16px 6px;background:var(--head);border:1px solid var(--line);border-radius:10px;padding:11px 12px;display:flex;align-items:center;gap:8px}
+  .prj .nm{font-size:13px;font-weight:600;letter-spacing:-.01em}
+  .prj .cd{font-size:11px;font-weight:600;color:var(--brand);background:var(--brand-weak);border:1px solid var(--brand-line);border-radius:5px;padding:1px 6px}
+  .prj i{color:var(--tx3);font-size:16px;cursor:pointer}
+  .navt{font-size:12px;color:var(--tx2);font-weight:600;padding:16px 20px 6px;display:flex;align-items:center;justify-content:space-between}
+  .nav{padding:0 12px}
+  .nv{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--tx2);cursor:pointer;font-size:13px;transition:.12s}
+  .nv:hover{background:var(--hover);color:var(--tx)}
+  .nv.on{background:var(--brand-weak);color:var(--brand);font-weight:600}
+  .nv i{font-size:17px}
+  .sbf{margin-top:auto;padding:16px}
+  .fcard{border:1px solid var(--line);border-radius:10px;padding:9px 10px 9px 13px;display:flex;align-items:center;gap:8px;font-size:12.5px}
+  .fcard+.fcard{margin-top:9px}
+  .fcard .lb{color:var(--brand);font-weight:600}
+  .fcard .vl{font-weight:700;font-variant-numeric:tabular-nums}
+  .fcard.bal{background:var(--brand-weak);border-color:var(--brand-line)}
+  .fcard.bal .vl{color:var(--brand)}
+
+  /* 메인 */
+  main{flex:1;min-width:0;display:flex;flex-direction:column}
+  header.top{height:var(--hdH);flex-shrink:0;display:flex;align-items:center;gap:10px;padding:0 22px;background:#fff;border-bottom:1px solid var(--line)}
+  header.top h1{font-size:17px;font-weight:700;display:flex;align-items:center;gap:9px;letter-spacing:-.01em}
+  header.top h1::before{content:'';width:3px;height:15px;border-radius:2px;background:var(--brand)}
+  header.top .hi{color:var(--tx3);font-size:15px}
+  .collapse{width:24px;height:24px;border-radius:50%;border:1px solid var(--line2);background:#fff;color:var(--tx2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;margin-right:4px}
+
+  /* ===== 헤더 드롭다운 ===== */
+  .dd{position:relative}
+  .dd>button i{transition:transform .16s;font-size:14px}
+  .dd.on>button i{transform:rotate(180deg)}
+  .ddm{position:absolute;right:0;top:calc(100% + 7px);z-index:70;min-width:182px;background:#fff;border:1px solid var(--line2);border-radius:10px;box-shadow:0 12px 30px rgba(20,22,26,.16);padding:5px;display:none}
+  .dd.on .ddm{display:block;animation:drop .14s ease}
+  .ddm button{width:100%;justify-content:flex-start;border:none;background:none;font-size:12.5px;font-weight:500;padding:9px 11px;border-radius:7px;color:var(--tx);white-space:nowrap}
+  .ddm button:hover{background:var(--brand-weak);color:var(--brand-dk);font-weight:600}
+  .ddm hr{border:none;border-top:1px solid var(--line);margin:4px 5px}
+
+  .body{flex:1;min-height:0;padding:14px 22px 20px;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+  .card{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
+
+  /* ===== 집계 (카드 상단 1줄) ===== */
+  .kpi{flex:1;min-width:0;display:flex;align-items:center;gap:9px;font-size:12px;white-space:nowrap;overflow-x:auto;padding:1px 0}
+  .kpi .k{color:var(--tx2);font-weight:600;display:flex;align-items:center;gap:5px}
+  .kpi .k i{font-size:14px;color:var(--tx3)}
+  .kpi .v{color:var(--tx2);font-variant-numeric:tabular-nums}
+  .kpi .v b{color:var(--tx);font-weight:700;font-size:12.5px;letter-spacing:-.01em}
+  .kpi .dot{color:var(--line2)}
+  .kpi .dv{width:1px;height:14px;background:var(--line);margin:0 5px}
+  .gap{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:20px;white-space:nowrap}
+  .gap.ok{background:var(--ok-weak);color:var(--ok)}
+  .gap.no{background:var(--warn-weak);color:var(--warn)}
+  .pbar{width:56px;height:4px;border-radius:3px;background:#EDEEF1;overflow:hidden}
+  .pbar span{display:block;height:100%;background:var(--brand);border-radius:3px}
+  .kpct{font-size:11px;color:var(--tx3);font-variant-numeric:tabular-nums}
+
+  /* 카드 툴바 */
+  .tool{flex-shrink:0;display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line)}
+  .total{font-size:13px;color:var(--tx2)}
+  .total b{color:var(--brand);font-weight:700;font-size:14px}
+  .segs{display:flex;background:var(--head);border:1px solid var(--line);padding:2px;border-radius:8px;gap:2px}
+  .seg{font-size:12px;padding:5px 11px;border-radius:6px;cursor:pointer;color:var(--tx2);user-select:none;display:flex;align-items:center;gap:5px;white-space:nowrap}
+  .seg:hover{color:var(--tx)}
+  .seg.on{background:#fff;color:var(--tx);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.07)}
+  .seg .n{font-size:11px;color:var(--tx3);font-variant-numeric:tabular-nums}
+  .seg.on .n{color:var(--brand)}
+  .search{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line2);border-radius:7px;padding:5px 10px;width:220px}
+  .search:focus-within{border-color:var(--brand)}
+  .search input{border:none;background:none;flex:1;font-size:12.5px;color:var(--tx);outline:none;font-family:inherit;min-width:0}
+  .search i{color:var(--tx3);font-size:15px}
+
+  /* ===== 테이블 ===== */
+  .tw{flex:1;min-height:0;overflow:auto;margin:12px 16px 16px;border:1px solid var(--line2);border-radius:10px;background:#fff}
+  table{border-collapse:separate;border-spacing:0;table-layout:fixed;width:1500px}
+  th,td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0 8px;text-align:center;vertical-align:middle}
+  th:last-child,td:last-child{border-right:none}
+  thead th{background:var(--head);font-size:11.5px;font-weight:600;color:var(--tx2);height:34px;position:sticky;z-index:5;white-space:nowrap}
+  thead tr.g1 th{top:0;z-index:6;letter-spacing:.06em;color:var(--tx3);font-size:10.5px}
+  thead tr.g2 th{top:34px}
+  thead tr.g1 th.v{background:#F2F3F5}
+  thead tr.g1 th.a{background:var(--info-weak);color:#2554A8}
+  thead tr.g1 th.e{background:var(--brand-weak);color:var(--brand-dk)}
+  thead tr.g2 th.a{background:#F5F8FE}
+  thead tr.g2 th.e{background:#FEF7F3}
+  thead th.sk{z-index:8}
+  tbody td{height:46px;font-size:12.5px;background:#fff}
+  tbody tr:nth-child(even) td{background:var(--zebra)}
+  tbody tr:hover td{background:#F6F8FB}
+  tbody tr.sel td{background:var(--info-weak)!important}
+  tbody tr.ex td{color:var(--tx3)}
+  tbody tr.ex td .qt{color:var(--tx3)}
+  tbody tr:last-child td{border-bottom:none}
+  .sk{position:sticky;left:0;z-index:4}
+  .num{text-align:right;font-variant-numeric:tabular-nums;font-feature-settings:'tnum';white-space:nowrap;padding-right:12px;letter-spacing:-.01em}
+
+  /* 응답 → 분석대상 → 완료 : 단위·의미가 다른 3열 묶음 */
+  thead tr.g1 th.n3{background:#E9EEF2;color:#3D5164;font-size:10.5px;letter-spacing:.02em}
+  thead tr.g1 th.n3 i{font-size:12px;vertical-align:-1px;opacity:.6}
+  thead tr.g2 th.n3{background:#F3F6F8}
+  thead tr.g2 th{height:42px}
+  .th2{line-height:1.25;cursor:help}
+  .thsub{display:block;font-size:9.5px;font-weight:500;color:var(--tx3);letter-spacing:0;margin-top:1px}
+  tbody td.n3{background:#FCFDFE}
+  tbody tr:nth-child(even) td.n3{background:#F8FAFC}
+  tbody tr:hover td.n3{background:#F2F6FA}
+  tbody td.n3{font-weight:600}
+  .mono{font-family:ui-monospace,'SF Mono',Consolas,monospace;font-size:11.5px;color:var(--tx2)}
+  .qt{text-align:left;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px}
+  .dim{color:var(--tx3)}
+
+  /* 체크박스 */
+  .ck{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--line2);display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#fff;cursor:pointer;background:#fff;vertical-align:middle;transition:.1s}
+  .ck i{opacity:0}
+  .ck.on{background:var(--info);border-color:var(--info)}
+  .ck.on i{opacity:1}
+  .ck.part{background:var(--info);border-color:var(--info);position:relative}
+  .ck.part::after{content:'';width:8px;height:2px;background:#fff;border-radius:1px}
+
+  /* 칩 */
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;border:1px solid transparent}
+  .chip::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+  .chip.done{background:var(--ok-weak);color:var(--ok);border-color:var(--ok-line)}
+  .chip.run{background:var(--info-weak);color:var(--info);border-color:var(--info-line)}
+  .chip.wait{background:var(--warn-weak);color:var(--warn);border-color:var(--warn-line)}
+  .chip.idle{background:#F4F5F7;color:var(--tx3);border-color:var(--line)}
+  .chip.exc{background:#F4F5F7;color:var(--tx3);border-color:var(--line)}
+  .lbl{display:inline-block;font-size:11.5px;font-weight:600;font-family:ui-monospace,Consolas,monospace;color:var(--info);background:var(--info-weak);border:1px solid var(--info-line);border-radius:5px;padding:1px 7px;white-space:nowrap}
+
+  /* 분석 / 제외 토글 */
+  .tg{display:inline-flex;flex-wrap:nowrap;flex-shrink:0;border:1px solid var(--line2);border-radius:6px;overflow:hidden;background:#fff;white-space:nowrap;line-height:1.5}
+  .tg span{font-size:11.5px;padding:4px 8px;cursor:pointer;color:var(--tx2);user-select:none;transition:.1s;white-space:nowrap;flex-shrink:0}
+  .tg span+span{border-left:1px solid var(--line2)}
+  .tg span:hover{background:var(--hover)}
+  .tg span.on{background:var(--info);color:#fff;font-weight:600}
+  .tg span.on.ex{background:#8A9099;color:#fff}
+
+  /* 통합저장 셀 */
+  .mg{display:inline-flex;align-items:center;gap:5px;max-width:100%}
+  .mgname{font-size:11.5px;font-weight:600;font-family:ui-monospace,Consolas,monospace;color:var(--brand-dk);background:var(--brand-weak);border:1px solid var(--brand-line);border-radius:5px;padding:2px 7px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mgname:hover{background:#FFE7D9}
+  .mgcnt{font-size:10.5px;color:var(--tx3);white-space:nowrap}
+  .mgadd{font-size:11.5px;color:var(--tx3);border:1px dashed var(--line2);border-radius:5px;padding:2px 8px;cursor:pointer;background:none}
+  .mgadd:hover{color:var(--brand);border-color:var(--brand-line);background:var(--brand-weak)}
+  .mgadd.pick{border-style:solid;color:var(--brand-dk);border-color:var(--brand);background:var(--brand-weak);font-weight:600}
+
+  /* 수정 잠금 */
+  .lk{width:26px;height:26px;border-radius:6px;border:1px solid var(--line2);background:#fff;color:var(--tx3);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px}
+  .lk:hover{background:var(--hover)}
+  .lk.open{background:var(--brand-weak);border-color:var(--brand-line);color:var(--brand)}
+  .hbtns{display:flex;gap:3px;justify-content:center;margin-top:2px}
+  .hb{font-size:10.5px;border:1px solid var(--line2);background:#fff;border-radius:4px;padding:1px 6px;cursor:pointer;color:var(--tx2)}
+  .hb:hover{background:#fff;border-color:var(--brand);color:var(--brand)}
+
+  /* ===== 묶음(컨테이너) 행 ===== */
+  tr.grp td{background:#FFF8F2!important;border-top:1.5px solid var(--brand-line);border-bottom:1px solid var(--brand-line)}
+  tr.grp:hover td{background:#FFF3EA!important}
+  tr.grp.sel td{background:var(--info-weak)!important}
+  tr.grp td.accL{border-left:3px solid var(--brand)}      /* 컨테이너 좌측 강조바 */
+  tr.ch  td.accL{border-left:3px solid var(--brand-line)}
+  .chev{width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;color:var(--brand);background:var(--brand-weak);border:1px solid var(--brand-line);cursor:pointer;font-size:15px;transition:transform .12s;flex-shrink:0}
+  .chev:hover{filter:brightness(.97)}
+  .chev.op{transform:rotate(90deg)}
+  .gq{display:flex;align-items:center;gap:8px;padding-left:2px;min-width:0}
+  .gbadge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#fff;background:var(--brand);border-radius:20px;padding:2px 9px;white-space:nowrap;flex-shrink:0}
+  .gq .t{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  tr.ch td{background:#FFFDFB!important}
+  tr.ch:hover td{background:#FFF7F1!important}
+  /* position은 지정하지 않는다 — .sk의 sticky를 덮으면 left가 상대 이동으로 바뀌어 셀이 밀린다.
+     sticky 자체가 위치 기준이 되므로 ::before는 그대로 절대배치된다. */
+  tr.ch .qt{padding-left:30px;font-weight:400;color:var(--tx2)}
+  tr.ch .qt::before{content:'';position:absolute;left:14px;top:-14px;bottom:50%;width:8px;border-left:1px solid var(--brand-line);border-bottom:1px solid var(--brand-line);border-bottom-left-radius:4px}
+  /* 묶음 소속 표시 — 셀 내용은 일반 문항과 동일하게 두고 마커만 */
+  .chmark{font-size:14px;color:var(--brand);opacity:.5;cursor:help}
+  tr.hide{display:none}
+  /* 묶음 편집 셀: 통합명 + 풀기 */
+  .grpedit{display:flex;align-items:center;gap:6px;min-width:0}
+  .grpedit .mgname{flex:0 1 auto;min-width:0}
+  .btn-unmerge{flex-shrink:0;font-size:11px;font-weight:600;color:var(--tx2);background:#fff;border:1px solid var(--line2);border-radius:5px;padding:3px 8px;cursor:pointer;display:inline-flex;align-items:center;gap:3px}
+  .btn-unmerge:hover{border-color:var(--coral,#D9500F);color:#C0392B;background:#FDEEEA}
+  .empty{padding:56px 0;text-align:center;color:var(--tx3);font-size:13px}
+
+  /* ===== 묶기 모드 ===== */
+  .mband{flex-shrink:0;display:flex;align-items:center;gap:10px;margin:10px 16px 0;padding:10px 14px;border-radius:9px;background:var(--brand-weak);border:1px solid var(--brand-line);color:var(--brand-dk);font-size:12.5px;animation:drop .18s ease}
+  @keyframes drop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .mband .ic{width:26px;height:26px;border-radius:7px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .mband b{font-weight:700}
+  .mband .lblnow{font-family:ui-monospace,Consolas,monospace;font-weight:700;background:#fff;border:1px solid var(--brand-line);border-radius:5px;padding:1px 8px;color:var(--brand-dk)}
+  /* 묶기 모드일 때 행 상태 */
+  tbody.mm tr.pk td{background:var(--brand-weak)!important}
+  tbody.mm tr.pk td.accP{box-shadow:inset 3px 0 0 var(--brand)}
+  tbody.mm tr.dis td{opacity:.32}
+  tbody.mm tr.dis .ck{pointer-events:none}
+  /* 묶기용 큰 체크 */
+  .pck{width:22px;height:22px;border-radius:6px;border:2px solid var(--line2);display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:#fff;cursor:pointer;background:#fff;transition:.1s}
+  .pck i{opacity:0}
+  .pck.on{background:var(--brand);border-color:var(--brand)}
+  .pck.on i{opacity:1}
+  .pck.lock{border-style:dashed;cursor:not-allowed;background:var(--head)}
+
+  /* 묶기 트레이 */
+  .tray{position:fixed;left:calc(50% + var(--sbW)/2);bottom:24px;transform:translateX(-50%) translateY(160%);z-index:45;display:flex;align-items:center;gap:14px;background:#fff;border:1.5px solid var(--brand);border-radius:14px;box-shadow:0 14px 38px rgba(217,80,15,.24);padding:11px 12px 11px 18px;transition:transform .24s cubic-bezier(.2,.8,.3,1)}
+  .tray.on{transform:translateX(-50%) translateY(0)}
+  .tray .tt{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap}
+  .tray .tt .lblnow{font-family:ui-monospace,Consolas,monospace;background:var(--brand-weak);border:1px solid var(--brand-line);border-radius:5px;padding:1px 8px;color:var(--brand-dk)}
+  .tray .chips{display:flex;align-items:center;gap:5px;max-width:340px;overflow-x:auto;padding:1px}
+  .tchip{font-size:11px;font-family:ui-monospace,Consolas,monospace;color:var(--tx2);background:var(--head);border:1px solid var(--line);border-radius:20px;padding:2px 9px 2px 8px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+  .tchip i{cursor:pointer;color:var(--tx3);font-size:13px}
+  .tchip i:hover{color:#C0392B}
+  .tray .hint{font-size:11.5px;color:var(--tx3);white-space:nowrap}
+  .tray .dv{width:1px;height:26px;background:var(--line)}
+  .tray button.go{font-size:13px;font-weight:700;padding:9px 18px;border-radius:9px}
+
+  /* 일괄 액션 바 */
+  .bulk{position:fixed;left:calc(50% + var(--sbW)/2);bottom:24px;transform:translateX(-50%) translateY(150%);z-index:40;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line2);border-radius:12px;box-shadow:0 10px 30px rgba(20,22,26,.16);padding:9px 10px 9px 15px;transition:transform .22s cubic-bezier(.2,.8,.3,1)}
+  .bulk.on{transform:translateX(-50%) translateY(0)}
+  .bulk .n{font-size:12.5px;font-weight:700;white-space:nowrap}
+  .bulk .st{font-size:11.5px;display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .bulk .st.ok{background:var(--ok-weak);color:var(--ok)}
+  .bulk .st.no{background:var(--warn-weak);color:var(--warn)}
+  .bulk .dv{width:1px;height:22px;background:var(--line)}
+  .bulk .blb{font-size:11px;color:var(--tx3);font-weight:600;white-space:nowrap}
+
+  /* 모달 */
+  .ov{position:fixed;inset:0;background:rgba(20,22,26,.38);z-index:50;display:none}
+  .ov.on{display:block}
+  .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.98);z-index:51;width:600px;max-width:calc(100vw - 40px);max-height:calc(100vh - 80px);background:#fff;border-radius:14px;box-shadow:0 20px 56px rgba(20,22,26,.26);display:none;flex-direction:column;overflow:hidden}
+  .modal.sm2{width:440px}
+  .modal.on{display:flex;animation:pop .16s cubic-bezier(.2,.8,.3,1) forwards}
+  @keyframes pop{to{transform:translate(-50%,-50%) scale(1)}}
+  .m-hd{display:flex;align-items:center;gap:9px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .m-hd h2{font-size:15px;font-weight:700}
+  .m-hd .sub{font-size:11.5px;color:var(--tx3)}
+  .m-bd{padding:18px;overflow-y:auto;flex:1}
+  .m-ft{display:flex;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--line);background:var(--head)}
+  .fld{margin-bottom:15px}
+  .fld:last-child{margin-bottom:0}
+  .fld>label{display:block;font-size:11.5px;font-weight:700;color:var(--tx2);margin-bottom:6px}
+  .fld .desc{font-size:11.5px;color:var(--tx3);margin-top:6px;line-height:1.55}
+  input.tx,select.sl{font-family:inherit;font-size:13px;border:1px solid var(--line2);background:#fff;color:var(--tx);border-radius:7px;padding:8px 10px;outline:none;width:100%}
+  input.tx:focus,select.sl:focus{border-color:var(--brand)}
+  .row2{display:flex;gap:10px}
+  .row2>div{flex:1}
+  /* ===== 문항 등록 모달 ===== */
+  .reg{width:min(1180px,calc(100vw - 60px));max-height:calc(100vh - 50px);border-radius:14px}
+  .reg-hd{padding:20px 26px 16px;border-bottom:none}
+  .reg-hd h2{font-size:19px;font-weight:700;display:flex;align-items:center;gap:8px;letter-spacing:-.02em}
+  .regtabs{display:flex;gap:0;padding:0 26px;border-bottom:1px solid var(--line);flex-shrink:0}
+  .regtabs>span{display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:var(--tx2);
+    padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;user-select:none}
+  .regtabs>span:hover{color:var(--tx)}
+  .regtabs>span.on{color:var(--brand);border-bottom-color:var(--brand)}
+  .regtabs i{font-size:16px}
+  .regtabs i.inf{font-size:13px;color:var(--tx3);cursor:help}
+  .reg-bd{padding:18px 26px 26px;background:#FAFAFB}
+
+  .regtot{font-size:13px;color:var(--tx2);margin-bottom:8px}
+  .regtot b{color:var(--brand);font-weight:700}
+  .regtw{border:2px solid var(--tx);border-radius:4px;overflow:auto;max-height:330px;background:#fff}
+  .regtbl{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+  .regtbl th{position:sticky;top:0;z-index:2;background:#EFF2F6;font-size:13px;font-weight:600;color:var(--tx);
+    padding:12px 10px;border-bottom:1px solid var(--line2);border-right:1px solid var(--line2);text-align:center;white-space:nowrap}
+  .regtbl th:last-child{border-right:none}
+  .regtbl th i{font-size:13px;color:var(--tx3);float:right;margin-top:2px;cursor:pointer}
+  .regtbl td{padding:15px 10px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);text-align:center;font-size:13px}
+  .regtbl td:last-child{border-right:none}
+  .regtbl tbody tr:hover td{background:#FFF8F3}
+
+  .regcard{margin:24px auto 0;width:min(800px,100%);background:#fff;border:1px solid var(--line2);border-radius:10px;padding:26px 30px}
+  .rgf{margin-bottom:16px}
+  .rgf:last-of-type{margin-bottom:0}
+  .rgf>label{display:block;font-size:13px;font-weight:700;color:var(--tx);margin-bottom:7px}
+  .rgf>label em{font-style:normal;color:#E0403C;margin-left:2px}
+  input.tx.ro{background:#EFEFEF;color:var(--tx2);cursor:default}
+  .rgsubmit{display:block;margin:26px auto 0;min-width:180px;font-size:14px;font-weight:700;padding:12px 22px;border-radius:8px}
+  .reghelp{text-align:center;font-size:12.5px;color:var(--tx2);margin-top:14px}
+
+  .xlcard{margin:8px auto;width:min(860px,100%);background:#fff;border:1px solid var(--line2);border-radius:10px;padding:26px 32px 30px}
+  .xlhd{display:flex;align-items:flex-start;gap:10px;margin-bottom:22px}
+  .xlt{font-size:16px;font-weight:700}
+  .xls{font-size:12.5px;color:var(--tx3);margin-top:3px}
+  .xlrow2{display:flex;gap:16px}
+  .xlrow2>.rgf{flex:1;min-width:0}
+  .xlfile{display:flex;align-items:center;gap:0;border:1px solid var(--line2);border-radius:7px;overflow:hidden;background:#fff}
+  .fbrowse{flex-shrink:0;font-size:12.5px;padding:8px 12px;background:#EFEFEF;border-right:1px solid var(--line2);cursor:pointer;color:var(--tx);position:relative}
+  .fbrowse:hover{background:#E6E6E6}
+  .fbrowse input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+  .xlfile .fname{flex:1;min-width:0;padding:0 12px;font-size:12.5px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .xlfile>button{flex-shrink:0;margin:-1px;border-radius:0 7px 7px 0;padding:9px 14px;font-size:12.5px}
+  .xlpick{display:flex;align-items:center;gap:10px}
+  .xlpick>button{flex-shrink:0;padding:9px 16px;font-size:12.5px;background:#EFEFEF;border-color:var(--line2);color:var(--tx2)}
+  .xlpick>button:not(:disabled){background:#fff;color:var(--brand);border-color:var(--brand);font-weight:600}
+  .xlpick .fname{flex:1;min-width:0;border:1px solid var(--line2);border-radius:7px;padding:9px 12px;font-size:12.5px;color:var(--tx3);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff}
+  .xlhr{border:none;border-top:1px solid var(--line);margin:22px 0 18px}
+  .xlsubmit{width:100%;font-size:14px;font-weight:700;padding:13px;border-radius:7px}
+
+  /* ===== 필터문항 설정 모달 ===== */
+  .fm{width:640px;border-radius:16px}
+  .fm-hd{padding:22px 26px 18px;border-bottom:none}
+  .fm-hd h2{font-size:19px;font-weight:700;letter-spacing:-.02em}
+  .fmlbl{color:var(--brand);font-weight:700;margin-left:4px}
+  .fmx{padding:4px;color:var(--tx2)}
+  .fmx i{font-size:22px}
+  .fm-bd{padding:0 26px 6px;overflow:visible;display:flex;flex-direction:column;min-height:0}
+  .fsearch{display:flex;align-items:center;gap:9px;border:1px solid var(--line2);border-radius:9px;padding:11px 14px;margin-bottom:18px;flex-shrink:0}
+  .fsearch:focus-within{border-color:var(--brand)}
+  .fsearch i{font-size:18px;color:var(--tx3)}
+  .fsearch input{border:none;background:none;flex:1;font-size:13.5px;color:var(--tx);outline:none;font-family:inherit;min-width:0}
+  .fsearch input::placeholder{color:var(--tx3)}
+  .fth,.frow{display:flex;align-items:center}
+  .fth{border-bottom:2px solid var(--tx);padding:10px 4px;flex-shrink:0}
+  .fth .c2{font-size:13.5px;font-weight:700}
+  .fth .c3{font-size:13.5px;font-weight:700;display:flex;flex-direction:column;align-items:center;line-height:1.35}
+  .fth .c3 em{font-style:normal;font-size:11px;font-weight:600;color:#E0403C}
+  .c1{width:52px;flex-shrink:0;display:flex;justify-content:center}
+  .c2{flex:1;min-width:0;text-align:center;padding:0 8px}
+  .c3{width:148px;flex-shrink:0;text-align:center}
+  .fbody{flex:1;min-height:0;max-height:326px;overflow-y:auto}
+  .frow{padding:14px 4px;border-bottom:1px solid var(--line);cursor:pointer;transition:.1s}
+  .frow:hover{background:#FFF6EF}
+  .frow.on{background:var(--brand-weak)}
+  .frow .c2{font-size:13.5px;color:var(--tx)}
+  .frow.on .c2{font-weight:600}
+  .frow .c3{font-size:13px;color:var(--tx2)}
+  .fck{width:19px;height:19px;border-radius:4px;border:1.5px solid var(--brand-line);background:#fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0}
+  .fck i{opacity:0}
+  .frow.on .fck{background:var(--brand);border-color:var(--brand)}
+  .frow.on .fck i{opacity:1}
+  .fempty{padding:48px 0;text-align:center;color:var(--tx3);font-size:13px}
+  .fm-ft{padding:16px 26px;border-top:none;background:none;gap:10px}
+  .fm-ft b{font-size:13.5px;font-weight:700;white-space:nowrap}
+  .fnames{font-size:12.5px;color:var(--tx3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .fmgo{font-size:13.5px;font-weight:700;padding:11px 22px;border-radius:9px}
+  /* 목록의 필터 설정 버튼 (설정됨 표시) */
+  .fbtn.set{background:var(--brand-weak);border-color:var(--brand-line);color:var(--brand-dk);font-weight:700}
+
+  /* 문항최종 수정 모달 */
+  .edtabs{display:flex;align-items:center;gap:4px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .edtabs>span{font-size:12.5px;padding:6px 12px;border-radius:7px;cursor:pointer;color:var(--tx2);user-select:none;display:inline-flex;align-items:center;gap:6px;border:1px solid transparent;white-space:nowrap}
+  .edtabs>span:hover{background:var(--hover)}
+  .edtabs>span.on{background:var(--brand-weak);border-color:var(--brand-line);color:var(--brand-dk);font-weight:700}
+  .edtabs i{font-size:15px}
+  textarea.ta{width:100%;min-height:168px;max-height:280px;font-family:ui-monospace,'SF Mono',Consolas,monospace;font-size:12.5px;line-height:2;padding:6px 10px;border:1px solid var(--line2);border-radius:7px;outline:none;resize:vertical;background:#fff;color:var(--tx);
+    background-image:repeating-linear-gradient(var(--line) 0 1px,transparent 1px 25px);background-position:0 31px}
+  textarea.ta:focus{border-color:var(--brand)}
+  .talines{font-size:11.5px;font-weight:600;margin-top:7px;display:flex;align-items:center;gap:6px}
+  .talines.ok{color:var(--ok)} .talines.no{color:var(--warn)}
+  .ordbox{max-height:132px;overflow-y:auto}
+  .ordbox .bi{padding:5px 12px;font-size:11.5px}
+  .ordn{width:22px;color:var(--tx3);font-variant-numeric:tabular-nums;flex-shrink:0}
+  .inline-row{display:flex;gap:8px}
+  .inline-row input{flex:1;min-width:0}
+  .inline-row button{flex:0 0 auto}
+  input.tx:disabled{background:var(--head);color:var(--tx3);cursor:not-allowed}
+  .box .bi input.tx{padding:5px 8px;font-size:12.5px}
+  .box .bi .lockic{color:var(--tx3);font-size:14px;flex-shrink:0}
+  .box{border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .box .bh{display:flex;align-items:center;padding:8px 12px;background:var(--head);font-size:11.5px;font-weight:700;color:var(--tx2);border-bottom:1px solid var(--line)}
+  .box .bi{display:flex;align-items:center;gap:9px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:12.5px}
+  .box .bi:last-child{border-bottom:none}
+  .box .bi .g{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
+  .opts{display:flex;flex-direction:column;gap:7px}
+  .opt{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;cursor:pointer;transition:.12s}
+  .opt:hover{border-color:var(--line2)}
+  .opt.on{border-color:var(--brand);background:var(--brand-weak)}
+  .radio{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--line2);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center}
+  .opt.on .radio{border-color:var(--brand)}
+  .opt.on .radio::after{content:'';width:7px;height:7px;border-radius:50%;background:var(--brand)}
+  .opt .ot{font-size:12.5px;font-weight:600}
+  .opt .od{font-size:11.5px;color:var(--tx3);margin-top:2px;line-height:1.5}
+  .cost{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--head);border-radius:9px;margin-top:13px}
+  .cost .lb{font-size:11.5px;color:var(--tx2)}
+  .cost .vl{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--brand)}
+  .note{display:flex;gap:8px;padding:10px 12px;border-radius:8px;font-size:11.5px;line-height:1.55;margin-top:12px}
+  .note.ok{background:var(--ok-weak);color:var(--ok)}
+  .note.wr{background:var(--warn-weak);color:var(--warn)}
+  .note i{font-size:14px;flex-shrink:0;margin-top:1px}
+
+  .toast{position:fixed;left:calc(50% + var(--sbW)/2);bottom:24px;transform:translateX(-50%) translateY(150%);z-index:60;background:#22252A;color:#fff;font-size:12.5px;padding:10px 16px;border-radius:10px;display:flex;align-items:center;gap:8px;box-shadow:0 10px 28px rgba(0,0,0,.26);transition:transform .22s cubic-bezier(.2,.8,.3,1)}
+  .toast.on{transform:translateX(-50%) translateY(0)}
+  .toast i{color:#5FD3A6;font-size:15px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ========== 사이드바 ========== -->
+  <aside>
+    <div class="brand">
+      <i class="ti ti-home"></i><i class="ti ti-menu-2"></i>
+      <span class="lg"><em>AI</em>오픈분석</span>
+    </div>
+    <div class="prj">
+      <span class="nm">2026 컬리 BHT_Q2</span>
+      <span class="cd">q261000</span>
+      <div class="sp"></div>
+      <i class="ti ti-settings"></i>
+    </div>
+    <div class="navt">분석 설정 <i class="ti ti-chevron-up"></i></div>
+    <div class="nav">
+      <div class="nv on"><i class="ti ti-file-text"></i>문항 목록</div>
+      <div class="nv" onclick="location.href='분석_개선시안.html'"><i class="ti ti-adjustments-alt"></i>분석</div>
+      <div class="nv"><i class="ti ti-chart-bar"></i>토큰 사용 내역</div>
+    </div>
+    <div class="sbf">
+      <div class="fcard"><span class="lb">누적액 $</span><div class="sp"></div><span class="vl">360</span>
+        <button class="br xs" onclick="toast('사용량을 갱신했습니다')">업데이트</button></div>
+      <div class="fcard bal"><i class="ti ti-sparkles" style="color:var(--brand)"></i><span>OPEN AI 잔액</span><div class="sp"></div><span class="vl">약 $335.32</span></div>
+    </div>
+  </aside>
+
+  <!-- ========== 메인 ========== -->
+  <main>
+    <header class="top">
+      <span class="collapse"><i class="ti ti-chevron-left"></i></span>
+      <h1>문항 목록</h1>
+      <i class="ti ti-info-circle hi"></i>
+      <div class="sp"></div>
+      <div class="dd" id="ddOut">
+        <button class="bro" onclick="dd('ddOut',event)">데이터추출 <i class="ti ti-chevron-down"></i></button>
+        <div class="ddm">
+          <button onclick="ddPick('보기추출(개발자용)')">보기추출(개발자용)</button>
+          <button onclick="ddPick('보기추출(DP용)')">보기추출(DP용)</button>
+          <hr>
+          <button onclick="ddPick('응답추출(전체문항)')">응답추출(전체문항)</button>
+        </div>
+      </div>
+      <div class="dd" id="ddIn">
+        <button class="br" onclick="dd('ddIn',event)">데이터등록 <i class="ti ti-chevron-down"></i></button>
+        <div class="ddm">
+          <button onclick="ddClose();openReg()">문항등록</button>
+          <hr>
+          <button onclick="ddPick('보기등록(전체문항)')">보기등록(전체문항)</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="body">
+      <div class="card">
+        <div class="tool">
+          <!-- 집계 -->
+          <div class="kpi">
+            <span class="k"><i class="ti ti-users"></i>총 완료자수</span>
+            <span class="v">조사DB <b id="sDb1">0</b>명</span><span class="dot">·</span>
+            <span class="v">설문온DB <b id="sDb2">0</b>명</span>
+            <span class="gap" id="sGap"></span>
+            <span class="dv"></span>
+            <span class="k"><i class="ti ti-list-details"></i>총 문항수</span><span class="v"><b id="sQ">0</b>개</span>
+            <span class="dv"></span>
+            <span class="k"><i class="ti ti-circle-check"></i>완료 문항수</span>
+            <span class="v"><b id="sDone">0</b> / <span id="sDone2">0</span>개</span>
+            <span class="pbar"><span id="sBar" style="width:0%"></span></span><span class="kpct" id="sPct">0%</span>
+          </div>
+          <div class="search"><i class="ti ti-search"></i>
+            <input id="q" placeholder="문항명 · 문번호 · 문항번호" oninput="render()" /></div>
+          <button class="gh" onclick="toast('컬럼 표시 설정')"><i class="ti ti-adjustments-horizontal"></i></button>
+        </div>
+
+        <div class="mband" id="mband" style="display:none">
+          <span class="ic"><i class="ti ti-arrow-merge"></i></span>
+          <div id="mbandTx"></div>
+          <div class="sp"></div>
+          <button class="xs" onclick="toggleMerge()"><i class="ti ti-x"></i> 묶기 종료</button>
+        </div>
+
+        <div class="tw">
+          <table>
+            <colgroup>
+              <col style="width:42px"><col style="width:50px"><col style="width:70px"><col style="width:100px">
+              <col style="width:84px"><col style="width:240px">
+              <col style="width:80px"><col style="width:88px"><col style="width:88px">
+              <col style="width:96px"><col style="width:68px"><col style="width:72px">
+              <col style="width:112px"><col style="width:86px">
+              <col style="width:152px"><col style="width:72px">
+            </colgroup>
+            <thead>
+              <tr class="g1">
+                <th class="v sk" style="left:0"></th>
+                <th class="v sk" style="left:42px" colspan="5">VIEW</th>
+                <th class="n3" colspan="3">응답 <i class="ti ti-arrow-narrow-right"></i> 분석대상 (중복제거) <i class="ti ti-arrow-narrow-right"></i> 완료</th>
+                <th class="v" colspan="3"></th>
+                <th class="a" colspan="2">ADMIN</th>
+                <th class="e" colspan="2">EDIT</th>
+              </tr>
+              <tr class="g2">
+                <th class="sk" style="left:0"><span class="ck" id="ckAll" onclick="toggleAll()"><i class="ti ti-check"></i></span></th>
+                <th class="sk" style="left:42px">no</th>
+                <th class="sk" style="left:92px">모델</th>
+                <th class="sk" style="left:162px">문번호</th>
+                <th class="sk" style="left:262px">문항번호</th>
+                <th class="sk" style="left:346px;text-align:left;padding-left:10px;border-right:1px solid var(--line2)">문항최종</th>
+                <th class="num n3 th2" title="설문에 응답한 PID(응답자) 수입니다. 사람 단위이며 중복이 포함되어 있습니다.">응답수<span class="thsub">PID · 명</span></th>
+                <th class="num n3 th2" title="PID 응답에서 중복을 제거한 분석데이터의 대상 건수입니다. 실제로 AI가 읽는 건수이자 비용 산정 기준입니다.">분석대상수<span class="thsub">중복제거 · 건</span></th>
+                <th class="num n3 th2" title="분석대상수 중 분석(코드화)이 완료된 건수입니다.">분석완료수<span class="thsub">분석대상 중 · 건</span></th>
+                <th>진행상황</th>
+                <th>필터문항</th>
+                <th class="num">예상비용</th>
+                <th class="a">분석 / 제외</th>
+                <th class="a">분석보기</th>
+                <th class="e">문항통합저장</th>
+                <th class="e th2">수정<span class="hbtns"><span class="hb" onclick="lockAll(false)">X</span><span class="hb" onclick="lockAll(true)">O</span></span></th>
+              </tr>
+            </thead>
+            <tbody id="tb"></tbody>
+          </table>
+          <div class="empty" id="empty" style="display:none">조건에 맞는 문항이 없습니다.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 일괄 액션 바 (일반 모드) — 코드화는 행 단위로만 실행 -->
+<div class="bulk" id="bulk">
+  <span class="n" id="bulkN">0개 선택</span>
+  <div class="dv"></div>
+  <button class="bro xs" onclick="openEdit()"><i class="ti ti-pencil"></i>문항최종 수정</button>
+  <div class="dv"></div>
+  <span class="blb">분석</span>
+  <button class="xs" onclick="bulkMode('an')"><i class="ti ti-circle-check"></i>분석 대상</button>
+  <button class="xs" onclick="bulkMode('ex')"><i class="ti ti-ban"></i>분석 제외</button>
+  <div class="dv"></div>
+  <span class="blb">수정</span>
+  <button class="xs" onclick="bulkLock(false)"><i class="ti ti-lock"></i>잠금 X</button>
+  <button class="xs" onclick="bulkLock(true)"><i class="ti ti-lock-open"></i>가능 O</button>
+  <div class="dv"></div>
+  <button class="gh xs" onclick="clearSel()"><i class="ti ti-x"></i></button>
+</div>
+
+<!-- 묶기 트레이 (묶기 모드) -->
+<div class="tray" id="tray">
+  <div class="tt"><i class="ti ti-arrow-merge" style="color:var(--brand)"></i>묶는 중<span class="lblnow" id="trLbl">—</span></div>
+  <div class="chips" id="trChips"></div>
+  <span class="hint" id="trHint">2개 이상 선택하세요</span>
+  <div class="dv"></div>
+  <button class="br go" id="trGo" onclick="openMerge()" disabled>묶기 <i class="ti ti-arrow-right"></i></button>
+  <button class="gh xs" onclick="cancelMerge()">취소</button>
+</div>
+
+<div class="ov" id="ov" onclick="closeAll()"></div>
+
+<!-- 묶기 모달 -->
+<div class="modal" id="mMerge">
+  <div class="m-hd"><i class="ti ti-arrow-merge" style="font-size:18px;color:var(--brand)"></i>
+    <div><h2>문항 통합저장</h2><div class="sub" id="mgSub"></div></div>
+    <div class="sp"></div><button class="gh xs" onclick="closeAll()"><i class="ti ti-x"></i></button></div>
+  <div class="m-bd">
+    <div class="fld"><div class="row2">
+      <div><label>통합 문항번호</label><input class="tx" id="mgNo" /></div>
+      <div><label>통합 문항명</label><input class="tx" id="mgTitle" /></div>
+    </div><div class="desc">묶인 문항은 이 번호·명칭으로 저장되며, 코드화 결과도 통합 기준으로 생성됩니다. 저장 후에도 목록의 <b>문항통합저장</b> 셀에서 언제든 수정할 수 있습니다.</div></div>
+    <div class="fld"><label>묶을 문항 <span id="mgCnt" class="dim" style="font-weight:400"></span></label>
+      <div class="box" id="mgList"></div></div>
+    <div id="mgNote"></div>
+  </div>
+  <div class="m-ft"><div class="sp"></div><button onclick="closeAll()">취소</button>
+    <button class="br" onclick="doMerge()"><i class="ti ti-check"></i>묶어서 저장</button></div>
+</div>
+
+<!-- 문항 등록 모달 -->
+<div class="modal reg" id="mReg">
+  <div class="m-hd reg-hd">
+    <h2><i class="ti ti-plus" style="color:var(--brand);font-size:20px"></i>문항 등록</h2>
+    <div class="sp"></div>
+    <button class="gh fmx" onclick="closeAll()"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="regtabs">
+    <span class="on" id="rgTabDb" onclick="regTab('db')"><i class="ti ti-database"></i>DB<i class="ti ti-info-circle inf" title="설문 DB에 등록된 오픈문항 맵을 그대로 불러옵니다."></i></span>
+    <span id="rgTabXl" onclick="regTab('xl')"><i class="ti ti-file-spreadsheet"></i>Excel<i class="ti ti-info-circle inf" title="엑셀 파일을 업로드해 문항과 응답 데이터를 등록합니다."></i></span>
+  </div>
+
+  <div class="m-bd reg-bd">
+    <!-- ===== DB 탭 ===== -->
+    <div id="rgDb">
+      <div class="regtot">전체 <b>233</b> 건</div>
+      <div class="regtw">
+        <table class="regtbl">
+          <colgroup><col style="width:150px"><col style="width:300px"><col></colgroup>
+          <thead><tr>
+            <th>no<i class="ti ti-filter"></i></th>
+            <th>qnum<i class="ti ti-filter"></i></th>
+            <th>등록된 맵의 오픈문항<i class="ti ti-filter"></i></th>
+          </tr></thead>
+          <tbody id="rgRows"></tbody>
+        </table>
+      </div>
+      <div class="regcard">
+        <div class="rgf"><label>웹프로젝트명</label><input class="tx ro" value="q261000" readonly /></div>
+        <div class="rgf"><label>조사명</label><input class="tx ro" value="2026 컬리 BHT_Q2" readonly /></div>
+        <button class="br rgsubmit" onclick="doReg('db')">등록</button>
+        <div class="reghelp">문항추가, 응답자 데이터 추가를 자동으로 등록합니다.</div>
+      </div>
+    </div>
+
+    <!-- ===== Excel 탭 ===== -->
+    <div id="rgXl" style="display:none">
+      <div class="xlcard">
+        <div class="xlhd">
+          <div><div class="xlt">Excel 파일 업로드</div><div class="xls">엑셀 파일을 업로드하여 문항을 등록하세요.</div></div>
+          <div class="sp"></div>
+          <button class="bro xs" onclick="toast('업로드 가이드 열기')"><b style="color:var(--brand)">?</b> 가이드</button>
+        </div>
+        <div class="xlrow2">
+          <div class="rgf"><label>웹프로젝트명</label><input class="tx ro" value="q261000" readonly /></div>
+          <div class="rgf"><label>조사명</label><input class="tx ro" value="2026 컬리 BHT_Q2" readonly /></div>
+        </div>
+        <div class="rgf"><label>분석모델선택 <em>*</em></label>
+          <select class="sl"><option>설문온</option><option>외부 데이터</option><option>직접 입력</option></select></div>
+        <div class="rgf"><label>파일 업로드 <em>*</em></label>
+          <div class="xlfile">
+            <label class="fbrowse">파일 선택<input type="file" id="xlFile" accept=".xlsx,.xls,.csv" onchange="xlPick()" /></label>
+            <span class="fname" id="xlName">선택된 파일 없음</span>
+            <button class="bro" onclick="toast('샘플 양식 다운로드')">샘플 다운로드</button>
+          </div></div>
+        <div class="rgf"><label>아이디컬럼 <em>*</em></label>
+          <select class="sl" id="xlId" disabled><option>파일 선택 시 자동 활성화</option></select></div>
+        <div class="rgf"><label>문항선택 <em>*</em></label>
+          <div class="xlpick">
+            <button id="xlPickBtn" disabled onclick="xlPickQ()">문항 선택하기</button>
+            <span class="fname" id="xlQ">선택된 문항이 없습니다.</span>
+          </div></div>
+        <hr class="xlhr" />
+        <button class="br xlsubmit" onclick="doReg('xl')">등록하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 필터문항 설정 모달 -->
+<div class="modal fm" id="mFilter">
+  <div class="m-hd fm-hd">
+    <h2>필터문항 설정 <span class="fmlbl" id="fltLbl"></span></h2>
+    <div class="sp"></div>
+    <button class="gh fmx" onclick="closeAll()"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="m-bd fm-bd">
+    <div class="fsearch"><i class="ti ti-search"></i>
+      <input id="fltQ" placeholder="문항을 검색하세요." oninput="drawFlt()" /></div>
+    <div class="fth">
+      <span class="c1"></span><span class="c2">문항</span>
+      <span class="c3">타입<em>복수, 순위 제외</em></span>
+    </div>
+    <div class="fbody" id="fltList"></div>
+  </div>
+  <div class="m-ft fm-ft">
+    <b id="fltCnt">선택된 문항 (0/3)</b>
+    <span class="fnames" id="fltNames">선택된 문항이 없습니다.</span>
+    <div class="sp"></div>
+    <button class="br fmgo" onclick="saveFlt()">선택 완료</button>
+  </div>
+</div>
+
+<!-- 문항최종 일괄 수정 모달 -->
+<div class="modal" id="mEdit">
+  <div class="m-hd"><i class="ti ti-pencil" style="font-size:18px;color:var(--brand)"></i>
+    <div><h2>문항최종 일괄 수정</h2><div class="sub" id="edSub"></div></div>
+    <div class="sp"></div><button class="gh xs" onclick="closeAll()"><i class="ti ti-x"></i></button></div>
+  <div class="m-bd">
+    <div class="edtabs">
+      <span class="on" id="edTabList" onclick="edMode('list')"><i class="ti ti-list"></i>목록에서 수정</span>
+      <span id="edTabBulk" onclick="edMode('bulk')"><i class="ti ti-clipboard-text"></i>일괄 복사 · 붙여넣기</span>
+      <div class="sp"></div>
+      <button class="xs" onclick="edCopy()"><i class="ti ti-copy"></i>전체 복사</button>
+    </div>
+
+    <div id="edPaneList">
+      <div class="fld"><label>선택 문항 <span id="edCnt" class="dim" style="font-weight:400"></span></label>
+        <div class="box" id="edList"></div></div>
+    </div>
+
+    <div id="edPaneBulk" style="display:none">
+      <div class="fld">
+        <label>문항최종 — 한 줄에 하나씩 (아래 목록 순서와 동일)</label>
+        <textarea class="ta" id="edTa" spellcheck="false" oninput="edTaMeta()"
+          placeholder="엑셀 열을 그대로 붙여넣으세요 (Ctrl+V)"></textarea>
+        <div class="talines" id="edTaMetaTx"></div>
+        <div class="desc">전체 복사 → 엑셀에서 편집 → 이 칸에 붙여넣기 순서로 쓰면 빠릅니다. 줄 순서가 곧 문항 순서입니다.</div>
+      </div>
+      <div class="fld"><label>순서 확인</label><div class="box ordbox" id="edOrder"></div></div>
+    </div>
+    <div id="edNote"></div>
+  </div>
+  <div class="m-ft">
+    <button id="edUnlock" onclick="unlockEdit()" style="display:none"><i class="ti ti-lock-open"></i>선택 문항 잠금 해제</button>
+    <div class="sp"></div><button onclick="closeAll()">취소</button>
+    <button class="br" onclick="doEdit()"><i class="ti ti-check"></i>저장</button></div>
+</div>
+
+<!-- 통합명 수정 모달 -->
+<div class="modal sm2" id="mRen">
+  <div class="m-hd"><i class="ti ti-pencil" style="font-size:18px;color:var(--brand)"></i>
+    <div><h2>통합 문항 수정</h2><div class="sub" id="rnSub"></div></div>
+    <div class="sp"></div><button class="gh xs" onclick="closeAll()"><i class="ti ti-x"></i></button></div>
+  <div class="m-bd">
+    <div class="fld"><label>통합 문항번호</label><input class="tx" id="rnNo" /></div>
+    <div class="fld"><label>통합 문항명</label><input class="tx" id="rnTitle" /></div>
+    <div class="fld"><label>포함 문항</label><div class="box" id="rnList"></div></div>
+  </div>
+  <div class="m-ft">
+    <button onclick="unmerge()"><i class="ti ti-arrows-split"></i>묶음 해제</button>
+    <div class="sp"></div><button onclick="closeAll()">취소</button>
+    <button class="br" onclick="doRename()"><i class="ti ti-check"></i>저장</button></div>
+</div>
+
+<!-- 코드화 모달 -->
+<div class="modal" id="mCode">
+  <div class="m-hd"><i class="ti ti-code" style="font-size:18px;color:var(--brand)"></i>
+    <div><h2>오픈문항 코드화</h2><div class="sub" id="cdSub"></div></div>
+    <div class="sp"></div><button class="gh xs" onclick="closeAll()"><i class="ti ti-x"></i></button></div>
+  <div class="m-bd">
+    <div class="fld"><label>대상 <span id="cdCnt" class="dim" style="font-weight:400"></span></label>
+      <div class="box" id="cdList"></div></div>
+    <div class="fld"><label>코드프레임</label>
+      <div class="opts" id="cdOpts">
+        <div class="opt on" data-v="auto" onclick="pickOpt(this)"><span class="radio"></span>
+          <div><div class="ot">AI 자동 생성</div><div class="od">응답 전체를 읽어 코드프레임을 새로 생성합니다. 묶인 문항은 단일 코드프레임을 공유합니다.</div></div></div>
+        <div class="opt" data-v="book" onclick="pickOpt(this)"><span class="radio"></span>
+          <div><div class="ot">기존 코드북 사용</div><div class="od">이전 차수 코드북에 매핑하고 미매칭 응답만 신규 코드로 추가합니다.</div></div></div>
+        <div class="opt" data-v="hybrid" onclick="pickOpt(this)"><span class="radio"></span>
+          <div><div class="ot">코드북 + 확장</div><div class="od">기존 코드북 기준으로 두되 빈도 상위 신규 응답을 코드로 승격합니다.</div></div></div>
+      </div></div>
+    <div class="fld"><label>최소 빈도</label>
+      <select class="sl" id="cdMin" onchange="calcCost()">
+        <option value="1">1건 — 모든 응답 코드화</option>
+        <option value="5" selected>5건 미만 → 기타</option>
+        <option value="10">10건 미만 → 기타</option>
+      </select></div>
+    <div class="cost"><span class="lb">예상 비용 <span id="cdBase" class="dim"></span></span><span class="vl" id="cdCost">0.00</span></div>
+    <div id="cdNote"></div>
+  </div>
+  <div class="m-ft"><div class="sp"></div><button onclick="closeAll()">취소</button>
+    <button class="br" onclick="doCode()"><i class="ti ti-player-play"></i>코드화 실행</button></div>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toastTx"></span></div>
+
+<script>
+/* ================= 데이터 ================= */
+let SEQ=200;
+let D=[
+ {no:125,md:'설문온',qno:'q150_op6',lbl:'SQ11',t:'거주 형태',      resp:4,   tgt:2,   done:2,   st:'done',mode:'an',lock:false,g:null},
+ {no:124,md:'설문온',qno:'q165_op1',lbl:'A31', t:'온라인 쇼핑 TOM', resp:2036,tgt:807, done:807, st:'done',mode:'an',lock:false,g:null},
+ {no:123,md:'설문온',qno:'q166_op2',lbl:'A31-1',t:'온라인 쇼핑 unaided',resp:2036,tgt:0,done:0,st:'idle',mode:'an',lock:false,g:null},
+ {no:122,md:'설문온',qno:'q166_op3',lbl:'A31-1',t:'온라인 쇼핑 unaided',resp:1450,tgt:0,done:0,st:'idle',mode:'an',lock:false,g:null},
+ {no:121,md:'설문온',qno:'q166_op4',lbl:'A31-1',t:'온라인 쇼핑 unaided',resp:926, tgt:0,done:0,st:'idle',mode:'an',lock:false,g:null},
+ {no:120,md:'설문온',qno:'q166_op5',lbl:'A31-1',t:'온라인 쇼핑 unaided',resp:558, tgt:0,done:0,st:'idle',mode:'an',lock:false,g:null},
+ {no:119,md:'설문온',qno:'q166_op6',lbl:'A31-1',t:'온라인 쇼핑 unaided',resp:360, tgt:0,done:0,st:'idle',mode:'an',lock:false,g:null},
+ {no:118,md:'설문온',qno:'q170_op1',lbl:'A1',  t:'장보기 TOM',     resp:2036,tgt:654, done:654, st:'done',mode:'an',lock:false,g:null},
+ {no:117,md:'설문온',qno:'q171_op2',lbl:'A1-1',t:'장보기 unaided', resp:2036,tgt:2036,done:2036,st:'done',mode:'an',lock:true, g:1},
+ {no:116,md:'설문온',qno:'q171_op3',lbl:'A1-1',t:'장보기 unaided', resp:1502,tgt:1502,done:1502,st:'done',mode:'an',lock:true, g:1},
+ {no:115,md:'설문온',qno:'q171_op4',lbl:'A1-1',t:'장보기 unaided', resp:988, tgt:988, done:988, st:'done',mode:'an',lock:true, g:1},
+ {no:114,md:'설문온',qno:'q180_op1',lbl:'B7',  t:'브랜드 선택 이유',resp:2036,tgt:1204,done:640,st:'run', mode:'an',lock:false,g:null},
+ {no:113,md:'설문온',qno:'q181_op1',lbl:'B7-1',t:'개선 희망 사항',  resp:1840,tgt:0,done:0,st:'idle',mode:'an',lock:false,g:null},
+ {no:112,md:'설문온',qno:'q181_op2',lbl:'B7-1',t:'개선 희망 사항',  resp:1204,tgt:0,done:0,st:'idle',mode:'an',lock:false,g:null},
+ {no:111,md:'설문온',qno:'q190_op1',lbl:'C2',  t:'최근 이용 매장',  resp:2036,tgt:812,done:812,st:'done',mode:'an',lock:false,g:null},
+ {no:110,md:'설문온',qno:'q191_op1',lbl:'C3',  t:'불만 경험 자유응답',resp:604,tgt:604,done:0,st:'wait',mode:'an',lock:false,g:null},
+ {no:109,md:'설문온',qno:'q200_op1',lbl:'D1',  t:'전반 만족 이유',  resp:2036,tgt:0,done:0,st:'idle',mode:'ex',lock:false,g:null},
+ {no:108,md:'설문온',qno:'q201_op1',lbl:'D2',  t:'재구매 의향 이유',resp:2036,tgt:0,done:0,st:'idle',mode:'an',lock:false,g:null},
+ {no:107,md:'설문온',qno:'q210_op1',lbl:'E4',  t:'추천 이유',      resp:1420,tgt:0,done:0,st:'idle',mode:'an',lock:false,g:null},
+ {no:106,md:'설문온',qno:'q211_op1',lbl:'E4-1',t:'비추천 이유',    resp:616, tgt:0,done:0,st:'idle',mode:'an',lock:false,g:null}
+];
+let G={1:{id:1,no:'A1-1',t:'장보기 unaided (1~3순위 통합)',lbl:'A1-1',st:'done'}};
+
+const RATE=0.00273;
+const ST={done:['완료','done'],run:['분석중','run'],wait:['대기','wait'],idle:['대기','wait']};
+/* 총 완료자수 — 조사DB / 설문온DB 원천 집계 */
+const DB={survey:2036, on:2034};
+
+let filter='all', sel=new Set(), gsel=new Set(), exp=new Set([1]), renId=null;
+let mergeMode=false, mLbl=null;   /* 묶기 모드 · 확정된 문항번호 */
+
+const $=id=>document.getElementById(id);
+const fmt=n=>n.toLocaleString();
+const money=n=>(n).toFixed(2);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){$('toastTx').textContent=m;$('toast').classList.add('on');clearTimeout(window._t);window._t=setTimeout(()=>$('toast').classList.remove('on'),2200)}
+
+function pass(r){
+  const q=$('q').value.trim().toLowerCase();
+  if(q&&!(r.qno+r.lbl+r.t).toLowerCase().includes(q)) return false;
+  if(filter==='grp')  return !!r.g;
+  if(filter==='done') return r.st==='done'&&r.mode==='an';
+  if(filter==='wait') return r.mode==='an'&&(r.st==='idle'||r.st==='wait');
+  if(filter==='ex')   return r.mode==='ex';
+  return true;
+}
+
+/* ================= 렌더 ================= */
+function stats(){
+  $('sDb1').textContent=fmt(DB.survey); $('sDb2').textContent=fmt(DB.on);
+  const d=DB.survey-DB.on, g=$('sGap');
+  g.className='gap '+(d===0?'ok':'no');
+  g.textContent=d===0?'일치':`차이 ${fmt(Math.abs(d))}`;
+
+  const tot=D.length, dn=D.filter(r=>r.st==='done'&&r.mode==='an').length;
+  $('sQ').textContent=tot; $('sDone').textContent=dn; $('sDone2').textContent=tot;
+  const p=tot?Math.round(dn/tot*100):0;
+  $('sBar').style.width=p+'%'; $('sPct').textContent=p+'%';
+}
+
+function render(){
+  stats();
+
+  const rows=D.filter(pass), seen=new Set(); let h='';
+  rows.forEach(r=>{
+    if(r.g){ if(seen.has(r.g))return; seen.add(r.g);
+      const k=D.filter(x=>x.g===r.g); h+=grpRow(G[r.g],k)+k.map(x=>row(x,true)).join('');
+    } else h+=row(r,false);
+  });
+  const tb=$('tb'); tb.innerHTML=h; tb.className=mergeMode?'mm':'';
+  $('empty').style.display=rows.length?'none':'block';
+  mergeMode?syncTray():syncBulk();
+}
+
+function grpRow(g,k){
+  const resp=k.reduce((a,x)=>a+x.resp,0),tgt=k.reduce((a,x)=>a+x.tgt,0),dn=k.reduce((a,x)=>a+x.done,0);
+  const on=gsel.has(g.id),op=exp.has(g.id),an=k.every(x=>x.mode==='an'),lock=k.every(x=>x.lock);
+  const dis=mergeMode;   /* 묶기 모드에서 묶음 행은 조작 대상 아님 */
+  return `<tr class="grp ${on?'sel':''} ${dis?'dis':''}">
+   <td class="sk" style="left:0">${dis?'':`<span class="ck ${on?'on':''}" onclick="togG(${g.id})"><i class="ti ti-check"></i></span>`}</td>
+   <td class="sk accL dim" style="left:42px">—</td>
+   <td class="sk" style="left:92px">설문온</td>
+   <td class="sk dim" style="left:162px">—</td>
+   <td class="sk" style="left:262px"><span class="lbl">${esc(g.lbl)}</span></td>
+   <td class="sk qt" style="left:346px;border-right:1px solid var(--line2)">
+     <div class="gq"><span class="chev ${op?'op':''}" onclick="togE(${g.id})"><i class="ti ti-chevron-right"></i></span>
+       <span class="gbadge"><i class="ti ti-stack-2"></i>묶음 ${k.length}</span>
+       <span class="t">${esc(g.t)}</span></div></td>
+   ${cResp(resp)}${cTgt(resp,tgt)}${cDone(tgt,dn)}
+   <td>${chip(g.st)}</td>
+   <td>${fltBtn(g.id,true,(g.flt||[]).length)}</td>
+   <td class="num">${tgt?money(tgt*RATE):'<span class="dim">—</span>'}</td>
+   <td>${modeTog(null,g.id,an)}</td>
+   <td>${!an?'<span class="dim">—</span>'
+        :g.st==='done'?`<button class="brl xs" onclick="toast('통합 코드화 결과 보기')">분석보기</button>`
+        :`<button class="br xs" onclick="openCode(${g.id},true)">분석보기</button>`}</td>
+   <td><div class="grpedit">
+        <span class="mgname" onclick="openRen(${g.id})" title="통합 문항번호·명칭 수정">${esc(g.no)}</span>
+        <button class="btn-unmerge" onclick="unmergeNow(${g.id})" title="묶음 해제"><i class="ti ti-arrows-split"></i>풀기</button>
+      </div></td>
+   <td>${lk(null,g.id,lock)}</td></tr>`;
+}
+
+function row(r,ch){
+  const on=sel.has(r.no),an=r.mode==='an';
+  if(ch) return `<tr class="ch ${exp.has(r.g)?'':'hide'}">
+   <td class="sk" style="left:0"><i class="ti ti-stack-2 chmark" title="묶음 소속 문항"></i></td>
+   <td class="sk accL dim" style="left:42px">${r.no}</td>
+   <td class="sk" style="left:92px">${r.md}</td>
+   <td class="sk mono" style="left:162px">${r.qno}</td>
+   <td class="sk" style="left:262px"><span class="lbl">${esc(r.lbl)}</span></td>
+   <td class="sk qt" style="left:346px;border-right:1px solid var(--line2)" title="${esc(r.t)}">${esc(r.t)}</td>
+   ${cResp(r.resp)}<td class="num n3"></td><td class="num n3"></td>
+   <td class="dim" style="font-size:11.5px">통합 기준 처리</td>
+   <td></td><td class="num dim">—</td><td></td><td></td><td></td><td></td></tr>`;
+
+  /* ---- 묶기 모드 렌더 ---- */
+  if(mergeMode){
+    const eligible=an&&!r.g;                 /* 묶을 수 있는 대상: 분석 대상 · 미묶음 (문항번호 무관) */
+    const rowCls=on?'pk':(eligible?'':'dis');
+    const ckCell = !eligible
+      ? `<span class="pck lock" title="묶을 수 없는 문항 (이미 묶였거나 분석 제외)"><i class="ti ti-minus"></i></span>`
+      : `<span class="pck ${on?'on':''}" onclick="pick(${r.no})"><i class="ti ti-check"></i></span>`;
+    return `<tr class="${rowCls}">
+     <td class="sk" style="left:0">${ckCell}</td>
+     <td class="sk ${on?'accP':''}" style="left:42px">${r.no}</td>
+     <td class="sk" style="left:92px">${r.md}</td>
+     <td class="sk mono" style="left:162px">${r.qno}</td>
+     <td class="sk" style="left:262px"><span class="lbl">${esc(r.lbl)}</span></td>
+     <td class="sk qt" style="left:346px;border-right:1px solid var(--line2)" title="${esc(r.t)}">${esc(r.t)}</td>
+     ${cResp(r.resp)}${cTgt(r.resp,r.tgt)}${cDone(r.tgt,r.done)}
+     <td>${an?chip(r.st):'<span class="chip exc">제외</span>'}</td>
+     <td></td><td class="num dim">—</td><td></td><td></td>
+     <td>${on?'<span class="lbl" style="background:var(--brand);color:#fff;border-color:var(--brand)">선택됨</span>'
+        :eligible?'<span class="dim" style="font-size:11px">선택 가능</span>':'<span class="dim">—</span>'}</td>
+     <td></td></tr>`;
+  }
+
+  /* ---- 일반 모드 렌더 ---- */
+  return `<tr class="${on?'sel':''} ${an?'':'ex'}">
+   <td class="sk" style="left:0"><span class="ck ${on?'on':''}" onclick="tog(${r.no})"><i class="ti ti-check"></i></span></td>
+   <td class="sk" style="left:42px">${r.no}</td>
+   <td class="sk" style="left:92px">${r.md}</td>
+   <td class="sk mono" style="left:162px">${r.qno}</td>
+   <td class="sk" style="left:262px"><span class="lbl">${esc(r.lbl)}</span></td>
+   <td class="sk qt" style="left:346px;border-right:1px solid var(--line2)" title="${esc(r.t)}">${esc(r.t)}</td>
+   ${cResp(r.resp)}${cTgt(r.resp,r.tgt)}${cDone(r.tgt,r.done)}
+   <td>${an?chip(r.st):'<span class="chip exc">제외</span>'}</td>
+   <td>${an?fltBtn(r.no,false,(r.flt||[]).length):'<span class="dim">—</span>'}</td>
+   <td class="num">${an&&r.tgt?money(r.tgt*RATE):'<span class="dim">—</span>'}</td>
+   <td>${modeTog(r.no,null,an)}</td>
+   <td>${!an?'<span class="dim">—</span>'
+      :r.st==='done'?`<button class="brl xs" onclick="toast('분석 결과 보기')">분석보기</button>`
+      :`<button class="br xs" onclick="openCode(${r.no})">분석보기</button>`}</td>
+   <td>${an?`<button class="mgadd" onclick="startMergeFrom(${r.no})" title="이 문항으로 묶기 시작"><i class="ti ti-arrow-merge"></i> 묶기</button>`:'<span class="dim">—</span>'}</td>
+   <td>${lk(r.no,null,r.lock)}</td></tr>`;
+}
+
+/* ===== 응답 → 분석대상 → 완료 : 단위와 의미를 분리해 표기 ===== */
+const DEDUP=0.40;                                   /* 중복제거 후 남는 비율(예시) */
+const dedupOf=r=>r.tgt||Math.round(r.resp*DEDUP);   /* 아직 산출 전이면 예상치 */
+/* 의미·단위 설명은 헤더에만 두고, 셀은 숫자만 표기 */
+const cResp=n=>`<td class="num n3">${fmt(n)}</td>`;
+const cTgt=(resp,tgt)=>`<td class="num n3">${tgt?fmt(tgt):'<span class="dim">—</span>'}</td>`;
+const cDone=(tgt,done)=>`<td class="num n3">${tgt?fmt(done):'<span class="dim">—</span>'}</td>`;
+
+function chip(s){const[n,c]=ST[s]||ST.idle;return `<span class="chip ${c}">${n}</span>`}
+function modeTog(no,gid,an){
+  const t=no!==null?`setMode(${no},null,`:`setMode(null,${gid},`;
+  return `<span class="tg"><span class="${an?'on':''}" onclick="${t}'an')">분석</span><span class="${an?'':'on ex'}" onclick="${t}'ex')">제외</span></span>`;
+}
+function lk(no,gid,open){
+  const t=no!==null?`setLock(${no},null)`:`setLock(null,${gid})`;
+  return `<span class="lk ${open?'open':''}" onclick="${t}" title="${open?'수정 가능 (O)':'잠금 (X)'}"><i class="ti ti-lock${open?'-open':''}"></i></span>`;
+}
+
+/* ================= 상호작용 ================= */
+function togE(id){exp.has(id)?exp.delete(id):exp.add(id);render()}
+function tog(no){sel.has(no)?sel.delete(no):sel.add(no);render()}
+function togG(id){gsel.has(id)?gsel.delete(id):gsel.add(id);render()}
+function clearSel(){sel.clear();gsel.clear();render()}
+function toggleAll(){
+  const v=D.filter(r=>pass(r)&&!r.g);
+  v.every(r=>sel.has(r.no))?v.forEach(r=>sel.delete(r.no)):v.forEach(r=>sel.add(r.no));render();
+}
+function setMode(no,gid,m){
+  const ts=no!==null?D.filter(r=>r.no===no):D.filter(r=>r.g===gid);
+  ts.forEach(r=>{r.mode=m; if(m==='ex'){r.tgt=0;r.done=0;r.st='idle'}});
+  if(gid&&G[gid]&&m==='ex') G[gid].st='idle';
+  toast(m==='an'?'분석 대상으로 전환했습니다':'분석에서 제외했습니다 — 분석보기가 비활성화됩니다');render();
+}
+function setLock(no,gid){
+  const ts=no!==null?D.filter(r=>r.no===no):D.filter(r=>r.g===gid);
+  const v=!ts[0].lock; ts.forEach(r=>r.lock=v);
+  toast(v?'수정 가능(O) 상태로 열었습니다':'수정 잠금(X) 상태로 전환했습니다');render();
+}
+function lockAll(v){D.forEach(r=>r.lock=v);toast(v?'전체 수정 가능(O)':'전체 수정 잠금(X)');render()}
+/* 일괄 대상 = 선택한 개별 문항 + 선택한 묶음의 소속 문항 */
+function bulkTargets(){return D.filter(r=>sel.has(r.no)||(r.g&&gsel.has(r.g)))}
+function bulkMode(m){
+  const ts=bulkTargets(); if(!ts.length)return;
+  ts.forEach(r=>{r.mode=m; if(m==='ex'){r.tgt=0;r.done=0;r.st='idle'}});
+  gsel.forEach(id=>{if(G[id]&&m==='ex')G[id].st='idle'});
+  toast(m==='ex'?`${ts.length}개 문항을 분석에서 제외했습니다`:`${ts.length}개 문항을 분석 대상으로 되돌렸습니다`);
+  clearSel();
+}
+function bulkLock(v){
+  const ts=bulkTargets(); if(!ts.length)return;
+  ts.forEach(r=>r.lock=v);
+  toast(v?`${ts.length}개 문항을 수정 가능(O)으로 열었습니다`:`${ts.length}개 문항을 수정 잠금(X)으로 전환했습니다`);
+  clearSel();
+}
+
+function selRows(){return D.filter(r=>sel.has(r.no))}
+function same(){const s=selRows();return s.length>1&&s.every(r=>r.lbl===s[0].lbl&&!r.g&&r.mode==='an')}
+function syncBulk(){
+  $('tray').classList.remove('on');
+  const n=sel.size+gsel.size; $('bulk').classList.toggle('on',n>0); if(!n)return;
+  $('bulkN').textContent=`${n}개 선택`;
+  const v=D.filter(r=>pass(r)&&!r.g);
+  $('ckAll').className='ck '+(v.length&&v.every(r=>sel.has(r.no))?'on':(sel.size?'part':''));
+}
+
+/* ================= 묶기 모드 ================= */
+function toggleMerge(){
+  mergeMode=!mergeMode; sel.clear(); gsel.clear(); mLbl=null;
+  $('mband').style.display=mergeMode?'flex':'none';
+  $('bulk').classList.remove('on');
+  render();
+}
+/* 목록 행의 [묶기] 버튼 → 묶기 모드 진입하며 그 문항을 첫 선택으로 */
+function startMergeFrom(no){
+  mergeMode=true; sel.clear(); gsel.clear(); mLbl=null;
+  $('mband').style.display='flex'; $('bulk').classList.remove('on');
+  pick(no);
+}
+function pick(no){
+  const r=D.find(x=>x.no===no);
+  if(sel.has(no)){ sel.delete(no); }
+  else{ sel.add(no); }
+  render();
+}
+function cancelMerge(){ sel.clear(); mLbl=null; render(); toast('선택을 취소했습니다'); }
+function syncTray(){
+  $('bulk').classList.remove('on');
+  const s=selRows(), u=[...new Set(s.map(r=>r.lbl))];
+  $('tray').classList.toggle('on',mergeMode);
+  $('trLbl').textContent = s.length===0?'—' : u.length===1?u[0] : `${u.length}종 혼합`;
+  $('trChips').innerHTML=s.map(r=>`<span class="tchip"><b style="color:var(--info);font-weight:700">${esc(r.lbl)}</b> ${r.qno}<i class="ti ti-x" onclick="pick(${r.no})"></i></span>`).join('')
+    || '<span class="hint">아래에서 문항을 선택하세요</span>';
+  $('trGo').disabled=s.length<2;
+  $('trHint').textContent = s.length===0?'묶을 문항을 선택하세요' : s.length===1?'1개 더 선택하면 묶을 수 있습니다' : `${s.length}개 선택됨`;
+  $('mbandTx').innerHTML = s.length
+    ? `<b>${s.length}개</b> 선택됨 — 문항번호가 <b>달라도</b> 하나로 묶을 수 있습니다`
+    : `묶을 문항을 자유롭게 선택하세요 · <b>문항번호가 달라도</b> 하나의 통합 문항으로 묶입니다`;
+}
+
+/* ---- 문항 등록 ---- */
+const REGQ=[
+ ['q20_op1','SQ2. 연령 - 오픈'],            ['q110_op1','SQ9-1. 자녀 연령 - 첫째'],
+ ['q120_op1','SQ9-2. 자녀 연령 - 둘째'],     ['q130_op1','SQ9-3. 자녀 연령 - 셋째'],
+ ['q150_op6','SQ11. 거주 형태'],            ['q165_op1','A31. 온라인 쇼핑 TOM'],
+ ['q166_op2','A31-1. 온라인 쇼핑 unaided'],  ['q166_op3','A31-1. 온라인 쇼핑 unaided'],
+ ['q170_op1','A1. 장보기 TOM'],             ['q171_op2','A1-1. 장보기 unaided'],
+ ['q180_op1','B7. 브랜드 선택 이유'],        ['q181_op1','B7-1. 개선 희망 사항'],
+ ['q190_op1','C2. 최근 이용 매장'],          ['q191_op1','C3. 불만 경험 자유응답'],
+ ['q210_op1','E4. 추천 이유'],              ['q211_op1','E4-1. 비추천 이유']
+];
+function openReg(){
+  $('rgRows').innerHTML=REGQ.map((r,i)=>`<tr><td>${i+1}</td><td>${r[0]}</td><td>${esc(r[1])}</td></tr>`).join('');
+  regTab('db'); show('mReg');
+}
+function regTab(t){
+  $('rgTabDb').classList.toggle('on',t==='db');
+  $('rgTabXl').classList.toggle('on',t==='xl');
+  $('rgDb').style.display=t==='db'?'block':'none';
+  $('rgXl').style.display=t==='xl'?'block':'none';
+}
+function xlPick(){
+  const f=$('xlFile').files[0];
+  $('xlName').textContent=f?f.name:'선택된 파일 없음';
+  $('xlName').style.color=f?'var(--tx)':'';
+  const id=$('xlId'), btn=$('xlPickBtn');
+  if(f){
+    id.disabled=false;
+    id.innerHTML=['ID','PID','RESPID','SEQ'].map(c=>`<option>${c}</option>`).join('');
+    btn.disabled=false;
+  }else{
+    id.disabled=true; id.innerHTML='<option>파일 선택 시 자동 활성화</option>';
+    btn.disabled=true; $('xlQ').textContent='선택된 문항이 없습니다.';
+  }
+}
+function xlPickQ(){
+  /* 실제로는 업로드한 엑셀의 컬럼 목록에서 고르는 선택창이 열립니다 */
+  const s=REGQ.slice(0,3).map(r=>r[0]);
+  $('xlQ').textContent=`${s.length}개 선택됨 — ${s.join(', ')}`;
+  $('xlQ').style.color='var(--tx)';
+  toast('엑셀 컬럼에서 문항을 선택했습니다');
+}
+function doReg(kind){
+  if(kind==='xl'&&!$('xlFile').files[0]){toast('엑셀 파일을 먼저 선택하세요');return}
+  closeAll();
+  toast(kind==='db'?'DB 맵의 오픈문항 233건을 등록했습니다':'엑셀 파일로 문항을 등록했습니다');
+}
+
+/* ---- 필터문항 설정 ---- */
+/* 필터로 걸 수 있는 문항 목록 (복수·순위 문항은 제외) */
+const FQ=[
+ {id:1,t:'SQ1. 성별',ty:'single'},        {id:2,t:'SQ2. 연령 - 오픈',ty:'open(문자)'},
+ {id:3,t:'SQ2. 연령 - 코드',ty:'dummy'},   {id:4,t:'SQ3. 지역',ty:'single'},
+ {id:5,t:'SQ3. 지역 - 쿼터',ty:'dummy'},   {id:6,t:'SQ3-1. 온라인 쇼핑 빈도',ty:'single'},
+ {id:7,t:'SQ4. 장보는 빈도',ty:'single'},  {id:8,t:'SQ5. 가구원수',ty:'single'},
+ {id:9,t:'SQ6. 결혼 여부',ty:'single'},    {id:10,t:'SQ7. 자녀 유무',ty:'single'},
+ {id:11,t:'SQ8. 직업',ty:'single'},        {id:12,t:'SQ9. 월평균 가구소득',ty:'single'},
+ {id:13,t:'SQ10. 주 이용 채널 - 코드',ty:'dummy'}, {id:14,t:'SQ11. 거주 형태',ty:'single'},
+ {id:15,t:'A1. 장보기 TOM - 코드',ty:'dummy'}
+];
+const FMAX=3;
+let fltFor=null, fltSel=new Set();
+
+function openFilter(id,isG){
+  fltFor={id,isG};
+  const cur = isG? (G[id].flt||[]) : (D.find(r=>r.no===id).flt||[]);
+  fltSel=new Set(cur);
+  const lbls = isG ? [...new Set([G[id].no,...D.filter(r=>r.g===id).map(r=>r.lbl)])]
+                   : [D.find(r=>r.no===id).lbl];
+  $('fltLbl').textContent=`[${lbls.join('/')}]`;
+  $('fltQ').value='';
+  drawFlt(); show('mFilter');
+}
+function drawFlt(){
+  const q=$('fltQ').value.trim().toLowerCase();
+  const list=FQ.filter(f=>!q||f.t.toLowerCase().includes(q)||f.ty.toLowerCase().includes(q));
+  $('fltList').innerHTML = list.length
+    ? list.map(f=>`<div class="frow ${fltSel.has(f.id)?'on':''}" onclick="togFlt(${f.id})">
+        <span class="c1"><span class="fck"><i class="ti ti-check"></i></span></span>
+        <span class="c2">${esc(f.t)}</span><span class="c3">${esc(f.ty)}</span></div>`).join('')
+    : '<div class="fempty">검색 결과가 없습니다.</div>';
+  const s=[...fltSel].map(i=>FQ.find(f=>f.id===i)).filter(Boolean);
+  $('fltCnt').textContent=`선택된 문항 (${s.length}/${FMAX})`;
+  $('fltNames').textContent = s.length? s.map(f=>f.t).join(', ') : '선택된 문항이 없습니다.';
+}
+function togFlt(id){
+  if(fltSel.has(id)) fltSel.delete(id);
+  else{
+    if(fltSel.size>=FMAX){ toast(`필터문항은 최대 ${FMAX}개까지 선택할 수 있습니다`); return }
+    fltSel.add(id);
+  }
+  drawFlt();
+}
+function saveFlt(){
+  const arr=[...fltSel];
+  if(fltFor.isG) G[fltFor.id].flt=arr;
+  else D.find(r=>r.no===fltFor.id).flt=arr;
+  closeAll(); render();
+  toast(arr.length?`필터문항 ${arr.length}개를 설정했습니다`:'필터문항 설정을 해제했습니다');
+}
+const fltBtn=(id,isG,n)=>`<button class="xs fbtn ${n?'set':''}" onclick="openFilter(${id},${!!isG})">설정${n?` ${n}`:''}</button>`;
+
+/* ---- 문항최종 일괄 수정 ---- */
+let edT=[], edM='list';
+function openEdit(){
+  const grps=[...gsel].filter(id=>G[id]).map(id=>({k:'g',id,qno:`${D.filter(r=>r.g===id).length}개 통합`,lbl:G[id].no,t:G[id].t,lock:true}));
+  const rows=D.filter(r=>sel.has(r.no)).map(r=>({k:'r',id:r.no,qno:r.qno,lbl:r.lbl,t:r.t,lock:r.lock}));
+  edT=[...grps,...rows];
+  if(!edT.length){toast('수정할 문항을 선택하세요');return}
+  $('edSub').textContent=`${edT.length}개 항목`;
+  $('edCnt').textContent=`(잠금 해제된 문항만 수정됩니다)`;
+  edM='list'; edMode('list');
+  show('mEdit');
+}
+/* 목록 ↔ 일괄 전환 (전환 시 양방향 동기화) */
+function edMode(m){
+  if(m==='bulk'&&edM==='list') readEdit();
+  if(m==='list'&&edM==='bulk') readTa();
+  edM=m;
+  $('edTabList').classList.toggle('on',m==='list');
+  $('edTabBulk').classList.toggle('on',m==='bulk');
+  $('edPaneList').style.display=m==='list'?'block':'none';
+  $('edPaneBulk').style.display=m==='bulk'?'block':'none';
+  if(m==='bulk'){
+    $('edTa').value=edT.map(e=>e.t).join('\n');
+    $('edOrder').innerHTML=edT.map((e,i)=>`<div class="bi"><span class="ordn">${i+1}</span>
+      <span class="mono" style="width:96px;flex-shrink:0">${e.k==='g'?'<i class="ti ti-stack-2"></i> ':''}${esc(e.qno)}</span>
+      <span class="lbl">${esc(e.lbl)}</span>${e.lock?'':'<div class="sp"></div><i class="ti ti-lock lockic"></i>'}</div>`).join('');
+    edTaMeta();
+  }
+  drawEdit();
+}
+function edTaMeta(){
+  const n=$('edTa').value.replace(/\r/g,'').split('\n').length, t=edT.length, el=$('edTaMetaTx');
+  const ok=n===t;
+  el.className='talines '+(ok?'ok':'no');
+  el.innerHTML=ok?`<i class="ti ti-circle-check"></i>${n}줄 / 문항 ${t}개 — 순서가 일치합니다`
+    :`<i class="ti ti-alert-triangle"></i>${n}줄 / 문항 ${t}개 — 줄 수가 다릅니다. 남는 줄은 무시되고 모자란 문항은 그대로 유지됩니다`;
+}
+function readTa(){
+  const ls=$('edTa').value.replace(/\r/g,'').split('\n');
+  edT.forEach((e,i)=>{ if(ls[i]!==undefined&&ls[i].trim()) e.t=ls[i].trim() });
+}
+/* 현재 값 전체를 줄바꿈으로 복사 (엑셀 붙여넣기용) */
+function edCopy(){
+  if(edM==='list') readEdit(); else readTa();
+  const txt=edT.map(e=>e.t).join('\n');
+  const ta=document.createElement('textarea');
+  ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  let ok=false; try{ ok=document.execCommand('copy') }catch(e){}
+  ta.remove();
+  if(!ok&&navigator.clipboard) navigator.clipboard.writeText(txt).then(()=>toast(`${edT.length}건 복사했습니다`),()=>toast('복사에 실패했습니다'));
+  else toast(ok?`${edT.length}건을 클립보드에 복사했습니다`:'복사에 실패했습니다');
+}
+function drawEdit(){
+  $('edList').innerHTML=`<div class="bh"><span style="width:96px">문번호</span><span style="width:76px">문항번호</span><span style="flex:1">문항최종</span></div>`+
+    edT.map((e,i)=>`<div class="bi">
+      <span class="mono" style="width:96px;flex-shrink:0">${e.k==='g'?'<i class="ti ti-stack-2"></i> ':''}${esc(e.qno)}</span>
+      <span style="width:76px;flex-shrink:0"><span class="lbl">${esc(e.lbl)}</span></span>
+      <input class="tx" data-i="${i}" value="${esc(e.t)}" ${e.lock?'':'disabled'} />
+      ${e.lock?'':'<i class="ti ti-lock lockic" title="수정 잠금(X) — 해제 후 수정 가능"></i>'}
+    </div>`).join('');
+  const locked=edT.filter(e=>!e.lock).length;
+  $('edUnlock').style.display=locked?'inline-flex':'none';
+  $('edNote').innerHTML=locked
+    ? `<div class="note wr"><i class="ti ti-lock"></i><div><b>${locked}건</b>이 수정 잠금(X) 상태라 변경되지 않습니다. 아래 <b>잠금 해제</b>를 누르면 바로 수정할 수 있습니다.</div></div>`
+    : `<div class="note ok"><i class="ti ti-circle-check"></i><div>선택한 ${edT.length}건 모두 수정 가능(O) 상태입니다.</div></div>`;
+}
+function readEdit(){ document.querySelectorAll('#edList input').forEach(i=>{ edT[+i.dataset.i].t=i.value }) }
+function unlockEdit(){
+  if(edM==='list') readEdit(); else readTa();
+  edT.forEach(e=>{ if(!e.lock){ e.lock=true; const r=D.find(x=>x.no===e.id); if(r)r.lock=true; } });
+  edMode(edM); toast('선택 문항을 수정 가능(O)으로 열었습니다');
+}
+function doEdit(){
+  if(edM==='list') readEdit(); else readTa();
+  let n=0;
+  edT.forEach(e=>{
+    if(!e.lock) return;
+    const v=e.t.trim(); if(!v) return;
+    if(e.k==='g'){ if(G[e.id].t!==v){G[e.id].t=v;n++} }
+    else { const r=D.find(x=>x.no===e.id); if(r&&r.t!==v){r.t=v;n++} }
+  });
+  closeAll(); clearSel();
+  toast(n?`${n}건의 문항최종을 수정했습니다`:'변경된 내용이 없습니다');
+}
+
+/* ---- 묶기 ---- */
+function listBox(arr,showTgt){
+  return `<div class="bh"><span style="flex:1">문번호 / 문항최종</span><span style="width:70px">문항번호</span>
+    <span style="width:70px;text-align:right">응답 PID</span>${showTgt?'<span style="width:76px;text-align:right">분석대상</span>':''}</div>`+
+    arr.map(r=>`<div class="bi"><div class="g"><span class="mono">${r.qno}</span><span>${esc(r.t)}</span></div>
+      <span style="width:70px"><span class="lbl">${esc(r.lbl)}</span></span>
+      <span style="width:70px;text-align:right;font-variant-numeric:tabular-nums">${fmt(r.resp)}<span style="color:var(--tx3);font-size:10px"> 명</span></span>
+      ${showTgt?`<span style="width:76px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">${fmt(dedupOf(r))}<span style="color:var(--tx3);font-size:10px;font-weight:400"> 건</span></span>`:''}</div>`).join('');
+}
+function openMerge(){
+  const s=selRows(); if(s.length<2)return;
+  const u=[...new Set(s.map(r=>r.lbl))], mixed=u.length>1;
+  $('mgSub').textContent = mixed?`문항번호 ${u.length}종 · ${s.length}개 문항` : `문항번호 ${u[0]} · ${s.length}개 문항`;
+  $('mgNo').value=u[0]; $('mgTitle').value = mixed? s[0].t : s[0].t+` (1~${s.length}순위 통합)`;
+  $('mgCnt').textContent=`(${s.length}개 문항 · 응답 PID 합계 ${fmt(s.reduce((a,r)=>a+r.resp,0))}명)`;
+  $('mgList').innerHTML=listBox(s);
+  $('mgNote').innerHTML = mixed
+    ? `<div class="note wr"><i class="ti ti-info-circle"></i><div>서로 <b>다른 문항번호</b>(${u.join(', ')}) ${s.length}개를 하나로 묶습니다. 묶은 뒤에는 <b>하나의 통합 문항번호</b>로 저장되어 <b>단일 코드프레임</b>이 적용됩니다. 위 통합 문항번호를 확인·수정하세요.</div></div>`
+    : `<div class="note ok"><i class="ti ti-circle-check"></i><div>선택한 ${s.length}개 문항의 문항번호가 <b>${u[0]}</b>로 동일합니다. 통합 후 <b>한 번의 코드화</b>로 같은 코드프레임이 적용되어 순위 간 비교가 가능합니다.</div></div>`;
+  show('mMerge');
+}
+function doMerge(){
+  const s=selRows(),id=++SEQ, no=$('mgNo').value.trim()||s[0].lbl;
+  G[id]={id,no,t:$('mgTitle').value.trim()||s[0].t,lbl:no,st:'wait'};
+  s.forEach(r=>r.g=id); exp.add(id);
+  const n=s.length, nm=G[id].no;
+  closeAll(); exitMerge();
+  toast(`${n}개 문항을 ${nm}(으)로 묶었습니다`);
+}
+function exitMerge(){
+  mergeMode=false; sel.clear(); gsel.clear(); mLbl=null;
+  $('mband').style.display='none'; $('tray').classList.remove('on');
+  render();
+}
+/* 목록에서 곧바로 풀기 */
+function unmergeNow(id){
+  const cnt=D.filter(r=>r.g===id).length, nm=G[id].no;
+  D.filter(r=>r.g===id).forEach(r=>r.g=null); delete G[id]; gsel.delete(id); exp.delete(id);
+  render(); toast(`${nm} 묶음을 풀었습니다 (${cnt}개 문항 복원)`);
+}
+function openRen(id){
+  renId=id; const g=G[id],k=D.filter(r=>r.g===id);
+  $('rnSub').textContent=`${k.length}개 문항 통합`; $('rnNo').value=g.no; $('rnTitle').value=g.t;
+  $('rnList').innerHTML=listBox(k); show('mRen');
+}
+function doRename(){
+  const g=G[renId]; g.no=$('rnNo').value.trim()||g.no; g.lbl=g.no; g.t=$('rnTitle').value.trim()||g.t;
+  closeAll(); toast('통합 문항 정보를 수정했습니다'); render();
+}
+function unmerge(){
+  const id=renId; D.filter(r=>r.g===id).forEach(r=>r.g=null); delete G[id]; gsel.delete(id);
+  closeAll(); toast('묶음을 해제했습니다'); render();
+}
+
+/* ---- 코드화 ---- */
+let cdT=[];
+function openCode(id,isG){
+  if(id!==undefined) cdT = isG? D.filter(r=>r.g===id) : D.filter(r=>r.no===id);
+  else cdT=[...selRows(),...D.filter(r=>r.g&&gsel.has(r.g))];
+  cdT=cdT.filter(r=>r.mode==='an');
+  if(!cdT.length){toast('코드화할 분석 대상 문항을 선택하세요');return}
+  $('cdSub').textContent=isG?`통합 ${G[id].no} · ${cdT.length}문항`:cdT.length>1?`${cdT.length}개 문항`:cdT[0].qno;
+  const pid=cdT.reduce((a,r)=>a+r.resp,0), tg=cdT.reduce((a,r)=>a+dedupOf(r),0);
+  $('cdCnt').textContent=`(응답 PID ${fmt(pid)}명 → 분석대상 ${fmt(tg)}건, 중복 −${Math.round((1-tg/pid)*100)}%)`;
+  $('cdList').innerHTML=listBox(cdT,true);
+  const u=[...new Set(cdT.map(r=>r.lbl))];
+  const grouped=cdT[0].g&&cdT.every(r=>r.g===cdT[0].g);   /* 하나의 묶음 = 단일 코드프레임 */
+  $('cdNote').innerHTML = (u.length===1||grouped)
+    ?`<div class="note ok"><i class="ti ti-circle-check"></i><div>단일 코드프레임이 적용됩니다${grouped&&u.length>1?` — 묶음 <b>${G[cdT[0].g].no}</b> (원 문항번호 ${u.join(', ')})`:` — 문항번호 <b>${u[0]}</b>`}</div></div>`
+    :`<div class="note wr"><i class="ti ti-alert-triangle"></i><div>선택 문항의 문항번호가 ${u.length}종(${u.join(', ')})이고 아직 묶이지 않았습니다. 각각 코드프레임이 <b>따로</b> 생성됩니다. 하나로 합치려면 먼저 문항 묶기를 실행하세요.</div></div>`;
+  calcCost(); show('mCode');
+}
+function pickOpt(el){document.querySelectorAll('#cdOpts .opt').forEach(o=>o.classList.remove('on'));el.classList.add('on');calcCost()}
+function calcCost(){
+  const n=cdT.reduce((a,r)=>a+dedupOf(r),0), m=document.querySelector('#cdOpts .opt.on').dataset.v;
+  const k=m==='auto'?1:m==='book'?.45:.72, mn=+$('cdMin').value, mk=mn===1?1.15:mn===5?1:.92;
+  $('cdBase').textContent=`(분석대상 ${fmt(n)}건 기준 · 중복제거 후)`; $('cdCost').textContent='$ '+money(n*RATE*k*mk);
+}
+function doCode(){
+  const n=cdT.reduce((a,r)=>a+dedupOf(r),0), gid=cdT[0].g, t=cdT.slice();
+  t.forEach(r=>{r.tgt=dedupOf(r);r.done=0;r.st='run'}); if(gid&&G[gid])G[gid].st='run';
+  closeAll(); clearSel(); toast(`코드화를 시작했습니다 — 분석대상 ${fmt(n)}건`);
+  setTimeout(()=>{t.forEach(r=>{r.done=r.tgt;r.st='done'});if(gid&&G[gid])G[gid].st='done';render();toast('코드화가 완료되었습니다');},2400);
+}
+
+/* ---- 헤더 드롭다운 ---- */
+function ddClose(){document.querySelectorAll('.dd.on').forEach(x=>x.classList.remove('on'))}
+function dd(id,e){
+  e.stopPropagation();
+  const el=$(id), was=el.classList.contains('on');
+  ddClose(); if(!was) el.classList.add('on');
+}
+function ddPick(n){ ddClose(); toast(`${n} — 실행`); }
+document.addEventListener('click',ddClose);
+
+function show(id){$('ov').classList.add('on');$(id).classList.add('on')}
+function closeAll(){$('ov').classList.remove('on');document.querySelectorAll('.modal').forEach(m=>m.classList.remove('on'))}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAll();ddClose()}});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 챗봇 교차분석 (AiChatbot) 시연 발표</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #8B5CF6; --secondary: #EC4899; --bg: #F9FAFB; --surface: #FFFFFF; --text: #1F2937; --text-light: #6B7280; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; margin: 0; padding: 0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        header { border-bottom: 2px solid #E5E7EB; padding-bottom: 2rem; margin-bottom: 2rem; text-align: center; }
+        h1 { color: var(--primary); font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .subtitle { font-size: 1.2rem; color: var(--text-light); }
+        .section { background: var(--surface); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .section-title { font-size: 1.5rem; border-left: 4px solid var(--primary); padding-left: 1rem; margin-bottom: 1.5rem; color: var(--text); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .card { background: var(--bg); padding: 1.5rem; border-radius: 8px; border: 1px solid #E5E7EB; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; background: #EEF2FF; color: var(--primary); border-radius: 999px; font-size: 0.875rem; font-weight: 500; margin: 0.25rem; }
+        pre { background: #1F2937; color: #E5E7EB; padding: 1.5rem; border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 0.95rem; white-space: pre-wrap; }
+        .step-container { display: flex; flex-direction: column; gap: 1rem; }
+        .step { display: flex; align-items: stretch; background: var(--bg); border-radius: 8px; overflow: hidden; border: 1px solid #E5E7EB; }
+        .step-number { background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; width: 60px; font-size: 1.5rem; font-weight: bold; }
+        .step-content { padding: 1.5rem; flex: 1; }
+        .step-content h3 { margin-top: 0; margin-bottom: 0.5rem; color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💬 AI 챗봇 교차분석 분과 (AiChatbotController)</h1>
+            <div class="subtitle">자연어 질의 기반 실시간 다변량/다차원 데이터 교차분석 자동화 파이프라인</div>
+        </header>
+
+        <div class="section">
+            <h2 class="section-title">1. 핵심 기능 및 목적</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>💡 자연어 to 차트 변환 (NLU to Chart)</h3>
+                    <p>사용자가 일상어로 "성별을 기준으로 직업과 통신사 결과를 묶어서 보여줘" 라고 입력하면 자동으로 UI에 교차분석 표와 그룹 바 차트를 렌더링합니다.</p>
+                </div>
+                <div class="card">
+                    <h3>🚀 혼합 모델링 지원 (Hybrid Crosstab)</h3>
+                    <p>단일 배너 뿐만 아니라 변수의 조합(카르테시안 곱, 예: 성별*통신사)을 다중 배너로 확장하여 깊이 있는 분석 도표를 생성합니다.</p>
+                </div>
+                <div class="card">
+                    <h3>🔍 유연한 문항 맵핑 (Fuzzy Mapping)</h3>
+                    <p>문항번호(SQ2)나 문항이름(성별), 혹은 섞어 쓰더라도 LLM과 메타데이터 동기화를 통해 정확한 변수명(`q10`)으로 치환해주는 매핑 기술이 적용되었습니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">2. 처리 프로세스 흐름도 (Data Pipeline)</h2>
+            <div class="step-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>변수 사본 제공 (Variables Hint)</h3>
+                        <p>사용자의 텍스트(질문)와 함께 현재 파케이 파일 내의 사용 가능한 변수 리스트(`q10(SQ1. 성별)`, `q20` 등) 힌트를 LLM에 제공합니다.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>LLM 의도 파악 파서 (Intent Parser)</h3>
+                        <p>LLM 모델이 시스템 프롬프트의 지시를 받아 사용자의 질문을 분석하고 엄격한 JSON 구조(Stub, Banner 배열 등)로 파싱하여 반환합니다.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>C# 백엔드 메모리 연산 (Memory Crosstab)</h3>
+                        <p>LLM이 반환한 JSON 구조에 맞춰 `ChatAnalyticsService` 엔진이 10종의 다변량 비교(카르테시안 곱, 필터 포함) 로직을 C# LINQ로 계산하여 동적 매트릭스를 생성합니다.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>JSON 메타 렌더 및 응답 (Render Payload)</h3>
+                        <p>연산 결과를 단일 표 구조 및 React UI 랜더링 전용 데이터 셋업 포맷(`ChartMeta`)으로 포장하여 클라이언트에 1초 내 즉시 전송합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">3. 프롬프트 엔지니어링 (System Prompt)</h2>
+            <pre>
+당신은 설문조사 자연어 요청을 분석하여, 지정된 교차분석(Crosstab) JSON 규격으로 정확히 변환하는 '데이터 파싱 전문가' 입니다.
+
+[CORE DEFINITIONS]
+- Stub (스터브): 교차표의 '행(Row)'. (감지 키워드: 기준, 행, 스터브)
+- Banner (배너): 교차표의 '열(Column)'. (감지 키워드: 배너, 열, 기준으로 나눠)
+
+[CROSSTAB MODES]
+- mode='banner' : 단일 Stub(행) + 독립적인 Banner(열)들. (최대 5개)
+- mode='stub_cart' : 카르테시안 조합 Stub(행) + 독립적인 Banner(열)들.
+
+[OUTPUT FORMAT]
+반드시 지정된 JSON 스키마만 반환하십시오.
+{
+  "mode": "banner",
+  "row_var": "q10",
+  "banner_vars": ["q20", "q50"]
+}
+</pre>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">4. 적용 핵심 기술 (Tech Stack)</h2>
+            <div>
+                <span class="badge">.NET Core Web API</span>
+                <span class="badge">LINQ & Select/GroupBy</span>
+                <span class="badge">Cartesian Product Algorithms</span>
+                <span class="badge">vLLM (JSON Format Extraction)</span>
+                <span class="badge">Dynamic Payload Binding</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

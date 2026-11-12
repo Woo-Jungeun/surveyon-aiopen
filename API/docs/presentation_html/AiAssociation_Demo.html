@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 연관성 분석 (AiAssociation) 시연 발표</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #EC4899; --secondary: #3B82F6; --bg: #F9FAFB; --surface: #FFFFFF; --text: #1F2937; --text-light: #6B7280; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.6; margin: 0; padding: 0; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        header { border-bottom: 2px solid #E5E7EB; padding-bottom: 2rem; margin-bottom: 2rem; text-align: center; }
+        h1 { color: var(--primary); font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .subtitle { font-size: 1.2rem; color: var(--text-light); }
+        .section { background: var(--surface); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .section-title { font-size: 1.5rem; border-left: 4px solid var(--primary); padding-left: 1rem; margin-bottom: 1.5rem; color: var(--text); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .card { background: var(--bg); padding: 1.5rem; border-radius: 8px; border: 1px solid #E5E7EB; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; background: #EEF2FF; color: var(--primary); border-radius: 999px; font-size: 0.875rem; font-weight: 500; margin: 0.25rem; }
+        pre { background: #1F2937; color: #E5E7EB; padding: 1.5rem; border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace; font-size: 0.95rem; white-space: pre-wrap; }
+        .step-container { display: flex; flex-direction: column; gap: 1rem; }
+        .step { display: flex; align-items: stretch; background: var(--bg); border-radius: 8px; overflow: hidden; border: 1px solid #E5E7EB; }
+        .step-number { background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; width: 60px; font-size: 1.5rem; font-weight: bold; }
+        .step-content { padding: 1.5rem; flex: 1; }
+        .step-content h3 { margin-top: 0; margin-bottom: 0.5rem; color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🕸️ AI 연관성 분석 분과 (AiAssociationController)</h1>
+            <div class="subtitle">다중 응답 패턴 발굴 및 네트워크 연관 규칙 시각화 생성 파이프라인</div>
+        </header>
+
+        <div class="section">
+            <h2 class="section-title">1. 핵심 기능 및 목적</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>💡 무자각 연관성 도출 (Apriori Algorithm)</h3>
+                    <p>사용자도 스스로 모르는 답변 간의 깊은 상관관계(예: 'A를 산 사람은 B도 산다')를 Apriori/FP-Growth 알고리즘으로 자동 추출합니다.</p>
+                </div>
+                <div class="card">
+                    <h3>🚀 네트워크 그래프 시각화 (Nodes & Edges)</h3>
+                    <p>추출된 교차 연관성(도수/신뢰도)을 React 기반의 네트워크 그래프 데이터(노드와 엣지 두께)로 전달하여 직관적인 연결망을 렌더링합니다.</p>
+                </div>
+                <div class="card">
+                    <h3>🔍 AI 해설 보고서 (Insight Rules)</h3>
+                    <p>데이터마이닝으로 추출된 규칙(Rules)을 나열하는데 그치지 않고, LLM을 거쳐 "이 규칙이 현 비즈니스 관점에서 어떤 의미가 있는지" 번역해 제공합니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">2. 처리 프로세스 흐름도 (Data Pipeline)</h2>
+            <div class="step-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>원핫 인코딩 파싱 (One-Hot Formatting)</h3>
+                        <p>파케이 파일에 담긴 복수응답 데이터 배열을 머신러닝(Association Rules) 라이브러리가 연산할 수 있도록 희소 행렬(희소 배열 형태)의 트랜잭션 단위로 변환합니다.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>연관 규칙 추출 (Association Rules Mining)</h3>
+                        <p>Accord.MachineLearning 라이브러리를 활용하여 설정된 최소 지지도(Support) 및 신뢰도(Confidence) 임계값을 넘어선 의미 있는 문항 속성 묶음을 찾아냅니다.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Network 노드 및 엣지 생성 (Graph Mapping)</h3>
+                        <p>도출된 A -> B 규칙을 기반으로 UI에서 표현 가능한 `nodes`와 `links` 리스트를 구성합니다. Lift(향상도) 수치에 따라 엣지의 두께와 중요도를 자동 스케일링합니다.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>LLM 전략 보고서 생성 (Summary Request)</h3>
+                        <p>규칙 목록을 통계용어 대신 일상 용어로 풀어서 설명하라고 LLM에게 지시를 내리고, 결과 텍스트와 그래프 구조를 조합하여 JSON 형태로 UI에 반환합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">3. 프롬프트 엔지니어링 (System Prompt)</h2>
+            <pre>
+당신은 현업 비즈니스 분석 전문가입니다.
+제공된 데이터는 설문 참여자들이 특정 문항에서 동시에 선택한 답변들의 연관 규칙(Association Rules)입니다.
+
+[지시사항]
+1. 각 규칙(A => B)에 대하여 단순히 '%가 나왔다'로 나열하지 말고, **왜 이런 관계가 형성되었을지 논리적으로 유추**하여 작성하세요.
+2. 향상도(Lift)가 높은, 즉 우연이 아니라 매우 이례적으로 강하게 얽혀 있는 특징들을 우선적으로 서술하세요.
+3. 분석 내용은 문단 형태로 가독성 좋고 세련되게 요약하세요.
+</pre>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">4. 적용 핵심 기술 (Tech Stack)</h2>
+            <div>
+                <span class="badge">.NET Core Web API</span>
+                <span class="badge">Accord.MachineLearning (Apriori)</span>
+                <span class="badge">One-Hot Encoding Algorithm</span>
+                <span class="badge">React Force Graph Metadata</span>
+                <span class="badge">vLLM (OSS 120B 통신)</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

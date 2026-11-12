@@ -1,0 +1,1927 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>설문온 AI 오픈분석 - 문항목록 페이지 (ProListPage) 최신 API 명세서 v2.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Pretendard:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    :root {
+      --brand: #FF6600;
+      --brand-weak: #FFF4EC;
+      --head: #F8FAFC;
+      --line: #E2E8F0;
+      --line2: #CBD5E1;
+      --tx: #0F172A;
+      --tx2: #475569;
+      --tx3: #94A3B8;
+      --bg-dark: #0F172A;
+      --bg-surface: #1E293B;
+      --accent-blue: #38BDF8;
+      --accent-indigo: #6366F1;
+      --accent-purple: #A855F7;
+      --accent-green: #22C55E;
+      --accent-red: #EF4444;
+      --badge-post: #F97316;
+      --badge-get: #3B82F6;
+      --badge-multipart: #10B981;
+      --font-main: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      --font-code: 'Fira Code', Consolas, Monaco, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: #0B1120;
+      color: #F8FAFC;
+      font-family: var(--font-main);
+      line-height: 1.5;
+    }
+
+    /* Outer Container */
+    .doc-page {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Document Navigation Header */
+    .doc-nav {
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #334155;
+      padding: 14px 28px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .doc-nav-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .doc-nav-title h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #FF6600, #F97316, #FBBF24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .doc-badge {
+      font-size: 0.75rem;
+      background: rgba(255, 102, 0, 0.15);
+      color: #FF6600;
+      border: 1px solid rgba(255, 102, 0, 0.4);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+
+    .doc-meta {
+      font-size: 0.85rem;
+      color: #94A3B8;
+      display: flex;
+      gap: 16px;
+    }
+
+    .main-layout {
+      display: flex;
+      flex: 1;
+    }
+
+    /* Left Sidebar */
+    .doc-sidebar {
+      width: 320px;
+      background: #141E33;
+      border-right: 1px solid #334155;
+      padding: 20px 16px;
+      height: calc(100vh - 60px);
+      position: sticky;
+      top: 60px;
+      overflow-y: auto;
+    }
+
+    .search-box {
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 9px 14px 9px 36px;
+      background: #0F172A;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: #FF6600;
+      box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2);
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94A3B8;
+      font-size: 16px;
+    }
+
+    .nav-cat {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #94A3B8;
+      font-weight: 700;
+      margin: 16px 8px 8px 8px;
+    }
+
+    .nav-list { list-style: none; }
+
+    .nav-item {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      color: #CBD5E1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+    }
+
+    .method-pill {
+      font-family: var(--font-code);
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #fff;
+    }
+    .pill-post { background: var(--badge-post); }
+    .pill-get { background: var(--badge-get); }
+    .pill-multipart { background: var(--badge-multipart); }
+
+    /* Content Area */
+    .doc-content {
+      flex: 1;
+      padding: 28px 36px;
+      overflow-y: auto;
+      max-width: 1450px;
+    }
+
+    .preview-section-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #38BDF8;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .preview-guide-banner {
+      background: rgba(255, 102, 0, 0.12);
+      border: 1px solid rgba(255, 102, 0, 0.35);
+      border-radius: 8px;
+      padding: 12px 18px;
+      margin-bottom: 20px;
+      font-size: 0.88rem;
+      color: #FFEDD5;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .auth-guide-banner {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      font-size: 0.85rem;
+      color: #E0F2FE;
+    }
+
+    .auth-guide-banner code {
+      background: rgba(15, 23, 42, 0.6);
+      color: #38BDF8;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-code);
+    }
+
+    /* =========================================================
+       ACTUAL 100% ProListPage UI CSS REPLICATION
+       ========================================================= */
+    .pl-app-sim {
+      background: #FFFFFF;
+      color: #0F172A;
+      border-radius: 12px;
+      border: 1px solid #CBD5E1;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      display: flex;
+      min-height: 650px;
+      font-size: 13px;
+      margin-bottom: 40px;
+    }
+
+    .pl-aside-sim {
+      width: 210px;
+      background: #0F172A;
+      color: #F8FAFC;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #334155;
+    }
+
+    .pl-brand-sim {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .pl-brand-sim em {
+      color: var(--brand);
+      font-style: normal;
+      margin-right: 2px;
+    }
+
+    .pl-prj-sim {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 20px;
+    }
+
+    .pl-prj-sim .nm { display: block; font-weight: 700; font-size: 0.85rem; color: #fff; }
+    .pl-prj-sim .cd { font-size: 0.75rem; color: #94A3B8; font-family: var(--font-code); }
+
+    .pl-navt-sim {
+      font-size: 0.72rem;
+      color: #94A3B8;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .pl-nv-sim {
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      color: #CBD5E1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      cursor: pointer;
+    }
+
+    .pl-nv-sim.on {
+      background: var(--brand);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .pl-main-sim {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #F8FAFC;
+    }
+
+    .pl-header-sim {
+      height: 54px;
+      background: #FFFFFF;
+      border-bottom: 1px solid #E2E8F0;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pl-header-sim h1 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .pl-btn-group-sim {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .pl-btn-sim {
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 1px solid #CBD5E1;
+      background: #FFFFFF;
+      color: #334155;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .pl-btn-sim:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .pl-btn-sim.br {
+      background: var(--brand);
+      color: #FFFFFF;
+      border-color: var(--brand);
+    }
+
+    .pl-btn-sim.br:hover {
+      background: #E65C00;
+      color: #fff;
+    }
+
+    .pl-btn-sim.bro {
+      background: #FFF4EC;
+      color: var(--brand);
+      border-color: #FFD8BE;
+    }
+
+    .pl-btn-sim.red {
+      background: #DC2626;
+      color: #FFFFFF;
+      border-color: #DC2626;
+    }
+
+    .pl-body-sim {
+      padding: 20px;
+      flex: 1;
+    }
+
+    .pl-card-sim {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .pl-tool-sim {
+      padding: 14px 18px;
+      background: #F8FAFC;
+      border-bottom: 1px solid #E2E8F0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pl-kpi-sim {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: #475569;
+    }
+
+    .pl-kpi-sim b { color: #0F172A; }
+
+    /* Gap Pulse Badge */
+    .pl-gap-sim {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .pl-gap-sim.no {
+      background: #FFF1F0;
+      color: #E11D48;
+      border: 1px solid #FECDD3;
+      animation: pulseAlert 1.8s infinite;
+    }
+
+    @keyframes pulseAlert {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(225, 29, 72, 0); }
+    }
+
+    .pl-search-sim {
+      display: flex;
+      align-items: center;
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 6px;
+      padding: 5px 10px;
+      width: 220px;
+    }
+
+    .pl-search-sim input {
+      border: none;
+      outline: none;
+      font-size: 0.8rem;
+      width: 100%;
+      margin-left: 6px;
+    }
+
+    /* Table styles */
+    .pl-table-sim {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    .pl-table-sim th {
+      background: #F1F5F9;
+      color: #475569;
+      font-weight: 700;
+      padding: 8px 10px;
+      border-bottom: 1px solid #CBD5E1;
+      border-right: 1px solid #E2E8F0;
+      text-align: center;
+    }
+
+    .pl-table-sim th.g1 {
+      font-size: 0.7rem;
+      color: #94A3B8;
+      background: #E2E8F0;
+      padding: 4px;
+    }
+
+    .pl-table-sim td {
+      padding: 9px 10px;
+      border-bottom: 1px solid #E2E8F0;
+      border-right: 1px solid #F1F5F9;
+      color: #334155;
+      text-align: center;
+    }
+
+    .pl-table-sim tr:hover { background: #F8FAFC; }
+    .pl-table-sim tr.grp { background: #FAF5FF; }
+
+    .pl-chip-sim {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .chip-done { background: #E6F4EA; color: #137333; }
+    .chip-wait { background: #F1F5F9; color: #64748B; }
+
+    .pl-fbtn-sim {
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      color: #475569;
+    }
+    .pl-fbtn-sim.set {
+      background: #EFF6FF;
+      color: #2563EB;
+      border-color: #BFDBFE;
+      font-weight: 700;
+    }
+
+    .pl-tg-sim {
+      display: inline-flex;
+      border: 1px solid #CBD5E1;
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+    .pl-tg-sim span {
+      padding: 2px 7px;
+      background: #F1F5F9;
+      color: #64748B;
+    }
+    .pl-tg-sim span.on {
+      background: var(--brand);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .pl-bulk-sim {
+      height: 52px;
+      background: #FFFFFF;
+      border-top: 1px solid #CBD5E1;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* API Card Component */
+    .api-card {
+      background: #141E33;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .api-card.highlight {
+      border-color: #FF6600;
+      box-shadow: 0 0 20px rgba(255, 102, 0, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .api-header {
+      padding: 16px 20px;
+      background: rgba(30, 41, 59, 0.7);
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .api-path {
+      font-family: var(--font-code);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #F8FAFC;
+      margin-left: 10px;
+    }
+
+    .api-desc {
+      font-size: 0.88rem;
+      color: #94A3B8;
+      margin-top: 4px;
+    }
+
+    .api-body {
+      padding: 20px;
+    }
+
+    .sec-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #38BDF8;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .code-box {
+      background: #0B1120;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .code-hdr {
+      background: #1E293B;
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      color: #94A3B8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .code-box pre {
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: #E2E8F0;
+      overflow-x: auto;
+    }
+
+    .btn-cp {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid #475569;
+      color: #CBD5E1;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      cursor: pointer;
+    }
+    .btn-cp:hover {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+
+    .note-info {
+      background: rgba(56, 189, 248, 0.08);
+      border-left: 3px solid #38BDF8;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: #BAE6FD;
+      margin-bottom: 14px;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .note-warn {
+      background: rgba(239, 68, 68, 0.08);
+      border-left: 3px solid #EF4444;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: #FECACA;
+      margin-bottom: 14px;
+      border-radius: 0 6px 6px 0;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #FF6600;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      z-index: 2000;
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<div class="doc-page">
+  <!-- Top Nav -->
+  <header class="doc-nav">
+    <div class="doc-nav-title">
+      <h1>설문온 AI 오픈분석 - ProListPage 최신 API 명세서</h1>
+      <span class="doc-badge">v2.0 (전수 검수 및 최신 반영)</span>
+    </div>
+    <div class="doc-meta">
+      <span>백엔드: <code>APICORE</code> (.NET 8.0)</span>
+      <span>최종 업데이트: <code>2026-09-18</code></span>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <!-- Sidebar -->
+    <aside class="doc-sidebar">
+      <div class="search-box">
+        <i class="ti ti-search"></i>
+        <input type="text" id="apiSearch" placeholder="API Path, 기능 검색..." onkeyup="filterApis()">
+      </div>
+
+      <div class="nav-cat">A. 페이지 로딩 & KPI</div>
+      <ul class="nav-list">
+        <li><a class="nav-item" href="#api-pro_list-select" onclick="jumpToApi('api-pro_list-select')"><span>문항 목록 및 집계</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-pid_diff" onclick="jumpToApi('api-pro_list-pid_diff')"><span>완료자 PID 비교</span><span class="method-pill pill-post">POST</span></a></li>
+      </ul>
+
+      <div class="nav-cat">B. 데이터등록 (헤더 Dropdown)</div>
+      <ul class="nav-list">
+        <li><a class="nav-item" href="#api-pro_register-db_select" onclick="jumpToApi('api-pro_register-db_select')"><span>DB 문항목록 조회</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_register-db_enter" onclick="jumpToApi('api-pro_register-db_enter')"><span>DB 오픈데이터 일괄등록</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_register-excel_sample" onclick="jumpToApi('api-pro_register-excel_sample')"><span>엑셀 샘플 다운로드</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_register-excel_parse" onclick="jumpToApi('api-pro_register-excel_parse')"><span>엑셀 파일 파싱</span><span class="method-pill pill-multipart">FILE</span></a></li>
+        <li><a class="nav-item" href="#api-pro_register-excel_enter" onclick="jumpToApi('api-pro_register-excel_enter')"><span>엑셀 오픈데이터 등록</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-import_lb_all_excel" onclick="jumpToApi('api-pro_list-import_lb_all_excel')"><span>보기등록 (엑셀 업로드)</span><span class="method-pill pill-multipart">FILE</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-import_lb_all" onclick="jumpToApi('api-pro_list-import_lb_all')"><span>보기등록 (JSON 저장)</span><span class="method-pill pill-post">POST</span></a></li>
+      </ul>
+
+      <div class="nav-cat">C. 데이터추출 (헤더 Dropdown)</div>
+      <ul class="nav-list">
+        <li><a class="nav-item" href="#api-pro_list-export_lb_excel" onclick="jumpToApi('api-pro_list-export_lb_excel')"><span>보기추출 JSON (개발자용)</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-export_lb_excel_file" onclick="jumpToApi('api-pro_list-export_lb_excel_file')"><span>보기추출 파일 (Excel)</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-export_lb_dp" onclick="jumpToApi('api-pro_list-export_lb_dp')"><span>보기추출 JSON (DP용)</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-export_lb_dp_file" onclick="jumpToApi('api-pro_list-export_lb_dp_file')"><span>보기추출 파일 (DP Text)</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-export_data_all" onclick="jumpToApi('api-pro_list-export_data_all')"><span>응답추출 JSON (전체)</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-export_data_all_file" onclick="jumpToApi('api-pro_list-export_data_all_file')"><span>응답추출 파일 (Excel)</span><span class="method-pill pill-post">POST</span></a></li>
+      </ul>
+
+      <div class="nav-cat">D. 테이블 개별 행 액션</div>
+      <ul class="nav-list">
+        <li><a class="nav-item" href="#api-pro_list-analysis" onclick="jumpToApi('api-pro_list-analysis')"><span>개별 분석/제외 토글</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-allanalysis" onclick="jumpToApi('api-pro_list-allanalysis')"><span>전체 분석/제외 일괄</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-rowEdit" onclick="jumpToApi('api-pro_list-rowEdit')"><span>개별 수정잠금 토글</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-allEdit" onclick="jumpToApi('api-pro_list-allEdit')"><span>전체 수정잠금 일괄</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-allmerge" onclick="jumpToApi('api-pro_list-allmerge')"><span>문항 묶기 및 풀기</span><span class="method-pill pill-post">POST</span></a></li>
+      </ul>
+
+      <div class="nav-cat">E. 하단 일괄 액션 바 (pl-bulk)</div>
+      <ul class="nav-list">
+        <li><a class="nav-item" href="#api-pro_list-batch_question_fin" onclick="jumpToApi('api-pro_list-batch_question_fin')"><span>문항최종 일괄수정</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-bulk_update" onclick="jumpToApi('api-pro_list-bulk_update')"><span>다중선택 일괄상태변경</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-qnum_delete" onclick="jumpToApi('api-pro_list-qnum_delete')"><span>선택 문항 일괄 삭제</span><span class="method-pill pill-post" style="background:#EF4444;">POST</span></a></li>
+      </ul>
+
+      <div class="nav-cat">F. 필터문항 설정 모달</div>
+      <ul class="nav-list">
+        <li><a class="nav-item" href="#api-pro_list-filter_select_qnum" onclick="jumpToApi('api-pro_list-filter_select_qnum')"><span>필터문항 목록 조회</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-filter_update_single" onclick="jumpToApi('api-pro_list-filter_update_single')"><span>필터 개별 설정</span><span class="method-pill pill-post">POST</span></a></li>
+        <li><a class="nav-item" href="#api-pro_list-filter_update_all" onclick="jumpToApi('api-pro_list-filter_update_all')"><span>필터 전체 일괄적용</span><span class="method-pill pill-post">POST</span></a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="doc-content">
+
+      <!-- Section Title -->
+      <div class="preview-section-title">
+        <i class="ti ti-layout-grid"></i>
+        실제 구현 ProListPage UI 프리뷰 & 클릭-스루 백엔드 API 인터랙티브 맵
+      </div>
+
+      <div class="preview-guide-banner">
+        <i class="ti ti-hand-click" style="font-size:20px; color:#FF6600;"></i>
+        <span>
+          아래의 <strong>실제 애플리케이션과 100% 동일한 UI 모형</strong>에서 원하는 버튼, 배지, 필터, 일괄 삭제 버튼 등을 클릭하시면 하단의 대응 <strong>백엔드 API 명세 카드로 즉시 이동</strong>합니다.
+        </span>
+      </div>
+
+      <!-- 공통 인증 및 환경 안내 -->
+      <div class="auth-guide-banner">
+        <strong>🔐 공통 인증 헤더 규격 및 환경별 API 라우트 경로</strong><br>
+        • 모든 API 호출 시 헤더에 <code>X-Auth-Token: [JWT/AuthToken]</code> 및 <code>X-Internal-Key: cGZeWyxlli5N4FRSwMAsbbRoNzJEhFkocore</code> 전송 필요<br>
+        • <strong>웹서버(IIS 배포) 환경</strong>: 기본 API 호출 경로가 <code>/APIs/o/...</code> 가상 디렉터리로 호출됨<br>
+        • <strong>로컬 개발 환경</strong>: Vite Proxy가 <code>/APIs/o/...</code> 경로를 가로채어 <code>rewrite</code>를 통해 <code>http://127.0.0.1:5120/...</code> 로 무중단 프록시 전달됨
+      </div>
+
+      <!-- Real UI Replication Container -->
+      <div class="pl-app-sim">
+        <!-- Sidebar -->
+        <aside class="pl-aside-sim">
+          <div class="pl-brand-sim">
+            <i class="ti ti-home"></i>
+            <span><em>AI</em>오픈분석</span>
+          </div>
+          <div class="pl-prj-sim">
+            <span class="nm">서울시 대중교통 설문</span>
+            <span class="cd">260113</span>
+          </div>
+          <div class="pl-navt-sim">분석 설정</div>
+          <div class="pl-nv-sim on"><i class="ti ti-file-text"></i>문항 목록</div>
+          <div class="pl-nv-sim"><i class="ti ti-chart-bar"></i>토큰 사용 내역</div>
+        </aside>
+
+        <!-- Main -->
+        <main class="pl-main-sim">
+          <!-- Header -->
+          <header class="pl-header-sim">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <i class="ti ti-chevron-left"></i>
+              <h1>문항 목록</h1>
+            </div>
+            <div class="pl-btn-group-sim">
+              <!-- Export Dropdown Button -->
+              <button class="pl-btn-sim bro" onclick="jumpToApi('api-pro_list-export_lb_excel_file')" title="보기추출 & 응답추출 API 명세">
+                <i class="ti ti-download"></i> 데이터추출 <i class="ti ti-chevron-down"></i>
+              </button>
+              <!-- Register Dropdown Button -->
+              <button class="pl-btn-sim br" onclick="jumpToApi('api-pro_register-db_enter')" title="데이터등록(DB/Excel/보기등록) API 명세">
+                <i class="ti ti-plus"></i> 데이터등록 <i class="ti ti-chevron-down"></i>
+              </button>
+            </div>
+          </header>
+
+          <!-- Body -->
+          <div class="pl-body-sim">
+            <div class="pl-card-sim">
+              <!-- Toolbar & KPI -->
+              <div class="pl-tool-sim">
+                <div class="pl-kpi-sim">
+                  <span><i class="ti ti-users"></i> 총 완료자수</span>
+                  <span>큐마DB <b>1,500</b>명</span> ·
+                  <span>설문온DB <b>1,500</b>명</span> ·
+                  <span>오픈등록수 <b>1,240</b>명</span>
+                  <!-- Gap Badge -->
+                  <span class="pl-gap-sim no" onclick="jumpToApi('api-pro_list-pid_diff')" title="수치 차이 발생! 클릭 시 PID 비교분석 모달 API 명세로 이동">
+                    <i class="ti ti-alert-triangle" style="font-size:11px; margin-right:2px;"></i> 차이
+                  </span>
+                  <span style="margin: 0 6px; color:#CBD5E1;">|</span>
+                  <span><i class="ti ti-list-details"></i> 총 문항수 <b>15</b>개</span>
+                </div>
+                <div class="pl-search-sim">
+                  <i class="ti ti-search" style="color:#94A3B8;"></i>
+                  <input placeholder="문항명 · 문번호 검색" readonly>
+                </div>
+              </div>
+
+              <!-- Table -->
+              <div style="overflow-x:auto;">
+                <table class="pl-table-sim">
+                  <thead>
+                    <tr class="g1">
+                      <th style="width:36px;"></th>
+                      <th colSpan="5">VIEW</th>
+                      <th colSpan="3">응답 → 분석대상 → 완료</th>
+                      <th colSpan="3"></th>
+                      <th colSpan="2">ADMIN</th>
+                      <th colSpan="2">EDIT</th>
+                    </tr>
+                    <tr>
+                      <th style="width:36px;"><input type="checkbox" checked></th>
+                      <th>no</th>
+                      <th>모델</th>
+                      <th>문번호</th>
+                      <th>문항번호</th>
+                      <th style="text-align:left; padding-left:8px;">문항최종</th>
+                      <th>응답수</th>
+                      <th>분석대상수</th>
+                      <th>분석완료수</th>
+                      <th>진행상황</th>
+                      <th>필터문항</th>
+                      <th>예상비용</th>
+                      <th>분석 / 제외</th>
+                      <th>분석보기</th>
+                      <th>문항통합저장</th>
+                      <th>수정</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Group Row -->
+                    <tr class="grp">
+                      <td><input type="checkbox" checked></td>
+                      <td>—</td>
+                      <td>설문온</td>
+                      <td>—</td>
+                      <td><span style="color:#7C3AED; font-weight:700;">문2_통합</span></td>
+                      <td style="text-align:left;">
+                        <span style="background:#F3E8FF; color:#7C3AED; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:700; margin-right:6px;">
+                          <i class="ti ti-stack-2"></i> 묶음 2
+                        </span>
+                        <b>문2. 이용 이유 (통합)</b>
+                      </td>
+                      <td>1,240</td>
+                      <td>1,240</td>
+                      <td>1,240</td>
+                      <td><span class="pl-chip-sim chip-done">완료</span></td>
+                      <td>
+                        <button class="pl-fbtn-sim set" onclick="jumpToApi('api-pro_list-filter_select_qnum')">설정 2</button>
+                      </td>
+                      <td>$0.12</td>
+                      <td>
+                        <span class="pl-tg-sim" onclick="jumpToApi('api-pro_list-analysis')">
+                          <span class="on">분석</span><span>제외</span>
+                        </span>
+                      </td>
+                      <td><button class="pl-btn-sim" style="padding:2px 6px; font-size:0.7rem;">분석보기</button></td>
+                      <td>
+                        <div style="display:flex; align-items:center; gap:4px; justify-content:center;">
+                          <span style="font-weight:700; color:#7C3AED;">문2_통합</span>
+                          <button style="border:1px solid #CBD5E1; background:#fff; border-radius:3px; padding:1px 5px; font-size:0.7rem; cursor:pointer;" onclick="jumpToApi('api-pro_list-allmerge')">
+                            <i class="ti ti-arrows-split"></i> 풀기
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <i class="ti ti-lock-open" style="color:#2563EB; font-size:16px; cursor:pointer;" onclick="jumpToApi('api-pro_list-rowEdit')" title="개별 수정 잠금 토글 API"></i>
+                      </td>
+                    </tr>
+
+                    <!-- Single Row -->
+                    <tr>
+                      <td><input type="checkbox" checked></td>
+                      <td>12</td>
+                      <td>excel</td>
+                      <td style="font-family:var(--font-code);">q90_op1</td>
+                      <td>q90_op1</td>
+                      <td style="text-align:left;">문3. 대중교통 개선점 [수정가능]</td>
+                      <td>850</td>
+                      <td>850</td>
+                      <td>0</td>
+                      <td><span class="pl-chip-sim chip-wait">대기</span></td>
+                      <td>
+                        <button class="pl-fbtn-sim" onclick="jumpToApi('api-pro_list-filter_select_qnum')">설정</button>
+                      </td>
+                      <td>$0.08</td>
+                      <td>
+                        <span class="pl-tg-sim" onclick="jumpToApi('api-pro_list-analysis')">
+                          <span class="on">분석</span><span>제외</span>
+                        </span>
+                      </td>
+                      <td><button class="pl-btn-sim" style="padding:2px 6px; font-size:0.7rem;">분석보기</button></td>
+                      <td>—</td>
+                      <td>
+                        <i class="ti ti-lock" style="color:#94A3B8; font-size:16px; cursor:pointer;" onclick="jumpToApi('api-pro_list-rowEdit')" title="개별 수정 잠금 토글 API"></i>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Bulk Action Bar -->
+          <div class="pl-bulk-sim">
+            <div style="font-weight:700; color:#FF6600; display:flex; align-items:center; gap:8px;">
+              <i class="ti ti-check-square"></i> 2개 선택됨
+            </div>
+            <div class="pl-btn-group-sim">
+              <button class="pl-btn-sim br" onclick="jumpToApi('api-pro_list-allmerge')">
+                <i class="ti ti-arrow-merge"></i> 일괄 묶기
+              </button>
+              <button class="pl-btn-sim bro" onclick="jumpToApi('api-pro_list-batch_question_fin')">
+                <i class="ti ti-pencil"></i> 문항최종 수정
+              </button>
+              <button class="pl-btn-sim" onclick="jumpToApi('api-pro_list-bulk_update')">
+                <i class="ti ti-circle-check"></i> 분석 대상
+              </button>
+              <button class="pl-btn-sim" onclick="jumpToApi('api-pro_list-bulk_update')">
+                <i class="ti ti-ban"></i> 분석 제외
+              </button>
+              <button class="pl-btn-sim" onclick="jumpToApi('api-pro_list-bulk_update')">
+                <i class="ti ti-lock"></i> 잠금 X
+              </button>
+              <button class="pl-btn-sim" onclick="jumpToApi('api-pro_list-bulk_update')">
+                <i class="ti ti-lock-open"></i> 가능 O
+              </button>
+              <button class="pl-btn-sim red" onclick="jumpToApi('api-pro_list-qnum_delete')">
+                <i class="ti ti-trash"></i> 삭제
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <!-- =========================================================
+           API SPECIFICATION DETAILED CARDS
+           ========================================================= -->
+
+      <!-- A. 페이지 로딩 & KPI -->
+      <h2 style="color:#F8FAFC; margin-bottom:16px; border-bottom:1px solid #334155; padding-bottom:8px;">A. 페이지 로딩 & KPI API 명세</h2>
+
+      <!-- 1. /pro_list/select -->
+      <div class="api-card" id="api-pro_list-select">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/select</span>
+            <div class="api-desc">문항 목록 메인 테이블 데이터 및 완료자수/문항수 상태 집계 조회 (배치 최적화)</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/select')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="sec-title">📌 트리거 이벤트</div>
+          <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:14px;">
+            `ProListPage` 초기 진입, 프로젝트 선택 변경, 등록/삭제/토글 액션 완료 후 자동 데이터 갱신 시 호출됩니다.
+          </p>
+
+          <div class="sec-title">📥 Request Payload (application/json)</div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "user": "syhong",           // [UI] 로그인된 사용자 계정 ID
+  "projectnum": "260113",     // [UI] 프로젝트 번호
+  "servername": "rps"         // [선택] 대상 DB 서버 구분 ("rps", "qm", "hdata", "target")
+}</code></pre>
+          </div>
+
+          <div class="sec-title">📤 Response Payload (application/json)</div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Response Payload 및 UI 매핑</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "success": "777",
+  "completed_stats": {
+    "qm_completed": 1500,          // [UI] KPI '큐마/조사DB 1,500명'
+    "surveyon_completed": 1500,    // [UI] KPI '설문온DB 1,500명'
+    "open_registered": 1240,       // [UI] KPI '오픈등록수 1,240명'
+    "diff_count": 260,             // [UI] 차이 인원수
+    "has_diff": true               // [UI] 차이 발생 시 [차이] 빨간 펄스 배지 표시
+  },
+  "summary": {
+    "total_questions": 15,         // [UI] KPI '총 문항수 15개'
+    "analysis_questions": 12,      // [UI] 분석 대상 문항수
+    "completed_questions": 1       // [UI] 분석 완료 문항수
+  },
+  "resultjson": [
+    {
+      "id": "1",                    // [UI] 테이블 행 고유 ID
+      "projectnum": "260113",       // [UI] 프로젝트 번호
+      "model": "설문온",             // [UI] 모델 컬럼 ('설문온' | 'excel' | 'qm' 등)
+      "qnum": "q20_op1",            // [UI] 문번호 / 변수 식별자
+      "qnum_text": "문2. 이용 이유",  // [UI] 원본 문항 레이블
+      "question_fin": "문2. 이용 이유 (통합)", // [UI] 문항최종 컬럼
+      "question_origin": "문2. 이용 이유",    // [UI] 원본 질문 문구
+      "status": "완료",              // [UI] 진행상황 칩 ('완료', '대기', '제외', '오류')
+      "status_cnt": "1240",         // [UI] 응답수 (PID 수)
+      "status_cnt_duplicated": "1240", // [UI] 분석대상수 (중복제거 건수)
+      "status_cnt_fin": "1240",     // [UI] 분석완료수 (완료 건수)
+      "merge_qnum": "문2_통합",     // [UI] 문항통합 묶음 식별자
+      "useYN": "분석",              // [UI] ADMIN '분석' | '제외' | '머지'
+      "project_lock": "수정가능",    // [UI] EDIT 자물쇠 아이콘 ('수정가능' 🔓 | '수정잠금' 🔒)
+      "qnum_join_cnt": "0",         // [UI] 필터문항 설정 개수
+      "tokens_cost": "0.12"         // [UI] 예상 비용 ($)
+    }
+  ]
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. /pro_list/pid_diff -->
+      <div class="api-card" id="api-pro_list-pid_diff">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/pid_diff</span>
+            <div class="api-desc">완료자 PID 수치 차이 내역 세부 비교분석 모달 데이터 조회</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/pid_diff')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="note-info">
+            <strong>🔄 API 경로 정정 안내:</strong> 기존 문서에 기재되었던 <code>/pro_list/pid_diff_select</code>에서 최신 표준인 <code>/pro_list/pid_diff</code>로 확정되었습니다.
+          </div>
+          <div class="sec-title">📌 트리거 이벤트</div>
+          <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:14px;">
+            상단 KPI 툴바의 <strong>`[차이]`</strong> 빨간색 펄스 알림 배지를 클릭했을 때 모달이 열리며 호출됩니다.
+          </p>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "user": "syhong",        // [UI] 로그인 사용자 ID
+  "projectnum": "260113",  // [UI] 프로젝트 번호
+  "servername": "rps"      // [선택] 대상 서버 타입 ("rps", "qm", "hdata")
+}</code></pre>
+          </div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "success": "777",
+  "is_manual": false,             // [UI] 수동 등록 프로젝트 여부
+  "server_type": "rps",           // [UI] 감지된 서버 타입
+  "survey_count": 1500,           // [UI 모달] 조사DB 완료 인원수
+  "surveyon_count": 1500,         // [UI 모달] 설문온DB 완료 인원수
+  "open_registered_count": 1240,  // [UI 모달] 오픈등록수
+  "is_all_match": false,          // [UI 모달] 전체 일치 여부
+  "diff_count": 260,              // [UI 모달] 차이 발생 PID 합계
+  "only_in_survey": [],           // [UI 모달] 조사DB에만 있는 PID 목록
+  "only_in_surveyon": [],         // [UI 모달] 설문온DB에만 있는 PID 목록
+  "unregistered_open": [          // [UI 모달] 오픈 미등록 PID 목록 (추가 등록 대상)
+    "PID_1001", "PID_1002"
+  ],
+  "only_in_open": []              // [UI 모달] 오픈테이블에만 존재하는 PID 목록
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- B. 데이터등록 -->
+      <h2 style="color:#F8FAFC; margin-top:36px; margin-bottom:16px; border-bottom:1px solid #334155; padding-bottom:8px;">B. 데이터등록 (상단 헤더 Dropdown)</h2>
+
+      <!-- 3. /pro_register/db_select -->
+      <div class="api-card" id="api-pro_register-db_select">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_register/db_select</span>
+            <div class="api-desc">DB 문항 및 신규 완료자 PID 대기 목록 고속 조회 (ProRegisterModal Tab 1)</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_register/db_select')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="sec-title">📌 트리거 이벤트</div>
+          <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:14px;">
+            `[데이터등록 ▾] -> DB 등록` 모달(Tab 1) 진입 시 호출되어 오픈 문항별 신규 추가 가능 PID 수를 집계합니다.
+          </p>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "projectnum": "260113",  // [UI] 프로젝트 번호
+  "server": "rps",         // [UI] 대상 DB 서버 ('rps', 'qm', 'hdata')
+  "user": "syhong"         // [UI] 로그인 사용자 ID
+}</code></pre>
+          </div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "success": "777",
+  "resultjson": [
+    {
+      "qnum": "q20_op1",               // [UI 모달] 문항코드
+      "question": "문2. 이용 이유",     // [UI 모달] 문항 질문 레이블
+      "is_registered": true,           // [UI 모달] 기존 등록 여부
+      "registered_pid_count": 1240,    // [UI 모달] 기등록 PID 수
+      "target_completed_pid_count": 1500, // [UI 모달] 대상DB 완료자 PID 수
+      "new_pid_count": 260             // [UI 모달] 신규 추가 대기 PID 수 (> 0 일 때 배지 표시)
+    }
+  ]
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. /pro_register/db_enter -->
+      <div class="api-card" id="api-pro_register-db_enter">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_register/db_enter</span>
+            <div class="api-desc">DB 오픈데이터 및 신규 완료자 PID 일괄 등록/병합 실행</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_register/db_enter')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="note-info">
+            <strong>⚡ 등록 최적화 규칙:</strong> 새롭게 추가된 신규 PID에 대해서만 <code>insert_date</code>가 갱신되며, 기존 등록 PID는 온전히 보존되어 응답 일관성을 유지합니다.
+          </div>
+          <div class="sec-title">📥 Request Payload</div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request Payload (ProRegisterDbEnterRequest DTO)</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "projectnum": "260113",      // [UI] 프로젝트 번호
+  "server": "rps",             // [UI] 대상 DB 서버 ('rps', 'qm', 'hdata')
+  "pof": "포프명",              // [UI] POF 명칭
+  "proname": "서울시대중교통",   // [UI] 프로젝트 명칭
+  "user": "syhong"             // [UI] 로그인 사용자 ID
+}</code></pre>
+          </div>
+          <div class="sec-title">📤 Response Payload</div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "success": "777",
+  "resultjson": {
+    "message": "오픈데이터가 성공적으로 등록되었습니다."
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. /pro_register/excel_sample -->
+      <div class="api-card" id="api-pro_register-excel_sample">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_register/excel_sample</span>
+            <div class="api-desc">엑셀 업로드용 표준 템플릿 파일 다운로드 (.xlsx 바이너리 스트림)</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_register/excel_sample')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="sec-title">📌 트리거 이벤트</div>
+          <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:14px;">
+            `ProRegisterModal` Tab 2(엑셀 등록)에서 <strong>`[샘플 양식 다운로드]`</strong> 버튼 클릭 시 `fetch POST + Blob`으로 호출되어 자동 다운로드됩니다.
+          </p>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request Payload (application/json)</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "projectnum": "260113"  // [선택] 프로젝트 번호
+}</code></pre>
+          </div>
+          <div class="note-info">
+            <strong>반환 파일:</strong> <code>HR_DB_Upload_Sample.xlsx</code> (PID 및 오픈 문항 컬럼 구조가 사전 정의된 엑셀 파일 바이너리 스트림)
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. /pro_register/excel_parse -->
+      <div class="api-card" id="api-pro_register-excel_parse">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-multipart">FILE</span>
+            <span class="api-path">/pro_register/excel_parse</span>
+            <div class="api-desc">엑셀 파일 업로드 및 컬럼/문항 자동 감지 파싱 (ProRegisterModal Tab 2)</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_register/excel_parse')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="sec-title">📥 Request (multipart/form-data)</div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Form Data</span><button class="btn-cp" onclick="copyCode(this)">복사</button></div>
+            <pre><code>file: [사용자 선택 엑셀 파일 .xlsx]</code></pre>
+          </div>
+          <div class="sec-title">📤 Response Payload</div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "success": "777",
+  "resultjson": {
+    "id_column": "id",
+    "columns": [
+      { "qnum": "q20_op1", "qnum_text": "문2. 이용 이유" },
+      { "qnum": "q90_op1", "qnum_text": "문3. 개선점" }
+    ],
+    "sample_rows": [
+      { "pid": "1001", "q20_op1": "편리해서", "q90_op1": "환승역 개선" },
+      { "pid": "1002", "q20_op1": "가까워서", "q90_op1": "배차간격 단축" }
+    ]
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. /pro_register/excel_enter -->
+      <div class="api-card" id="api-pro_register-excel_enter">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="method-pill pill-multipart">FILE</span>
+            <span class="api-path">/pro_register/excel_enter</span>
+            <div class="api-desc">엑셀 파일 직접 업로드(권장, 대용량 413 방지) 또는 파싱된 오픈데이터 JSON 등록 (model="excel" 부여)</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_register/excel_enter')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="sec-title">📥 1. 권장 방식: Multipart File Upload (대용량/전체 응답자 일괄 파싱)</div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Form Data (multipart/form-data)</span><button class="btn-cp" onclick="copyCode(this)">복사</button></div>
+            <pre><code>file: [엑셀 파일 (.xlsx)]
+projectnum: "260113"
+projectname: "서울시대중교통"
+projectpof: "포프명"
+model: "설문온"          // 기본값 "excel"
+user: "syhong"
+selected_qnums: "[\"q_op_440_1\", \"q_op_440_2\"]" // 또는 쉼표 구분 문자열, 미지정 시 전체 문항</code></pre>
+          </div>
+          <div class="sec-title">📥 2. 하위 호환: JSON Request Payload</div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request Payload (ProRegisterExcelEnterRequest)</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "projectnum": "260113",
+  "projectname": "서울시대중교통",
+  "projectpof": "포프명",
+  "model": "설문온",          // 또는 "excel"
+  "user": "syhong",
+  "data": [
+    {
+      "pid": "1001",
+      "qnum": "q20_op1",
+      "qnum_text": "문2. 이용 이유",
+      "answer": "편리해서"
+    }
+  ]
+}</code></pre>
+          </div>
+          <div class="sec-title">📤 Response Payload</div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "success": "777",
+  "message": "엑셀 오픈데이터가 성공적으로 등록되었습니다."
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. /pro_list/import_lb_all_excel -->
+      <div class="api-card" id="api-pro_list-import_lb_all_excel">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-multipart">FILE</span>
+            <span class="api-path">/pro_list/import_lb_all_excel</span>
+            <div class="api-desc">보기등록(전체문항) 엑셀 파일 업로드 & 3단계 카테고리 파싱/DB 저장</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/import_lb_all_excel')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="sec-title">📥 Request (multipart/form-data)</div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Form Data</span><button class="btn-cp" onclick="copyCode(this)">복사</button></div>
+            <pre><code>file: [HR_Sample_LB.xlsx 파일]
+projectnum: 260113
+user: syhong</code></pre>
+          </div>
+          <div class="sec-title">📤 Response Payload</div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "success": "777",
+  "resultjson": {
+    "message": "보기 일괄 등록이 성공적으로 완료되었습니다."
+  }
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. /pro_list/import_lb_all -->
+      <div class="api-card" id="api-pro_list-import_lb_all">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/import_lb_all</span>
+            <div class="api-desc">보기등록(전체문항) JSON 구조체 직접 전송 저장 (pn_lb 테이블 UPSERT)</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/import_lb_all')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="code-box">
+            <div class="code-hdr"><span>Request / Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>// [Request]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "data_lb": [
+    {
+      "q20_op1": [
+        { "lv1": "1", "lv1code": "1", "lv2": "편의성", "lv2code": "11", "lv3": "가까움", "lv123code": "101" }
+      ]
+    }
+  ]
+}
+
+// [Response]
+{
+  "success": "777",
+  "message": "보기 데이터 저장 성공"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- C. 데이터추출 -->
+      <h2 style="color:#F8FAFC; margin-top:36px; margin-bottom:16px; border-bottom:1px solid #334155; padding-bottom:8px;">C. 데이터추출 (상단 헤더 Dropdown)</h2>
+
+      <!-- 10. /pro_list/export_lb_excel & export_lb_excel_file -->
+      <div class="api-card" id="api-pro_list-export_lb_excel_file">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/export_lb_excel_file</span>
+            <div class="api-desc">보기추출 (개발자용 Excel 파일 다운로드)</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/export_lb_excel_file')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="sec-title">📌 연관 API 세트</div>
+          <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:14px;">
+            • <code>POST /pro_list/export_lb_excel</code> : 모달 미리보기용 JSON 데이터 조회<br>
+            • <code>POST /pro_list/export_lb_excel_file</code> : 실제 <code>{projectnum}_보기추출_개발자용.xlsx</code> 바이너리 파일 다운로드
+          </p>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "user": "syhong",
+  "projectnum": "260113"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. /pro_list/export_lb_dp & export_lb_dp_file -->
+      <div class="api-card" id="api-pro_list-export_lb_dp_file">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/export_lb_dp_file</span>
+            <div class="api-desc">보기추출 (DP 집계용 Text 파이프라인 파일 다운로드)</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/export_lb_dp_file')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="sec-title">📌 연관 API 세트</div>
+          <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:14px;">
+            • <code>POST /pro_list/export_lb_dp</code> : DP용 스크립트 텍스트(res.script_text) 미리보기 조회<br>
+            • <code>POST /pro_list/export_lb_dp_file</code> : 실제 <code>{projectnum}_보기추출_DP용.txt</code> 파일 다운로드
+          </p>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "user": "syhong",
+  "projectnum": "260113"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 12. /pro_list/export_data_all & export_data_all_file -->
+      <div class="api-card" id="api-pro_list-export_data_all_file">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/export_data_all_file</span>
+            <div class="api-desc">응답 수집 데이터 전체 추출 (Excel 파일 다운로드)</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/export_data_all_file')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="sec-title">📌 연관 API 세트</div>
+          <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:14px;">
+            • <code>POST /pro_list/export_data_all</code> : 수집 데이터 미리보기 JSON 조회<br>
+            • <code>POST /pro_list/export_data_all_file</code> : 실제 <code>{projectnum}_응답추출_전체.xlsx</code> 파일 다운로드
+          </p>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>{
+  "user": "syhong",
+  "projectnum": "260113"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- D. 테이블 개별 행 액션 -->
+      <h2 style="color:#F8FAFC; margin-top:36px; margin-bottom:16px; border-bottom:1px solid #334155; padding-bottom:8px;">D. 테이블 개별 행 클릭 액션</h2>
+
+      <!-- 13. /pro_list/analysis -->
+      <div class="api-card" id="api-pro_list-analysis">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/analysis</span>
+            <div class="api-desc">개별 행 및 묶음 그룹 분석 대상 (분석) / 제외 토글</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/analysis')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="note-info">
+            <strong>🔄 API 경로 정정 안내:</strong> 기존 문서의 <code>/pro_list/update_yn-useYN</code>에서 <code>/pro_list/analysis</code>로 확정되었습니다.
+          </div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request / Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>// [Request - 단일 행 토글]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "qid": "1",               // 행 고유 ID
+  "qnum": "q20_op1",        // 문항코드
+  "column": "useYN",
+  "value": "0"              // '1': 분석 대상, '0': 분석 제외
+}
+
+// [Request - 묶음 그룹 토글]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "merge_qnum": "문2_통합",  // 그룹 묶음 식별자
+  "column": "useYN",
+  "value": "1"
+}
+
+// [Response]
+{
+  "success": "777",
+  "message": "업데이트 완료"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 14. /pro_list/allanalysis -->
+      <div class="api-card" id="api-pro_list-allanalysis">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/allanalysis</span>
+            <div class="api-desc">프로젝트 내 전체 문항 분석 대상 (분석) / 제외 일괄 전환</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/allanalysis')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="code-box">
+            <div class="code-hdr"><span>Request / Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>// [Request]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "column": "useYN",
+  "value": "1"              // '1': 전체 분석, '0': 전체 제외
+}
+
+// [Response]
+{
+  "success": "777",
+  "message": "전체 업데이트 완료"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 15. /pro_list/rowEdit -->
+      <div class="api-card" id="api-pro_list-rowEdit">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/rowEdit</span>
+            <div class="api-desc">개별 행 및 묶음 그룹 수정 잠금 (🔒) / 가능 (🔓) 토글</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/rowEdit')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="note-info">
+            <strong>🔄 API 경로 정정 안내:</strong> 기존 문서의 <code>/pro_list/update_yn-lock</code>에서 <code>/pro_list/rowEdit</code>로 확정되었습니다.
+          </div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request / Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>// [Request]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "qid": "1",
+  "qnum": "q20_op1",
+  "column": "project_lock",
+  "value": "1"              // '1': 수정가능 🔓, '0': 수정잠금 🔒
+}
+
+// [Response]
+{
+  "success": "777",
+  "message": "수정 상태 변경 완료"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 16. /pro_list/allEdit -->
+      <div class="api-card" id="api-pro_list-allEdit">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/allEdit</span>
+            <div class="api-desc">프로젝트 내 전체 문항 수정 잠금 (🔒) / 가능 (🔓) 일괄 전환</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/allEdit')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="code-box">
+            <div class="code-hdr"><span>Request / Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>// [Request]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "column": "project_lock",
+  "value": "1"              // '1': 전체 수정가능, '0': 전체 잠금
+}
+
+// [Response]
+{
+  "success": "777",
+  "message": "전체 수정 상태 변경 완료"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 17. /pro_list/allmerge -->
+      <div class="api-card" id="api-pro_list-allmerge">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/allmerge</span>
+            <div class="api-desc">문항통합 묶기 (Merge) 및 개별 풀기 (Unmerge) 단일 통합 API</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/allmerge')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="note-info">
+            <strong>🔄 API 통합 안내:</strong> 기존 문서에 개별적으로 기재되었던 <code>/pro_list/merge_qnum_save</code>와 <code>/pro_list/unmerge</code>는 백엔드의 단일 <code>/pro_list/allmerge</code> API로 처리됩니다.
+          </div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request / Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>// [Case 1: 묶기 (Merge) - 2개 이상의 id에 동일한 merge_qnum 지정]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "data": {
+    "12": "문2_통합",
+    "15": "문2_통합"
+  }
+}
+
+// [Case 2: 풀기 (Unmerge) - 묶여있던 id들을 고유한 식별자로 분리 분해]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "data": {
+    "12": "q20_op1_12",
+    "15": "q20_op2_15"
+  }
+}
+
+// [Response]
+{
+  "success": "777",
+  "message": "문항통합 저장 완료"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- E. 하단 일괄 액션 바 (pl-bulk) -->
+      <h2 style="color:#F8FAFC; margin-top:36px; margin-bottom:16px; border-bottom:1px solid #334155; padding-bottom:8px;">E. 하단 일괄 액션 바 (pl-bulk)</h2>
+
+      <!-- 18. /pro_list/batch_question_fin -->
+      <div class="api-card" id="api-pro_list-batch_question_fin">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/batch_question_fin</span>
+            <div class="api-desc">선택 문항 문항최종(question_fin) 명칭 일괄 수정 및 치환 저장</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/batch_question_fin')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="sec-title">📌 트리거 이벤트</div>
+          <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:14px;">
+            체크박스 선택 후 하단 액션바 <strong>`[✏️ 문항최종 수정]`</strong> 버튼을 눌러 단어 찾아바꾸기, 일괄문구 적용, 원본 복원 후 저장할 때 호출됩니다.
+          </p>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request / Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>// [Request]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "data": {
+    "12": "문2. 변경된 대표 질문명",
+    "15": "문3. 변경된 개선사항 질문명"
+  }
+}
+
+// [Response]
+{
+  "success": "777",
+  "message": "문항최종 일괄 수정 완료"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 19. /pro_list/bulk_update -->
+      <div class="api-card" id="api-pro_list-bulk_update">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/bulk_update</span>
+            <div class="api-desc">체크박스로 선택한 문항/그룹 일괄 상태 변경 (분석/제외 or 수정 잠금/가능)</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/bulk_update')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="code-box">
+            <div class="code-hdr"><span>Request Payload (useYN or project_lock)</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>// [Request Case 1: 일괄 분석/제외]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "column": "useYN",
+  "value": "1",               // '1': 분석 대상, '0': 분석 제외
+  "ids": ["12", "15"],        // 선택된 단독 문항 ID 리스트
+  "merge_qnums": ["문2_통합"]  // 선택된 묶음 그룹 식별자 리스트
+}
+
+// [Request Case 2: 일괄 수정 잠금/가능]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "column": "project_lock",
+  "value": "1",               // '1': 가능 O (수정가능), '0': 잠금 X (수정불가)
+  "ids": ["12", "15"],
+  "merge_qnums": []
+}
+
+// [Response]
+{
+  "success": "777",
+  "message": "일괄 설정 완료"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 20. /pro_list/qnum_delete -->
+      <div class="api-card" id="api-pro_list-qnum_delete">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post" style="background:#EF4444;">POST</span>
+            <span class="api-path" style="color:#FCA5A5;">/pro_list/qnum_delete</span>
+            <div class="api-desc">선택 문항 일괄 삭제 (project_list 및 pn_in 테이블 동시 데이터 삭제 & NewOld 동기화)</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/qnum_delete')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="note-warn">
+            <strong>⚠️ 삭제 주의사항:</strong> 이 API는 선택한 문항의 메타정보(project_list)와 이미 등록된 응답자 오픈데이터(pn_in)를 영구 삭제합니다.
+          </div>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request / Response Payload (ProListQnumDeleteRequest)</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>// [Request]
+{
+  "projectnum": "260113",
+  "qnums": ["q20_op1", "q90_op1"], // 삭제 대상 문항 코드 리스트
+  "ids": [12, 15]                  // 삭제 대상 문항 고유 ID 리스트 (정수형)
+}
+
+// [Response]
+{
+  "success": "777",
+  "message": "문항 삭제가 완료되었습니다."
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- F. 필터문항 설정 모달 -->
+      <h2 style="color:#F8FAFC; margin-top:36px; margin-bottom:16px; border-bottom:1px solid #334155; padding-bottom:8px;">F. 필터문항 설정 모달</h2>
+
+      <!-- 21. /pro_list/filter_select_qnum -->
+      <div class="api-card" id="api-pro_list-filter_select_qnum">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/filter_select_qnum</span>
+            <div class="api-desc">필터문항 목록 조회 및 기존 DB 설정 여부(qnum_db) 로드</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/filter_select_qnum')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="sec-title">📌 트리거 이벤트</div>
+          <p style="font-size:0.85rem; color:#94A3B8; margin-bottom:14px;">
+            테이블의 <strong>`[설정]`</strong> 버튼 클릭 시 모달이 열리며 교차분석 필터 대상 문항들을 불러옵니다.
+          </p>
+          <div class="code-box">
+            <div class="code-hdr"><span>Request / Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>// [Request]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "qnum": "q20_op1"        // 특정 문항 설정 시 문항코드 (빈값이면 전체 공통 필터)
+}
+
+// [Response]
+{
+  "success": "777",
+  "resultjson": [
+    {
+      "qnum_variable": "d1",              // 필터 변수명
+      "qnum_text": "성별",                 // 필터 문항명
+      "qnum_question": "응답자의 성별은?", // 필터 질문 레이블
+      "qnum_db": "true"                   // 현재 필터 적용 여부 ("true" | "false")
+    },
+    {
+      "qnum_variable": "d2",
+      "qnum_text": "연령대",
+      "qnum_question": "응답자의 연령대는?",
+      "qnum_db": "false"
+    }
+  ]
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 22. /pro_list/filter_update_single -->
+      <div class="api-card" id="api-pro_list-filter_update_single">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/filter_update_single</span>
+            <div class="api-desc">단일 문항에 대한 필터문항 개별 저장</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/filter_update_single')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="code-box">
+            <div class="code-hdr"><span>Request / Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>// [Request]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "qnum": "q20_op1",
+  "data": { "selected": ["d1", "d2"] },
+  "datajson": "[{\"qnum_variable\":\"d1\"},{\"qnum_variable\":\"d2\"}]"
+}
+
+// [Response]
+{
+  "success": "777",
+  "message": "필터 문항별 설정 저장 완료"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- 23. /pro_list/filter_update_all -->
+      <div class="api-card" id="api-pro_list-filter_update_all">
+        <div class="api-header">
+          <div>
+            <span class="method-pill pill-post">POST</span>
+            <span class="api-path">/pro_list/filter_update_all</span>
+            <div class="api-desc">프로젝트 내 전체 분석문항에 대해 필터문항 일괄 적용 저장</div>
+          </div>
+          <button class="btn-cp" onclick="copyText('/pro_list/filter_update_all')">URL 복사</button>
+        </div>
+        <div class="api-body">
+          <div class="code-box">
+            <div class="code-hdr"><span>Request / Response Payload</span><button class="btn-cp" onclick="copyCode(this)">JSON 복사</button></div>
+            <pre><code>// [Request]
+{
+  "user": "syhong",
+  "projectnum": "260113",
+  "data": { "selected": ["d1", "d2"] },
+  "datajson": "[{\"qnum_variable\":\"d1\"},{\"qnum_variable\":\"d2\"}]"
+}
+
+// [Response]
+{
+  "success": "777",
+  "message": "전체 분석문항 필터 일괄 설정 저장 완료"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast">복사되었습니다!</div>
+
+<script>
+  function jumpToApi(apiId) {
+    const el = document.getElementById(apiId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      highlightApi(apiId);
+      showToast("해당 API 명세 카드로 이동했습니다.");
+    }
+  }
+
+  function highlightApi(apiId) {
+    document.querySelectorAll('.api-card').forEach(card => card.classList.remove('highlight'));
+    const target = document.getElementById(apiId);
+    if (target) {
+      target.classList.add('highlight');
+      setTimeout(() => {
+        target.classList.remove('highlight');
+      }, 3000);
+    }
+  }
+
+  function filterApis() {
+    const query = document.getElementById('apiSearch').value.toLowerCase();
+    const cards = document.querySelectorAll('.api-card');
+    
+    cards.forEach(card => {
+      const text = card.innerText.toLowerCase();
+      if (text.includes(query)) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast(`URL 복사 완료: ${text}`);
+    });
+  }
+
+  function copyCode(btnEl) {
+    const code = btnEl.parentElement.nextElementSibling.querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      showToast("JSON Payload가 클립보드에 복사되었습니다!");
+    });
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.innerText = msg;
+    toast.classList.add('show');
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2500);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+@SurveyonApi_HostAddress = http://localhost:5120
+
+GET {{SurveyonApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

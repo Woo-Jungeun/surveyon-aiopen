@@ -1,0 +1,23 @@
+[데이터]
+{context}
+
+[출력 형식] 반드시 아래 JSON 으로만 응답하세요:
+{
+  "table_id": "{table_id}",
+  "mode_a_demographic_analysis": [
+    {
+      "variable_name": "변수명",
+      "max_min_gap": "최대/최소 응답값과 격차(p.p)",
+      "finding": "가장 특징적인 집단 간 응답 차이 기술"
+    }
+  ],
+  "mode_b_parallel_summary": {
+    "key_insights_by_banner": [
+      {
+        "banner_name": "배너명",
+        "insight": "해당 배너의 핵심 특징 1줄 요약"
+      }
+    ],
+    "result_data": "전체 배너 분석 결과를 종합하여 변수별 차이를 한눈에 파악할 수 있도록 작성한 1~3줄의 전략적 요약"
+  }
+}
