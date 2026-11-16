@@ -1800,12 +1800,9 @@ namespace SurveyonApi.Repositories
             if (openQnumSet.Count == 0)
                 return (false, 0, 0, 0);
 
-            var rawAnswerData = new List<(string pid, string jsonData)>();
-            if (isSpss)
-            {
-                rawAnswerData = await GetSurveyonAnswerOpenDataFastAsync(projectnum, openQnumSet, ct);
-            }
-            else if (server == "rps" || server == "qm")
+            // HData surveyon_answer 우선 조회, 데이터 없을 시 QMaster T_Answer 폴백
+            var rawAnswerData = await GetSurveyonAnswerOpenDataFastAsync(projectnum, openQnumSet, ct);
+            if (rawAnswerData.Count == 0 && !isSpss && (server == "rps" || server == "qm"))
             {
                 rawAnswerData = await GetTAnswerOpenDataFastAsync(projectnum, server, ct);
             }
@@ -1815,11 +1812,8 @@ namespace SurveyonApi.Repositories
             while (rawAnswerData.Count == 0 && readinessRetries > 0)
             {
                 await Task.Delay(500, ct);
-                if (isSpss)
-                {
-                    rawAnswerData = await GetSurveyonAnswerOpenDataFastAsync(projectnum, openQnumSet, ct);
-                }
-                else if (server == "rps" || server == "qm")
+                rawAnswerData = await GetSurveyonAnswerOpenDataFastAsync(projectnum, openQnumSet, ct);
+                if (rawAnswerData.Count == 0 && !isSpss && (server == "rps" || server == "qm"))
                 {
                     rawAnswerData = await GetTAnswerOpenDataFastAsync(projectnum, server, ct);
                 }
@@ -4392,22 +4386,35 @@ namespace SurveyonApi.Repositories
             var openPids = await GetOpenRegisteredPidSetAsync(projectnum, ct);
             int openRegisteredCount = openPids.Count;
 
-            // 1. 설문온DB (Postgresqm / T_Answer) 조회 (기본 수행)
+            // 1. 설문온DB 조회 (HData surveyon_answer 우선, 데이터 없을 시 Postgresqm / T_Answer 폴백)
             try
             {
-                const string sqlSurveyon = "SELECT pid FROM \"T_Answer\" WHERE \"questionnaireNumber\" = @pn AND \"answerStateCode\" = 4";
-                var dtSurveyon = await _postgreLib.ExecuteQueryAsync(sqlSurveyon,
-                    new List<NpgsqlParameter> { new("@pn", projectnum) }, "Postgresqm", ct);
+                const string sqlHdata = "SELECT pid FROM public.surveyon_answer WHERE pn = @pn AND answer_state_code = 4";
+                var dtHdata = await _postgreLib.ExecuteQueryAsync(sqlHdata,
+                    new List<NpgsqlParameter> { new("@pn", projectnum) }, "Postgreshdata", ct);
 
-                foreach (DataRow row in dtSurveyon.Rows)
+                foreach (DataRow row in dtHdata.Rows)
                 {
                     string pidStr = row["pid"]?.ToString()?.Trim() ?? "";
                     if (!string.IsNullOrEmpty(pidStr)) surveyonPids.Add(pidStr);
                 }
+
+                if (surveyonPids.Count == 0)
+                {
+                    const string sqlSurveyon = "SELECT pid FROM \"T_Answer\" WHERE \"questionnaireNumber\" = @pn AND \"answerStateCode\" = 4";
+                    var dtSurveyon = await _postgreLib.ExecuteQueryAsync(sqlSurveyon,
+                        new List<NpgsqlParameter> { new("@pn", projectnum) }, "Postgresqm", ct);
+
+                    foreach (DataRow row in dtSurveyon.Rows)
+                    {
+                        string pidStr = row["pid"]?.ToString()?.Trim() ?? "";
+                        if (!string.IsNullOrEmpty(pidStr)) surveyonPids.Add(pidStr);
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GetCompletedPidDiffAsync] Postgresqm Query Error: {ex.Message}");
+                Console.WriteLine($"[GetCompletedPidDiffAsync] Surveyon DB Query Error: {ex.Message}");
             }
 
             // AI오픈 대기수 및 실제 대기 PID 목록 계산 (데이터등록 -> 문항등록 DB탭과 100% 동일한 기준)
@@ -5657,13 +5664,9 @@ namespace SurveyonApi.Repositories
                 }
             }
 
-            // 1-4. Target DB 전체완료 (answerStateCode="4") 응답 데이터 고속 조회 (SPSS vs QMASTER 분기)
-            var answerData = new List<(string pid, string jsonData)>();
-            if (isSpss)
-            {
-                answerData = await GetSurveyonAnswerOpenDataFastAsync(projectnum, validOpenQnumSet, ct);
-            }
-            else if (servername == "rps" || servername == "qm")
+            // 1-4. Target DB 전체완료 (answerStateCode="4") 응답 데이터 고속 조회 (HData surveyon_answer 우선 조회, 없을 시 QMASTER 폴백)
+            var answerData = await GetSurveyonAnswerOpenDataFastAsync(projectnum, validOpenQnumSet, ct);
+            if (answerData.Count == 0 && !isSpss && (servername == "rps" || servername == "qm"))
             {
                 answerData = await GetTAnswerOpenDataFastAsync(projectnum, servername, ct);
             }
