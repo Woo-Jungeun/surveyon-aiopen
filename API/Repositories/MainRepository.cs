@@ -542,7 +542,7 @@ namespace SurveyonApi.Repositories
 
         public async Task<DataTable> GetTAnswerCountHdataAsync(string projectnum, string type, string gb, string pid = null, CancellationToken ct = default)
         {
-            string sql = "select * from surveyon_answer where pn=@pn and answer_state_code=@statecode order by updated_at DESC";
+            string sql = "select * from surveyon_answer where pn=@pn and answer_state_code=@statecode and silsa_type >= 0 order by updated_at DESC";
             var parameters = new List<NpgsqlParameter>();
             parameters.Add(new NpgsqlParameter("@pn", projectnum));
             int stateCode = 4;
@@ -551,11 +551,11 @@ namespace SurveyonApi.Repositories
 
             if (gb == "10")
             {
-                sql = "select pid  from surveyon_answer where pn=@pn and answer_state_code=@statecode order by updated_at DESC";
+                sql = "select pid from surveyon_answer where pn=@pn and answer_state_code=@statecode and silsa_type >= 0 order by updated_at DESC";
             }
             if (gb == "11")
             {
-                sql = "select pid, response_data, response_data as \"originalData\" from surveyon_answer where pn=@pn and answer_state_code=@statecode and pid=@pid order by updated_at DESC";
+                sql = "select pid, response_data, response_data as \"originalData\" from surveyon_answer where pn=@pn and answer_state_code=@statecode and silsa_type >= 0 and pid=@pid order by updated_at DESC";
                 parameters.Add(new NpgsqlParameter("@pid", pid));
             }
             try
@@ -676,6 +676,7 @@ namespace SurveyonApi.Repositories
                 FROM public.surveyon_answer 
                 WHERE pn = @pn 
                   AND answer_state_code = 4 
+                  AND silsa_type >= 0 
                   AND response_data IS NOT NULL";
 
             var list = new List<(string pid, string jsonData)>();
@@ -2509,7 +2510,13 @@ namespace SurveyonApi.Repositories
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             if (pnsArray.Length == 0) return result;
 
-            string sql = "select \"questionnaireNumber\", count(\"questionnaireNumber\") as countpn from \"T_Answer\" where \"questionnaireNumber\" = ANY(@pns) and \"answerStateCode\" = @statecode group by \"questionnaireNumber\"";
+            string sql = @"
+                SELECT pn, count(pn) AS countpn 
+                FROM public.surveyon_answer 
+                WHERE pn = ANY(@pns) 
+                  AND answer_state_code = @statecode 
+                  AND silsa_type >= 0 
+                GROUP BY pn";
             var parameters = new List<NpgsqlParameter>
             {
                 new NpgsqlParameter("@pns", pnsArray),
@@ -2518,12 +2525,12 @@ namespace SurveyonApi.Repositories
 
             try
             {
-                var dt = await _postgreLib.ExecuteQueryAsync(sql, parameters, "Postgresqm", ct: ct);
+                var dt = await _postgreLib.ExecuteQueryAsync(sql, parameters, "Postgreshdata", ct: ct);
                 if (dt != null)
                 {
                     foreach (DataRow row in dt.Rows)
                     {
-                        string pn = row["questionnaireNumber"]?.ToString()?.Trim() ?? "";
+                        string pn = row["pn"]?.ToString()?.Trim() ?? "";
                         string cnt = row["countpn"]?.ToString()?.Trim() ?? "";
                         if (!string.IsNullOrEmpty(pn))
                         {
@@ -4386,35 +4393,27 @@ namespace SurveyonApi.Repositories
             var openPids = await GetOpenRegisteredPidSetAsync(projectnum, ct);
             int openRegisteredCount = openPids.Count;
 
-            // 1. 설문온DB 조회 (HData surveyon_answer 우선, 데이터 없을 시 Postgresqm / T_Answer 폴백)
+            // 1. 설문온DB (Postgreshdata / surveyon_answer) 조회 (silsa_type >= 0 실사 완료자 집계)
             try
             {
-                const string sqlHdata = "SELECT pid FROM public.surveyon_answer WHERE pn = @pn AND answer_state_code = 4";
-                var dtHdata = await _postgreLib.ExecuteQueryAsync(sqlHdata,
+                const string sqlSurveyon = @"
+                    SELECT pid 
+                    FROM public.surveyon_answer 
+                    WHERE pn = @pn 
+                      AND answer_state_code = 4 
+                      AND silsa_type >= 0";
+                var dtSurveyon = await _postgreLib.ExecuteQueryAsync(sqlSurveyon,
                     new List<NpgsqlParameter> { new("@pn", projectnum) }, "Postgreshdata", ct);
 
-                foreach (DataRow row in dtHdata.Rows)
+                foreach (DataRow row in dtSurveyon.Rows)
                 {
                     string pidStr = row["pid"]?.ToString()?.Trim() ?? "";
                     if (!string.IsNullOrEmpty(pidStr)) surveyonPids.Add(pidStr);
                 }
-
-                if (surveyonPids.Count == 0)
-                {
-                    const string sqlSurveyon = "SELECT pid FROM \"T_Answer\" WHERE \"questionnaireNumber\" = @pn AND \"answerStateCode\" = 4";
-                    var dtSurveyon = await _postgreLib.ExecuteQueryAsync(sqlSurveyon,
-                        new List<NpgsqlParameter> { new("@pn", projectnum) }, "Postgresqm", ct);
-
-                    foreach (DataRow row in dtSurveyon.Rows)
-                    {
-                        string pidStr = row["pid"]?.ToString()?.Trim() ?? "";
-                        if (!string.IsNullOrEmpty(pidStr)) surveyonPids.Add(pidStr);
-                    }
-                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GetCompletedPidDiffAsync] Surveyon DB Query Error: {ex.Message}");
+                Console.WriteLine($"[GetCompletedPidDiffAsync] Postgreshdata Query Error: {ex.Message}");
             }
 
             // AI오픈 대기수 및 실제 대기 PID 목록 계산 (데이터등록 -> 문항등록 DB탭과 100% 동일한 기준)
