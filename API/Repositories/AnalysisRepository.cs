@@ -606,14 +606,14 @@ namespace SurveyonApi.Repositories
                     }
 
                     // 3. 사용자가 삭제한 보기 정리: 이번 activeCodes에 없는 코드는 surveyon_labels에서도 삭제
-                    if (activeCodes.Count > 0)
-                    {
-                        const string deleteSql = @"DELETE FROM public.surveyon_labels
-                                                  WHERE variable_id = @varId
-                                                    AND pn = @pn
-                                                    AND code != ALL(@activeCodes)";
-                        await _db.ExecuteAsync(deleteSql, new { varId = varId.Value, pn, activeCodes = activeCodes.ToArray() }, "Postgreshdata", ct);
-                    }
+                    // if (activeCodes.Count > 0)
+                    // {
+                    //     const string deleteSql = @"DELETE FROM public.surveyon_labels
+                    //                               WHERE variable_id = @varId
+                    //                                 AND pn = @pn
+                    //                                 AND code != ALL(@activeCodes)";
+                    //     await _db.ExecuteAsync(deleteSql, new { varId = varId.Value, pn, activeCodes = activeCodes.ToArray() }, "Postgreshdata", ct);
+                    // }
                 }
 
                 _logger.LogInformation("[SyncCodesToHDataAsync] HData surveyon_labels 동기화 완료 pn={Pn} qnum={Qnum} count={Count}", pn, qnum, totalUpdated);
