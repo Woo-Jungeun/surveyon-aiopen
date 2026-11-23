@@ -75,36 +75,40 @@ namespace SurveyonApi.Services
             WorkerCustomFlags? flags = null,
             CancellationToken ct = default)
         {
-            string arguments;
-            bool hasCustomFlags = flags != null && (
-                !string.IsNullOrWhiteSpace(flags.Classified) ||
-                !string.IsNullOrWhiteSpace(flags.Response) ||
-                !string.IsNullOrWhiteSpace(flags.OpencodeCategory) ||
-                !string.IsNullOrWhiteSpace(flags.OpencodeResponse) ||
-                !string.IsNullOrWhiteSpace(flags.RecallResponse) ||
-                !string.IsNullOrWhiteSpace(flags.TranslateResponse)
-            );
+            static bool IsYes(string? val) =>
+                string.Equals(val?.Trim(), "Y", StringComparison.OrdinalIgnoreCase);
 
-            if (hasCustomFlags)
+            string actionNorm = (action ?? "").Trim().ToLowerInvariant();
+            bool hasActiveCustomFlags = flags != null && (
+                IsYes(flags.Classified) ||
+                IsYes(flags.Response) ||
+                IsYes(flags.OpencodeCategory) ||
+                IsYes(flags.OpencodeResponse) ||
+                IsYes(flags.RecallResponse) ||
+                IsYes(flags.TranslateResponse));
+
+            string arguments;
+            if (hasActiveCustomFlags)
             {
                 var sb = new StringBuilder($"--projectid {qid} --projectnum {projectnum}");
-                if (flags!.Classified == "Y") sb.Append(" --classified_yn Y");
-                if (flags.Response == "Y") sb.Append(" --response_yn Y");
-                if (flags.OpencodeCategory == "Y") sb.Append(" --opencode_category_yn Y");
-                if (flags.OpencodeResponse == "Y") sb.Append(" --opencode_response_yn Y");
-                if (flags.RecallResponse == "Y") sb.Append(" --recall_response_yn Y");
-                if (flags.TranslateResponse == "Y") sb.Append(" --translated_response_yn Y");
+                if (IsYes(flags!.Classified)) sb.Append(" --classified_yn Y");
+                if (IsYes(flags.Response)) sb.Append(" --response_yn Y");
+                if (IsYes(flags.OpencodeCategory)) sb.Append(" --opencode_category_yn Y");
+                if (IsYes(flags.OpencodeResponse)) sb.Append(" --opencode_response_yn Y");
+                if (IsYes(flags.RecallResponse)) sb.Append(" --recall_response_yn Y");
+                if (IsYes(flags.TranslateResponse) || actionNorm is "translate" or "번역")
+                    sb.Append(" --translated_response_yn Y");
                 arguments = sb.ToString();
             }
             else
             {
-                string actionArg = action.ToLower() switch
+                string actionArg = actionNorm switch
                 {
-                    "analyze" => "--opencode_category_yn Y --opencode_response_yn Y",
-                    "translate" => "--translated_response_yn Y",
-                    "respondent" => "--response_yn Y",
-                    "empty_etc" => "--recall_response_yn Y",
-                    _ => "--opencode_category_yn Y --opencode_response_yn Y"
+                    "analyze" or "보기" => "--classified_yn Y --opencode_category_yn Y",
+                    "translate" or "번역" => "--translated_response_yn Y",
+                    "respondent" or "응답" or "응답자" => "--response_yn Y --opencode_response_yn Y --recall_response_yn Y",
+                    "empty_etc" or "재분류" => "--recall_response_yn Y",
+                    _ => "--classified_yn Y --opencode_category_yn Y"
                 };
                 arguments = $"--projectid {qid} --projectnum {projectnum} {actionArg}";
             }
@@ -118,10 +122,13 @@ namespace SurveyonApi.Services
             string[] possiblePaths = new[]
             {
                 Path.Combine(Directory.GetCurrentDirectory(), "docs", "legacy_src", "worker_0427.exe"),
+                Path.Combine(Directory.GetCurrentDirectory(), "API", "docs", "legacy_src", "worker_0427.exe"),
                 Path.Combine(AppContext.BaseDirectory, "docs", "legacy_src", "worker_0427.exe"),
+                Path.Combine(AppContext.BaseDirectory, "App_Data", "worker_0427.exe"),
+                Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "docs", "legacy_src", "worker_0427.exe")),
+                @"d:\User_Data\Desktop\프로젝트\설문온\surveyon-aiopen-api\API\docs\legacy_src\worker_0427.exe",
                 @"D:\python\Antigravity\(261109)설문온_AIOPEN\API\docs\legacy_src\worker_0427.exe",
-                @"d:\python\Antigravity\(260113)설문온_APICORE\docs\legacy_src\worker_0427.exe",
-                Path.Combine(AppContext.BaseDirectory, "App_Data", "worker_0427.exe")
+                @"d:\python\Antigravity\(260113)설문온_APICORE\docs\legacy_src\worker_0427.exe"
             };
 
             string? exePath = null;
@@ -134,16 +141,14 @@ namespace SurveyonApi.Services
                 }
             }
 
-            _logger.LogInformation("[WorkerService] StartJob jobId={JobId} action={Action} exe={Exe} args={Args}", 
-                jobId, action, exePath, arguments);
-
             if (exePath != null)
             {
+                _logger.LogInformation("[WorkerService] Starting worker_0427.exe at {ExePath} with args: {Args}", exePath, arguments);
                 StartRealProcess(state, exePath, arguments);
             }
             else
             {
-                // Fallback simulation when worker_0427.exe is not found in environment
+                _logger.LogWarning("[WorkerService] worker_0427.exe not found! Falling back to simulated job for {Pn}/{Qnum} ({Action})", projectnum, qnum, action);
                 _ = Task.Run(() => RunSimulatedJobAsync(state, action, projectnum, qnum));
             }
 
@@ -152,8 +157,9 @@ namespace SurveyonApi.Services
 
         private void StartRealProcess(JobState state, string exePath, string arguments)
         {
-            var workingDir = Path.GetDirectoryName(exePath) ?? Directory.GetCurrentDirectory();
+            string workingDir = Path.GetDirectoryName(exePath) ?? Directory.GetCurrentDirectory();
 
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             Encoding consoleEncoding;
             try
             {
@@ -181,8 +187,6 @@ namespace SurveyonApi.Services
 
             try
             {
-                psi.Environment["PYTHONIOENCODING"] = "cp949";
-                psi.Environment["PGCLIENTENCODING"] = "utf-8";
                 psi.Environment["PYTHONUTF8"] = "1";
             }
             catch { }

@@ -319,7 +319,7 @@ export default function AnalysisPage({
   // 스마트 그리드 편집 및 고속 다중 선택 상태
   const [gridSelectedCodes, setGridSelectedCodes] = useState(new Set());
   const [gridSearch, setGridSearch] = useState('');
-  const [gridSort, setGridSort] = useState('freq'); // 'freq' | 'l1' | 'code' | 'name'
+  const [gridSort, setGridSort] = useState('legacy'); // 'legacy' | 'freq' | 'l1' | 'code' | 'name'
   const [gridBulkParentCol, setGridBulkParentCol] = useState('lv1');
   const [gridBulkParentVal, setGridBulkParentVal] = useState('');
   const gridAnchorIdxRef = useRef(null);   // Shift 범위 선택 기준 앵커 인덱스
@@ -2142,7 +2142,35 @@ export default function AnalysisPage({
         (c.ex_gubun && c.ex_gubun.toLowerCase().includes(q))
       );
     }
-    if (gridSort === 'freq') {
+    if (gridSort === 'legacy') {
+      const parseIntOrMax = (v) => {
+        const s = String(v ?? '').trim();
+        return /^-?\d+$/.test(s) ? Number(s) : Number.MAX_SAFE_INTEGER;
+      };
+      list.sort((a, b) => {
+        const egA = String(a?.ex_gubun ?? '').trim();
+        const egB = String(b?.ex_gubun ?? '').trim();
+        const sA = (egA === 'survey' || egA === '설문(수정불가)') ? 0 : 1;
+        const sB = (egB === 'survey' || egB === '설문(수정불가)') ? 0 : 1;
+        if (sA !== sB) return sA - sB;
+
+        const l1EmptyA = String(a?.lv1code ?? '').trim() === '' ? 0 : 1;
+        const l1EmptyB = String(b?.lv1code ?? '').trim() === '' ? 0 : 1;
+        if (l1EmptyA !== l1EmptyB) return l1EmptyA - l1EmptyB;
+        const l1A = parseIntOrMax(a?.lv1code);
+        const l1B = parseIntOrMax(b?.lv1code);
+        if (l1A !== l1B) return l1A - l1B;
+
+        const l2EmptyA = String(a?.lv2code ?? '').trim() === '' ? 0 : 1;
+        const l2EmptyB = String(b?.lv2code ?? '').trim() === '' ? 0 : 1;
+        if (l2EmptyA !== l2EmptyB) return l2EmptyA - l2EmptyB;
+        const l2A = parseIntOrMax(a?.lv2code);
+        const l2B = parseIntOrMax(b?.lv2code);
+        if (l2A !== l2B) return l2A - l2B;
+
+        return parseIntOrMax(a?.lv123code ?? a?.code_num) - parseIntOrMax(b?.lv123code ?? b?.code_num);
+      });
+    } else if (gridSort === 'freq') {
       list.sort((a, b) => Number(b.ex_sum || 0) - Number(a.ex_sum || 0));
     } else if (gridSort === 'l1') {
       list.sort((a, b) => {
@@ -5103,6 +5131,14 @@ export default function AnalysisPage({
 
                       {/* 3. 빠른 정렬 세그먼트 탭 버튼 */}
                       <div className="an-cb-sort-tabs" style={{ margin: 0 }}>
+                        <button
+                          type="button"
+                          className={`an-cb-sort-tab ${gridSort === 'legacy' ? 'active' : ''}`}
+                          onClick={() => setGridSort('legacy')}
+                          title="레거시 기본 정렬 (설문보기 우선 → 대코드 → 중코드 → 소코드 오름차순)"
+                        >
+                          📋 기본순
+                        </button>
                         <button
                           type="button"
                           className={`an-cb-sort-tab ${gridSort === 'freq' ? 'active' : ''}`}

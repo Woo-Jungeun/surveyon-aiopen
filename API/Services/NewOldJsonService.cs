@@ -213,18 +213,20 @@ namespace SurveyonApi.Services
         private PnInUpsertItem? ComputeNewOldData(string mergePn, string mergeQnum, string oldJsonStr, IEnumerable<DataRow> matchingRows, bool isPnInRowExisting = true)
         {
             JObject oldData = string.IsNullOrEmpty(oldJsonStr) ? new JObject() : JObject.Parse(oldJsonStr);
-            JArray oldArray = oldData[mergeQnum] as JArray ?? new JArray();
+            JArray oldArray = (oldData[mergeQnum] as JArray)
+                           ?? (oldData.Properties().FirstOrDefault(p => p.Value is JArray)?.Value as JArray)
+                           ?? new JArray();
 
-            // 기존 answer 집합 및 answer -> fixed_key 맵 생성
+            // 기존 answer 집합 및 answer -> fixed_key 맵, 그리고 기존 번역 결과(fixed_key -> 기존 JObject) 보존 맵 생성
             var oldAnswerFinSet = new HashSet<string>(
                 oldArray.OfType<JObject>()
-                        .Where(o => o["answer_origin"] != null && !string.IsNullOrWhiteSpace(o["answer"]?.ToString()))
+                        .Where(o => !string.IsNullOrWhiteSpace(o["answer"]?.ToString()))
                         .Select(o => o["answer"]!.ToString()),
                 StringComparer.Ordinal
             );
 
             var answerToFixedKey = oldArray.OfType<JObject>()
-                .Where(o => o["answer_origin"] != null && !string.IsNullOrWhiteSpace(o["answer"]?.ToString()))
+                .Where(o => !string.IsNullOrWhiteSpace(o["answer"]?.ToString()))
                 .Select(o => new
                 {
                     answer = o["answer"]!.ToString(),
@@ -233,6 +235,11 @@ namespace SurveyonApi.Services
                 .Where(x => !string.IsNullOrEmpty(x.fixedKey))
                 .GroupBy(x => x.answer, StringComparer.Ordinal)
                 .ToDictionary(g => g.Key, g => g.First().fixedKey!, StringComparer.Ordinal);
+
+            var oldRowByFixedKey = oldArray.OfType<JObject>()
+                .Where(o => !string.IsNullOrWhiteSpace(o["fixed_key"]?.ToString()))
+                .GroupBy(o => o["fixed_key"]!.ToString(), StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
 
             var projectlistAnswerfinFixedkeyList = new List<JObject>();
             var projectlistAnswerfinJArray = new JArray();
@@ -357,9 +364,26 @@ namespace SurveyonApi.Services
 
                     if (!oldAnswerFinSet.Contains(answerFin))
                     {
-                        // 신규 answer: fixed_key 발급
+                        // 신규 answer: fixed_key 발급 (혹시 동일 fixed_key에 기존 번역본이 있으면 보존)
                         string fixedKey = GenerateFixedKey(answerFin);
                         obj["fixed_key"] = fixedKey;
+
+                        if (oldRowByFixedKey.TryGetValue(fixedKey, out var existingOldObj))
+                        {
+                            string? oldTranslated = existingOldObj["answer_fin"]?.ToString();
+                            if (!string.IsNullOrWhiteSpace(oldTranslated))
+                            {
+                                obj["answer_fin"] = oldTranslated;
+                            }
+                            if (existingOldObj["trans_date"] != null)
+                            {
+                                obj["trans_date"] = existingOldObj["trans_date"]?.DeepClone();
+                            }
+                            if (existingOldObj["koryn"] != null)
+                            {
+                                obj["koryn"] = existingOldObj["koryn"]?.DeepClone();
+                            }
+                        }
 
                         filteredOldArray.Add(obj);
                         oldAnswerFinSet.Add(answerFin);
@@ -492,7 +516,7 @@ namespace SurveyonApi.Services
 
         private static string GetAnswerFinHash(IEnumerable<string> set)
         {
-            string concat = string.Join("|", set.Where(s => !string.IsNullOrEmpty(s)).OrderBy(x => x, StringComparer.Ordinal));
+            string concat = string.Join("|", set.Where(s => !string.IsNullOrWhiteSpace(s)).OrderBy(x => x, StringComparer.Ordinal));
             byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(concat));
             return Convert.ToHexString(hash).ToLowerInvariant();
         }

@@ -87,6 +87,7 @@ namespace SurveyonApi.Models
     /// <summary>분석 저장 요청 모델</summary>
     public class AnalysisSaveRequest : AnalysisRequest
     {
+        public string? ev { get; set; }
         public string? duplicate_answer { get; set; }
         public string? lvcode { get; set; }
         public Newtonsoft.Json.Linq.JToken? data { get; set; }
@@ -97,13 +98,18 @@ namespace SurveyonApi.Models
     {
         public string? jobId { get; set; }
         public string? action { get; set; } // analyze | translate | respondent | empty_etc | stop
+        public string? ev { get; set; }
         public string? classified { get; set; }
         public string? response { get; set; }
         public string? opencodeCategory { get; set; }
         public string? opencodeResponse { get; set; }
         public string? recallResponse { get; set; }
         public string? translateResponse { get; set; }
+        public string? translated_response_yn { get; set; }
+        public string? result_lang { get; set; }
+        public string? model_select { get; set; }
         public Newtonsoft.Json.Linq.JObject? settings { get; set; }
+        public Newtonsoft.Json.Linq.JToken? data { get; set; }
     }
 
     /// <summary>엑셀 업로드 미리보기 항목</summary>

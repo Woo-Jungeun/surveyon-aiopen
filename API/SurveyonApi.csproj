@@ -30,11 +30,12 @@
     <Content Include="Excel\**" Exclude="Excel\temp\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <!-- 레거시 참고 소스(docs/legacy_src)는 분석용이므로 빌드에서 제외 -->
+  <!-- 레거시 참고 소스(docs/legacy_src)는 분석용이므로 빌드에서 제외하되, 파이썬 워커(worker_0427.exe)는 실행/배포 폴더에 포함 -->
   <ItemGroup>
     <Compile Remove="docs\**" />
     <Content Remove="docs\**" />
     <None Remove="docs\**" />
+    <Content Include="docs\legacy_src\worker_0427.exe" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('docs\legacy_src\worker_0427.exe')" />
   </ItemGroup>
 
 </Project>

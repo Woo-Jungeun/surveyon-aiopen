@@ -230,11 +230,18 @@ namespace SurveyonApi.Services
         public async Task<JArray> BuildResponsesAsync(string pn, string qnum, CancellationToken ct = default)
         {
             var result = new JArray();
-            var pnInTask = _repo.GetPnInAsync(pn, qnum, ct);
-            var pnLbTask = _repo.GetPnLbAsync(pn, qnum, ct);
+
+            // pn_in / pn_lb는 머지 대표키(merge_pn, merge_qnum)로 저장되므로 대표 메타에서 실제 키를 해석
+            var meta = await _repo.GetQuestionMetaAsync(pn, qnum, ct);
+            string targetPn = !string.IsNullOrWhiteSpace(meta?.merge_pn) ? meta.merge_pn.Trim() : pn;
+            string targetQnum = !string.IsNullOrWhiteSpace(meta?.merge_qnum) ? meta.merge_qnum.Trim() : qnum;
+
+            var pnInTask = _repo.GetPnInAsync(targetPn, targetQnum, ct);
+            var pnLbTask = _repo.GetPnLbAsync(targetPn, targetQnum, ct);
             await Task.WhenAll(pnInTask, pnLbTask);
 
-            var pnIn = pnInTask.Result;
+            var pnIn = pnInTask.Result ?? ((targetPn != pn || targetQnum != qnum) ? await _repo.GetPnInAsync(pn, qnum, ct) : null);
+            var pnLb = pnLbTask.Result ?? ((targetPn != pn || targetQnum != qnum) ? await _repo.GetPnLbAsync(pn, qnum, ct) : null);
             if (pnIn == null) return result;
 
             string updateDate = pnIn.update_date?.TrimEnd() ?? "";
@@ -242,7 +249,7 @@ namespace SurveyonApi.Services
 
             // 보기 사전: lv123code → [lv1, lv2, lv3, lv1code, lv2code, lv123code]
             var diclb = new Dictionary<string, string?[]>();
-            foreach (var c in ParseArray(pnLbTask.Result?.result_json).OfType<JObject>())
+            foreach (var c in ParseArray(pnLb?.result_json).OfType<JObject>())
             {
                 string? lv123code = Str(c, "lv123code");
                 diclb[lv123code ?? ""] = new[] { Str(c, "lv1"), Str(c, "lv2"), Str(c, "lv3"), Str(c, "lv1code"), Str(c, "lv2code"), lv123code };
@@ -268,7 +275,8 @@ namespace SurveyonApi.Services
             foreach (var row in ParseArray(pnIn.origin_items).OfType<JObject>())
             {
                 string? answerOrigin = Str(row, "answer_origin");
-                string? answer = Str(row, "answer_fin");
+                string? answer = Str(row, "answer_fin") ?? Str(row, "answer") ?? answerOrigin;
+                string? transDate = Str(row, "trans_date") ?? "";
                 string? fixedKey = Str(row, "fixed_key");
                 string fk = fixedKey ?? "";
 
@@ -295,20 +303,20 @@ namespace SurveyonApi.Services
                             if (!string.IsNullOrEmpty(lb[3])) lv1code = lb[3];
                             if (!string.IsNullOrEmpty(lb[4])) lv2code = lb[4];
                             if (!string.IsNullOrEmpty(lb[5])) lv123code = lb[5];
-                            result.Add(ResponseRow(fixedKey, cid, lv1, lv2, lv3, lv1code, lv2code, lv123code, sentiment, recheckyn, excerpts, answerOrigin, answer, updateDate));
+                            result.Add(ResponseRow(fixedKey, cid, lv1, lv2, lv3, lv1code, lv2code, lv123code, sentiment, recheckyn, excerpts, answerOrigin, answer, updateDate, transDate));
                         }
                         else if (lv3 != null)
                         {
-                            result.Add(ResponseRow(fixedKey, cid, "", "", lv3, "", "", "", sentiment, recheckyn, excerpts, answerOrigin, answer, updateDate));
+                            result.Add(ResponseRow(fixedKey, cid, "", "", lv3, "", "", "", sentiment, recheckyn, excerpts, answerOrigin, answer, updateDate, transDate));
                         }
                         else if (cid == 1)
                         {
-                            result.Add(ResponseRow(fixedKey, cid, lv1, lv2, lv3, "", "", "", sentiment, recheckyn, excerpts, answerOrigin, answer, updateDate));
+                            result.Add(ResponseRow(fixedKey, cid, lv1, lv2, lv3, "", "", "", sentiment, recheckyn, excerpts, answerOrigin, answer, updateDate, transDate));
                         }
                     }
                     else if (cid == 1)
                     {
-                        result.Add(ResponseRow(fixedKey, cid, lv1, lv2, lv3, "", "", "", sentiment, recheckyn, excerpts, answerOrigin, answer, updateDate));
+                        result.Add(ResponseRow(fixedKey, cid, lv1, lv2, lv3, "", "", "", sentiment, recheckyn, excerpts, answerOrigin, answer, updateDate, transDate));
                     }
                 }
             }
@@ -316,7 +324,7 @@ namespace SurveyonApi.Services
         }
 
         private static JObject ResponseRow(string? fixedKey, int cid, string? lv1, string? lv2, string? lv3, string? lv1code, string? lv2code,
-            string? lv123code, string? sentiment, string? recheckyn, string? excerpts, string? answerOrigin, string? answer, string updateDate)
+            string? lv123code, string? sentiment, string? recheckyn, string? excerpts, string? answerOrigin, string? answer, string updateDate, string? transDate = "")
             => new JObject
             {
                 ["fixed_key"] = fixedKey,
@@ -332,6 +340,8 @@ namespace SurveyonApi.Services
                 ["excerpts"] = excerpts,
                 ["answer_origin"] = answerOrigin,
                 ["answer"] = answer,
+                ["answer_fin"] = answer,
+                ["trans_date"] = transDate ?? "",
                 ["update_date"] = updateDate
             };
 
@@ -340,12 +350,19 @@ namespace SurveyonApi.Services
         // ══════════════════════════════════════════════════════════════════
         public async Task<JArray> BuildRawdataAsync(string pn, string qnum, CancellationToken ct = default)
         {
-            var pnInTask = _repo.GetPnInAsync(pn, qnum, ct);
-            var pnLbTask = _repo.GetPnLbAsync(pn, qnum, ct);
-            var srcTask = _repo.GetSourceRowsAsync(pn, qnum, ct);
+            var meta = await _repo.GetQuestionMetaAsync(pn, qnum, ct);
+            string targetPn = !string.IsNullOrWhiteSpace(meta?.merge_pn) ? meta.merge_pn.Trim() : pn;
+            string targetQnum = !string.IsNullOrWhiteSpace(meta?.merge_qnum) ? meta.merge_qnum.Trim() : qnum;
+
+            var pnInTask = _repo.GetPnInAsync(targetPn, targetQnum, ct);
+            var pnLbTask = _repo.GetPnLbAsync(targetPn, targetQnum, ct);
+            var srcTask = _repo.GetSourceRowsAsync(targetPn, targetQnum, ct);
             await Task.WhenAll(pnInTask, pnLbTask, srcTask);
 
-            var pnIn = pnInTask.Result;
+            var pnIn = pnInTask.Result ?? ((targetPn != pn || targetQnum != qnum) ? await _repo.GetPnInAsync(pn, qnum, ct) : null);
+            var pnLb = pnLbTask.Result ?? ((targetPn != pn || targetQnum != qnum) ? await _repo.GetPnLbAsync(pn, qnum, ct) : null);
+            var sources = srcTask.Result.Count > 0 ? srcTask.Result : ((targetPn != pn || targetQnum != qnum) ? await _repo.GetSourceRowsAsync(pn, qnum, ct) : srcTask.Result);
+
             var diclb = new Dictionary<string, string?[]>();
             var pidlv123code = new Dictionary<string, Dictionary<string, string?>>();
             var pidsentiment = new Dictionary<string, Dictionary<string, string?>>();
@@ -355,7 +372,7 @@ namespace SurveyonApi.Services
 
             if (pnIn != null)
             {
-                foreach (var c in ParseArray(pnLbTask.Result?.result_json).OfType<JObject>())
+                foreach (var c in ParseArray(pnLb?.result_json).OfType<JObject>())
                 {
                     string? lv123code = Str(c, "lv123code");
                     diclb[lv123code ?? ""] = new[] { Str(c, "lv1"), Str(c, "lv2"), Str(c, "lv3"), lv123code };
@@ -381,7 +398,6 @@ namespace SurveyonApi.Services
             }
 
             // PID별 최초 응답일: 조사번호당 1회만 QM 조회 (레거시는 원본 문항행마다 반복 조회)
-            var sources = srcTask.Result;
             var pnList = sources.Select(s => s.projectnum?.TrimEnd() ?? "").Distinct().ToList();
             var dateTasks = pnList.ToDictionary(p => p, p => _repo.GetFirstWriteDatesAsync(p, ct));
             await Task.WhenAll(dateTasks.Values);
@@ -465,10 +481,15 @@ namespace SurveyonApi.Services
         public async Task<JArray> BuildCodesAsync(string pn, string qnum, CancellationToken ct = default)
         {
             var result = new JArray();
-            var pnLb = await _repo.GetPnLbAsync(pn, qnum, ct);
+            var meta = await _repo.GetQuestionMetaAsync(pn, qnum, ct);
+            string targetPn = !string.IsNullOrWhiteSpace(meta?.merge_pn) ? meta.merge_pn.Trim() : pn;
+            string targetQnum = !string.IsNullOrWhiteSpace(meta?.merge_qnum) ? meta.merge_qnum.Trim() : qnum;
+
+            var pnLb = await _repo.GetPnLbAsync(targetPn, targetQnum, ct)
+                    ?? ((targetPn != pn || targetQnum != qnum) ? await _repo.GetPnLbAsync(pn, qnum, ct) : null);
             if (pnLb == null) return result;
 
-            var raw = await BuildRawdataAsync(pn, qnum, ct);
+            var raw = await BuildRawdataAsync(targetPn, targetQnum, ct);
             var exSum = new Dictionary<string, int>();
             foreach (var r in raw)
             {
@@ -479,14 +500,32 @@ namespace SurveyonApi.Services
             string updateDate = pnLb.update_date?.TrimEnd() ?? "";
             if (updateDate == "") updateDate = pnLb.insert_date?.TrimEnd() ?? "";
 
-            // 정렬: 설문 보기 우선 → lv1code(없는 것 먼저, 숫자 오름차순) → lv2code(동일) → lv123code 숫자 오름차순
+            static string CleanCodeStr(JToken? tok)
+            {
+                string s = tok?.ToString()?.Trim() ?? "";
+                return (s.Equals("null", StringComparison.OrdinalIgnoreCase) ||
+                        s.Equals("none", StringComparison.OrdinalIgnoreCase) ||
+                        s.Equals("nan", StringComparison.OrdinalIgnoreCase))
+                    ? ""
+                    : s;
+            }
+
+            // 레거시 Jsonload.selectPnLb 정렬 규칙 100% 동일:
+            // 1순위: ex_gubun == "survey" || "설문(수정불가)" 먼저
+            // 2순위: lv1code 없는 것 먼저 → 있는 것 숫자 오름차순
+            // 3순위: lv2code 없는 것 먼저 → 있는 것 숫자 오름차순
+            // 4순위: lv123code 숫자 오름차순 (없으면 맨 뒤)
             var sorted = ParseArray(pnLb.result_json).OfType<JObject>()
-                .OrderBy(o => o["ex_gubun"]?.ToString() != "survey" && o["ex_gubun"]?.ToString() != "설문(수정불가)" && o["gubun_name"]?.ToString() != "설문 보기")
-                .ThenBy(o => string.IsNullOrWhiteSpace(o["lv1code"]?.ToString()) ? 0 : 1)
-                .ThenBy(o => int.TryParse(o["lv1code"]?.ToString(), out var v1) ? v1 : int.MaxValue)
-                .ThenBy(o => string.IsNullOrWhiteSpace(o["lv2code"]?.ToString()) ? 0 : 1)
-                .ThenBy(o => int.TryParse(o["lv2code"]?.ToString(), out var v2) ? v2 : int.MaxValue)
-                .ThenBy(o => int.TryParse(o["lv123code"]?.ToString(), out var v3) ? v3 : int.MaxValue);
+                .OrderBy(o =>
+                {
+                    string eg = o["ex_gubun"]?.ToString()?.Trim() ?? "";
+                    return eg != "survey" && eg != "설문(수정불가)";
+                })
+                .ThenBy(o => string.IsNullOrWhiteSpace(CleanCodeStr(o["lv1code"])) ? 0 : 1)
+                .ThenBy(o => int.TryParse(CleanCodeStr(o["lv1code"]), out var v1) ? v1 : int.MaxValue)
+                .ThenBy(o => string.IsNullOrWhiteSpace(CleanCodeStr(o["lv2code"])) ? 0 : 1)
+                .ThenBy(o => int.TryParse(CleanCodeStr(o["lv2code"]), out var v2) ? v2 : int.MaxValue)
+                .ThenBy(o => int.TryParse(CleanCodeStr(o["lv123code"]), out var v3) ? v3 : int.MaxValue);
 
             foreach (var row in sorted)
             {
@@ -618,23 +657,37 @@ namespace SurveyonApi.Services
             }
 
             // 2. 사용자 입력 설정 또는 기존 DB 값 병합
-            string qFin = inputSettings?["question_fin"]?.ToString()?.Trim()
-                          ?? existingOpt["keyword_string"]?.ToString()?.Trim()
-                          ?? meta.question_fin?.Trim()
+            static string? NonEmpty(params string?[] vals) =>
+                vals.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v))?.Trim();
+
+            string qFin = NonEmpty(
+                              inputSettings?["keyword_string"]?.ToString(),
+                              inputSettings?["question_fin"]?.ToString(),
+                              existingOpt["keyword_string"]?.ToString(),
+                              meta.question_fin)
                           ?? "";
 
-            string promptString = inputSettings?["prompt_string"]?.ToString()?.Trim()
-                                  ?? existingOpt["prompt_string"]?.ToString()?.Trim()
-                                  ?? "";
+            string promptString = inputSettings?["prompt_string"] != null
+                                  ? (inputSettings["prompt_string"]?.ToString()?.Trim() ?? "")
+                                  : (existingOpt["prompt_string"]?.ToString()?.Trim() ?? "");
 
-            string modelSelect = inputSettings?["model_select"]?.ToString()?.Trim()
-                                 ?? existingOpt["model_select"]?.ToString()?.Trim()
+            string modelSelect = NonEmpty(
+                                     inputSettings?["model_select"]?.ToString(),
+                                     existingOpt["model_select"]?.ToString())
                                  ?? "GPT-5.2";
 
-            string resultLang = inputSettings?["result_lang"]?.ToString()?.Trim()
-                                ?? existingOpt["result_lang"]?.ToString()?.Trim()
+            string resultLang = NonEmpty(
+                                    inputSettings?["result_lang"]?.ToString(),
+                                    existingOpt["result_lang"]?.ToString())
                                 ?? "Korean";
-            if (resultLang == "한국어") resultLang = "Korean";
+            resultLang = resultLang switch
+            {
+                "한국어" or "1" => "Korean",
+                "영어" or "2" => "English",
+                "일본어" or "3" => "Japanese",
+                "중국어" or "4" => "Chinese",
+                _ => resultLang
+            };
 
             object temperatureVal = 0.2;
             if (inputSettings?["temperature"] != null)
@@ -736,7 +789,7 @@ namespace SurveyonApi.Services
             var jsonArray = new JArray { itemnew };
             string optionJson = jsonArray.ToString(Newtonsoft.Json.Formatting.None);
 
-            // 6. DB 저장 (사용자/그룹 정보 함께 갱신)
+            // 6. DB 저장 (사용자/그룹 정보 함께 갱신 — 대표 qid 및 merge_pn/merge_qnum 동시 반영)
             var (username, usergroup) = await _repo.GetUserAndGroupAsync(user, pn, ct);
             int affected = await _repo.SaveOptionJsonFullAsync(
                 pn,
@@ -747,7 +800,8 @@ namespace SurveyonApi.Services
                 user,
                 username,
                 usergroup,
-                ct);
+                ct,
+                meta.id);
 
             if (!string.IsNullOrEmpty(lvcodeVal))
             {

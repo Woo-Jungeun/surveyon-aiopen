@@ -29,7 +29,7 @@ namespace SurveyonApi.Repositories
         Task<List<AnalysisSourceRow>> GetSourceRowsAsync(string pn, string qnum, CancellationToken ct = default);
         Task<Dictionary<string, string>> GetFirstWriteDatesAsync(string pn, CancellationToken ct = default);
         Task<int> SaveOptionJsonAsync(string pn, string qnum, string optionJson, string? questionFin, CancellationToken ct = default);
-        Task<int> SaveOptionJsonFullAsync(string pn, string qnum, string optionJson, string questionFin, int listapikey, string user, string username, string usergroup, CancellationToken ct = default);
+        Task<int> SaveOptionJsonFullAsync(string pn, string qnum, string optionJson, string questionFin, int listapikey, string user, string username, string usergroup, CancellationToken ct = default, int? qid = null);
         Task<(string secretKey, int keyId)> GetResolvedApiKeySecretAsync(int? apikeyid, string user, CancellationToken ct = default);
         Task<(string username, string usergroup)> GetUserAndGroupAsync(string user, string projectnum, CancellationToken ct = default);
         Task<int> SavePnLbAsync(string pn, string qnum, string resultJson, CancellationToken ct = default);
@@ -126,7 +126,9 @@ namespace SurveyonApi.Repositories
         public async Task<string> GetLvcodeAsync(string pn, string qnum, CancellationToken ct = default)
         {
             const string sql = @"SELECT lvcode FROM public.project_list
-                                 WHERE merge_qnum = @qnum AND merge_pn = @pn AND useyn = '분석' AND lvcode IS NOT NULL
+                                 WHERE (merge_qnum = @qnum OR qnum = @qnum OR qnum_text = @qnum)
+                                   AND (merge_pn = @pn OR projectnum = @pn)
+                                   AND useyn = '분석' AND lvcode IS NOT NULL
                                  ORDER BY lvcode DESC
                                  LIMIT 1";
             return (await _db.QueryFirstOrDefaultAsync<string>(sql, new { pn, qnum }, HOpen, ct))?.TrimEnd() ?? "";
@@ -138,7 +140,9 @@ namespace SurveyonApi.Repositories
             if (string.IsNullOrWhiteSpace(lvcode)) return 0;
             const string sql = @"UPDATE public.project_list 
                                  SET lvcode = @lvcode 
-                                 WHERE merge_pn = @pn AND merge_qnum = @qnum AND useyn = '분석'";
+                                 WHERE (merge_pn = @pn OR projectnum = @pn)
+                                   AND (merge_qnum = @qnum OR qnum = @qnum OR qnum_text = @qnum)
+                                   AND useyn = '분석'";
             return await _db.ExecuteAsync(sql, new { pn, qnum, lvcode = lvcode.Trim() }, HOpen, ct);
         }
 
@@ -204,11 +208,15 @@ namespace SurveyonApi.Repositories
         public Task<DataTable> GetModelCodesAsync(CancellationToken ct = default)
             => _db.ExecuteQueryAsync("SELECT id, modelvalue, modelname FROM public.project_model WHERE modelyn = 'y' ORDER BY id/1", null, HOpen, ct);
 
-        // 레거시 select_pn_in — answer_origin은 해당 문항 키 배열만 추출
+        // 레거시 select_pn_in — answer_origin은 해당 문항 키 배열만 추출 (키 불일치 시 첫 번째 배열로 폴백)
         public Task<AnalysisPnInRow?> GetPnInAsync(string pn, string qnum, CancellationToken ct = default)
         {
             const string sql = @"SELECT input_date, update_date,
-                                        (answer_origin -> @qnum)::text AS origin_items,
+                                        COALESCE(
+                                            (answer_origin -> @qnum)::text,
+                                            (answer_origin -> qnum)::text,
+                                            (SELECT value::text FROM jsonb_each(CASE WHEN jsonb_typeof(answer_origin) = 'object' THEN answer_origin ELSE '{}'::jsonb END) WHERE jsonb_typeof(value) = 'array' LIMIT 1)
+                                        ) AS origin_items,
                                         answer_fin::text AS answer_fin
                                  FROM public.pn_in
                                  WHERE projectnum = @pn AND qnum = @qnum
@@ -275,9 +283,11 @@ namespace SurveyonApi.Repositories
             string user,
             string username,
             string usergroup,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            int? qid = null)
         {
             string datetime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            int qidVal = qid ?? -1;
 
             const string sql = @"UPDATE public.project_list
                                  SET option_json = @optionJson::jsonb,
@@ -287,12 +297,14 @@ namespace SurveyonApi.Repositories
                                      use_id = @user,
                                      use_name = @username,
                                      use_group = @usergroup
-                                 WHERE (merge_pn = @pn OR projectnum = @pn)
-                                   AND (merge_qnum = @qnum OR qnum = @qnum)
-                                   AND useyn = '분석'";
+                                 WHERE id = @qidVal
+                                    OR ((merge_pn = @pn OR projectnum = @pn)
+                                        AND (merge_qnum = @qnum OR qnum = @qnum OR qnum_text = @qnum)
+                                        AND useyn = '분석')";
 
             int affected = await _db.ExecuteAsync(sql, new
             {
+                qidVal,
                 pn,
                 qnum,
                 optionJson,
@@ -314,10 +326,12 @@ namespace SurveyonApi.Repositories
                                                  use_id = @user,
                                                  use_name = @username,
                                                  use_group = @usergroup
-                                             WHERE (merge_pn = @pn OR projectnum = @pn)
-                                               AND (merge_qnum = @qnum OR qnum = @qnum)";
+                                             WHERE id = @qidVal
+                                                OR ((merge_pn = @pn OR projectnum = @pn)
+                                                    AND (merge_qnum = @qnum OR qnum = @qnum OR qnum_text = @qnum))";
                 affected = await _db.ExecuteAsync(sqlFallback, new
                 {
+                    qidVal,
                     pn,
                     qnum,
                     optionJson,

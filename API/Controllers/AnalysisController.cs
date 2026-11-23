@@ -134,9 +134,24 @@ namespace SurveyonApi.Controllers
             var (error, pn, qnum, user) = await ValidateQuestionRequest(req);
             if (error != null) return error;
 
-            if (req.data is not JObject infoObj)
+            JObject? infoObj = req.data as JObject;
+            if (infoObj == null && req.data is JArray infoArr)
+            {
+                infoObj = infoArr.OfType<JObject>().FirstOrDefault();
+            }
+
+            if (infoObj == null)
             {
                 return await ReturnError("701");
+            }
+
+            if (!string.IsNullOrWhiteSpace(req.ev) && infoObj["ev"] == null)
+            {
+                infoObj["ev"] = req.ev.Trim();
+            }
+            if (!string.IsNullOrWhiteSpace(req.lvcode) && infoObj["lvcode"] == null)
+            {
+                infoObj["lvcode"] = req.lvcode.Trim();
             }
 
             try
@@ -264,7 +279,7 @@ namespace SurveyonApi.Controllers
             try
             {
                 int? qid = null;
-                if (!string.IsNullOrWhiteSpace(req.qid) && int.TryParse(req.qid, out int parsedQid))
+                if (!string.IsNullOrWhiteSpace(req.qid) && int.TryParse(req.qid, out int parsedQid) && parsedQid > 0)
                 {
                     qid = parsedQid;
                 }
@@ -279,22 +294,78 @@ namespace SurveyonApi.Controllers
                     return await ReturnError("703", "해당 문항의 대표 QID를 찾을 수 없습니다.");
                 }
 
-                string action = req.action?.Trim() ?? "analyze";
+                bool isTranslateFlag = string.Equals(req.translateResponse?.Trim(), "Y", StringComparison.OrdinalIgnoreCase)
+                                    || string.Equals(req.translated_response_yn?.Trim(), "Y", StringComparison.OrdinalIgnoreCase);
+                bool isCategoryFlag = string.Equals(req.classified?.Trim(), "Y", StringComparison.OrdinalIgnoreCase)
+                                   || string.Equals(req.opencodeCategory?.Trim(), "Y", StringComparison.OrdinalIgnoreCase);
+                bool isResponseFlag = string.Equals(req.response?.Trim(), "Y", StringComparison.OrdinalIgnoreCase)
+                                   || string.Equals(req.opencodeResponse?.Trim(), "Y", StringComparison.OrdinalIgnoreCase);
+                bool isRecallFlag = string.Equals(req.recallResponse?.Trim(), "Y", StringComparison.OrdinalIgnoreCase);
+
+                string rawAction = (req.action ?? "").Trim().ToLowerInvariant();
+                string action;
+                if (rawAction is "translate" or "번역" || (isTranslateFlag && !isCategoryFlag && !isResponseFlag))
+                {
+                    action = "translate";
+                }
+                else if (rawAction is "respondent" or "응답" or "응답자" || (isResponseFlag && !isCategoryFlag))
+                {
+                    action = "respondent";
+                }
+                else if (rawAction is "empty_etc" or "재분류" || (isRecallFlag && !isCategoryFlag && !isResponseFlag))
+                {
+                    action = "empty_etc";
+                }
+                else
+                {
+                    action = string.IsNullOrWhiteSpace(rawAction) || rawAction == "start" ? "analyze" : rawAction;
+                }
+
+                JObject settingsObj;
+                if (req.settings != null)
+                {
+                    settingsObj = (JObject)req.settings.DeepClone();
+                }
+                else if (req.data is JObject dataObj)
+                {
+                    settingsObj = (JObject)dataObj.DeepClone();
+                }
+                else if (req.data is JArray dataArr && dataArr.OfType<JObject>().FirstOrDefault() is JObject firstDataObj)
+                {
+                    settingsObj = (JObject)firstDataObj.DeepClone();
+                }
+                else
+                {
+                    settingsObj = new JObject();
+                }
+
+                if (!string.IsNullOrWhiteSpace(req.result_lang) && string.IsNullOrWhiteSpace(settingsObj["result_lang"]?.ToString()))
+                {
+                    settingsObj["result_lang"] = req.result_lang.Trim();
+                }
+                if (!string.IsNullOrWhiteSpace(req.model_select) && string.IsNullOrWhiteSpace(settingsObj["model_select"]?.ToString()))
+                {
+                    settingsObj["model_select"] = req.model_select.Trim();
+                }
+                if (!string.IsNullOrWhiteSpace(req.ev) && string.IsNullOrWhiteSpace(settingsObj["ev"]?.ToString()))
+                {
+                    settingsObj["ev"] = req.ev.Trim();
+                }
 
                 // 레거시 option_setting.aspx.cs와 동일: 워커 실행 전 pn_in.answer_origin 원본 데이터 최신 동기화 보장
                 await _newOldJsonService.NewOldCheckAsync(pn, qnum, qid.Value.ToString(), HttpContext.RequestAborted);
 
                 // 레거시 create_json_option()과 동일: 워커 실행 전 "분석 설정"을 option_json에 자동 저장하여 Python 워커의 KeyError('data_type') 방지
-                await _service.EnsureOptionJsonSavedAsync(pn, qnum, user, req.settings, action, HttpContext.RequestAborted);
+                await _service.EnsureOptionJsonSavedAsync(pn, qnum, user, settingsObj, action, HttpContext.RequestAborted);
 
                 var flags = new WorkerCustomFlags
                 {
-                    Classified = action == "analyze" ? (!string.IsNullOrWhiteSpace(req.classified) ? req.classified.Trim() : "Y") : req.classified?.Trim(),
-                    OpencodeCategory = action == "analyze" ? (!string.IsNullOrWhiteSpace(req.opencodeCategory) ? req.opencodeCategory.Trim() : "Y") : req.opencodeCategory?.Trim(),
-                    Response = action == "respondent" ? (!string.IsNullOrWhiteSpace(req.response) ? req.response.Trim() : "Y") : req.response?.Trim(),
-                    OpencodeResponse = action == "respondent" ? (!string.IsNullOrWhiteSpace(req.opencodeResponse) ? req.opencodeResponse.Trim() : "Y") : req.opencodeResponse?.Trim(),
+                    Classified = action == "analyze" ? (isCategoryFlag ? req.classified?.Trim() : "Y") : req.classified?.Trim(),
+                    OpencodeCategory = action == "analyze" ? (isCategoryFlag ? req.opencodeCategory?.Trim() : "Y") : req.opencodeCategory?.Trim(),
+                    Response = action == "respondent" ? (isResponseFlag ? req.response?.Trim() : "Y") : req.response?.Trim(),
+                    OpencodeResponse = action == "respondent" ? (isResponseFlag ? req.opencodeResponse?.Trim() : "Y") : req.opencodeResponse?.Trim(),
                     RecallResponse = action == "empty_etc" ? "Y" : (action == "respondent" ? (!string.IsNullOrWhiteSpace(req.recallResponse) ? req.recallResponse.Trim() : "Y") : req.recallResponse?.Trim()),
-                    TranslateResponse = action == "translate" ? (!string.IsNullOrWhiteSpace(req.translateResponse) ? req.translateResponse.Trim() : "Y") : req.translateResponse?.Trim()
+                    TranslateResponse = (action == "translate" || isTranslateFlag) ? "Y" : req.translateResponse?.Trim()
                 };
 
                 string jobId = await _workerService.StartJobAsync(pn, qnum, qid.Value, action, flags, HttpContext.RequestAborted);
