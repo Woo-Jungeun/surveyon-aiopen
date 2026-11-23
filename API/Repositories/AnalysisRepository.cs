@@ -39,7 +39,7 @@ namespace SurveyonApi.Repositories
         Task<List<AnalysisImportProjectItem>> SearchProjectsForImportAsync(string search, CancellationToken ct = default);
         Task<List<string>> GetRelatedQnumsAsync(string pn, string qnum, CancellationToken ct = default);
         Task<int?> GetHDataVariableIdAsync(string pn, string qnum, CancellationToken ct = default);
-        Task<int> SyncCodesToHDataAsync(string pn, string qnum, Newtonsoft.Json.Linq.JArray codesArray, CancellationToken ct = default);
+        Task<int> SyncCodesToHDataAsync(string pn, string qnum, Newtonsoft.Json.Linq.JArray codesArray, CancellationToken ct = default, string? lvcode = null);
         Task<int> SyncHDataAnswerAndVariablesAsync(string pn, string mergeQnum, List<string> subQnums, Dictionary<string, Dictionary<string, (string code, string sentiment)>> pidSubQnumResults, CancellationToken ct = default);
         Task<List<AnalysisProjectOriginRow>> GetProjectOriginRowsAsync(string pn, string qnum, bool isDuplicateRemove, CancellationToken ct = default);
         Task<string?> GetPnInAnswerOriginAsync(string pn, string qnum, CancellationToken ct = default);
@@ -143,7 +143,16 @@ namespace SurveyonApi.Repositories
                                  WHERE (merge_pn = @pn OR projectnum = @pn)
                                    AND (merge_qnum = @qnum OR qnum = @qnum OR qnum_text = @qnum)
                                    AND useyn = '분석'";
-            return await _db.ExecuteAsync(sql, new { pn, qnum, lvcode = lvcode.Trim() }, HOpen, ct);
+            int affected = await _db.ExecuteAsync(sql, new { pn, qnum, lvcode = lvcode.Trim() }, HOpen, ct);
+            if (affected == 0)
+            {
+                const string sqlFallback = @"UPDATE public.project_list 
+                                             SET lvcode = @lvcode 
+                                             WHERE (merge_pn = @pn OR projectnum = @pn)
+                                               AND (merge_qnum = @qnum OR qnum = @qnum OR qnum_text = @qnum)";
+                affected = await _db.ExecuteAsync(sqlFallback, new { pn, qnum, lvcode = lvcode.Trim() }, HOpen, ct);
+            }
+            return affected;
         }
 
         // 레거시 select_project_list_pythonstatus
@@ -543,10 +552,53 @@ namespace SurveyonApi.Repositories
             return await _db.QueryFirstOrDefaultAsync<int?>(sql, new { pn, qnum }, "Postgreshdata", ct);
         }
 
-        public async Task<int> SyncCodesToHDataAsync(string pn, string qnum, Newtonsoft.Json.Linq.JArray codesArray, CancellationToken ct = default)
+        public async Task<int> SyncCodesToHDataAsync(
+            string pn,
+            string qnum,
+            Newtonsoft.Json.Linq.JArray codesArray,
+            CancellationToken ct = default,
+            string? lvcode = null)
         {
             try
             {
+                // 0. 현재 문항의 lvcode(1/2/3단계) 판정 (요청 전달값 → DB 조회 → 메타/option_json 폴백 → 기본값 "3")
+                string lvLevel = (lvcode ?? "").Trim();
+                if (string.IsNullOrEmpty(lvLevel))
+                {
+                    lvLevel = (await GetLvcodeAsync(pn, qnum, ct)).Trim();
+                }
+                if (string.IsNullOrEmpty(lvLevel))
+                {
+                    var meta = await GetQuestionMetaAsync(pn, qnum, ct);
+                    lvLevel = meta?.lvcode?.Trim() ?? "";
+                    if (string.IsNullOrEmpty(lvLevel) && !string.IsNullOrWhiteSpace(meta?.option_json))
+                    {
+                        try
+                        {
+                            var arr = Newtonsoft.Json.Linq.JToken.Parse(meta.option_json) as Newtonsoft.Json.Linq.JArray;
+                            if (arr != null && arr.Count > 0 && arr[0] is Newtonsoft.Json.Linq.JObject optObj)
+                            {
+                                lvLevel = optObj["lvcode"]?.ToString()?.Trim() ?? "";
+                            }
+                        }
+                        catch { }
+                    }
+                }
+                if (lvLevel != "1" && lvLevel != "2" && lvLevel != "3")
+                {
+                    lvLevel = "3";
+                }
+
+                static string CleanVal(string? raw)
+                {
+                    string s = raw?.Trim() ?? "";
+                    return (s.Equals("null", StringComparison.OrdinalIgnoreCase) ||
+                            s.Equals("none", StringComparison.OrdinalIgnoreCase) ||
+                            s.Equals("nan", StringComparison.OrdinalIgnoreCase))
+                        ? ""
+                        : s;
+                }
+
                 // 1. 머지/단일 문항에 연결된 모든 하위 qnum 확인
                 var relatedQnums = await GetRelatedQnumsAsync(pn, qnum, ct);
                 int totalUpdated = 0;
@@ -558,16 +610,17 @@ namespace SurveyonApi.Repositories
 
                     var activeCodes = new List<string>();
 
-                    // 2. 보기 일괄 UPSERT (대, 중, 소분류 컬럼 포함)
+                    // 2. 보기 일괄 UPSERT (is_open=true 및 lvcode 단계별 대/중/소분류 조건부 저장, NULL 바인딩 타입 명시)
                     const string upsertSql = @"
                         WITH up AS (
                             UPDATE public.surveyon_labels
-                            SET label = @label,
+                            SET label = CAST(@label AS text),
                                 ranking = @ranking,
-                                lv1code = @lv1code,
-                                lv1 = @lv1,
-                                lv2code = @lv2code,
-                                lv2 = @lv2,
+                                lv1code = CAST(@lv1code AS varchar),
+                                lv1 = CAST(@lv1 AS text),
+                                lv2code = CAST(@lv2code AS varchar),
+                                lv2 = CAST(@lv2 AS text),
+                                is_open = true,
                                 updated_at = NOW()
                             WHERE variable_id = @varId
                               AND pn = @pn
@@ -575,17 +628,18 @@ namespace SurveyonApi.Repositories
                             RETURNING *
                         )
                         INSERT INTO public.surveyon_labels
-                        (variable_id, pn, code, ranking, label, lv1code, lv1, lv2code, lv2, created_at, updated_at)
+                        (variable_id, pn, code, ranking, label, lv1code, lv1, lv2code, lv2, is_open, created_at, updated_at)
                         SELECT
                             @varId,
                             @pn,
                             @code,
                             @ranking,
-                            @label,
-                            @lv1code,
-                            @lv1,
-                            @lv2code,
-                            @lv2,
+                            CAST(@label AS text),
+                            CAST(@lv1code AS varchar),
+                            CAST(@lv1 AS text),
+                            CAST(@lv2code AS varchar),
+                            CAST(@lv2 AS text),
+                            true,
                             NOW(),
                             NOW()
                         WHERE NOT EXISTS (SELECT 1 FROM up)";
@@ -593,14 +647,22 @@ namespace SurveyonApi.Repositories
                     foreach (var token in codesArray)
                     {
                         if (token is not Newtonsoft.Json.Linq.JObject item) continue;
-                        string code = item["lv123code"]?.ToString()?.Trim() ?? "";
+                        string code = CleanVal(item["lv123code"]?.ToString());
                         if (string.IsNullOrEmpty(code)) continue;
 
-                        string label = item["lv3"]?.ToString()?.Trim() ?? "";
-                        string lv1code = item["lv1code"]?.ToString()?.Trim() ?? "";
-                        string lv1 = item["lv1"]?.ToString()?.Trim() ?? "";
-                        string lv2code = item["lv2code"]?.ToString()?.Trim() ?? "";
-                        string lv2 = item["lv2"]?.ToString()?.Trim() ?? "";
+                        string label = CleanVal(item["lv3"]?.ToString());
+                        string rawLv1Code = CleanVal(item["lv1code"]?.ToString());
+                        string rawLv1 = CleanVal(item["lv1"]?.ToString());
+                        string rawLv2Code = CleanVal(item["lv2code"]?.ToString());
+                        string rawLv2 = CleanVal(item["lv2"]?.ToString());
+
+                        bool useLv1 = lvLevel == "3" && !string.IsNullOrEmpty(rawLv1Code);
+                        bool useLv2 = (lvLevel == "2" || lvLevel == "3") && !string.IsNullOrEmpty(rawLv2Code);
+
+                        string? lv1code = useLv1 ? rawLv1Code : null;
+                        string? lv1 = useLv1 ? rawLv1 : null;
+                        string? lv2code = useLv2 ? rawLv2Code : null;
+                        string? lv2 = useLv2 ? rawLv2 : null;
                         int ranking = int.TryParse(code, out int r) ? r : 0;
 
                         activeCodes.Add(code);
@@ -630,7 +692,7 @@ namespace SurveyonApi.Repositories
                     }
                 }
 
-                _logger.LogInformation("[SyncCodesToHDataAsync] HData surveyon_labels 동기화 완료 pn={Pn} qnum={Qnum} count={Count}", pn, qnum, totalUpdated);
+                _logger.LogInformation("[SyncCodesToHDataAsync] HData surveyon_labels 동기화 완료 pn={Pn} qnum={Qnum} lvcode={LvCode} count={Count}", pn, qnum, lvLevel, totalUpdated);
                 return totalUpdated;
             }
             catch (Exception ex)

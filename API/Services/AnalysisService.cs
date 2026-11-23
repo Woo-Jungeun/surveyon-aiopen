@@ -28,7 +28,7 @@ namespace SurveyonApi.Services
         Task<bool> EnsureOptionJsonSavedAsync(string pn, string qnum, string user, JObject? inputSettings, string? actionType, CancellationToken ct = default);
         Task<bool> SaveInfoAsync(string pn, string qnum, string user, JObject infoObj, CancellationToken ct = default);
         Task<bool> SaveInfoAsync(string pn, string qnum, JObject infoObj, CancellationToken ct = default);
-        Task<(bool success, string code, string message, int savedCount)> SaveCodesAsync(string pn, string qnum, JArray codesArray, CancellationToken ct = default);
+        Task<(bool success, string code, string message, int savedCount)> SaveCodesAsync(string pn, string qnum, JArray codesArray, CancellationToken ct = default, string? lvcode = null);
         Task<(bool success, string code, string message, int savedCount)> SaveResponsesAsync(string pn, string qnum, string duplicateAnswer, JArray responsesArray, CancellationToken ct = default);
         Task<object> CompareResponsesAsync(string pn, string qnum, JArray currentResponses, CancellationToken ct = default);
         Task<byte[]> ExportExcelAsync(string pn, string qnum, CancellationToken ct = default);
@@ -994,7 +994,7 @@ namespace SurveyonApi.Services
         }
 
         public async Task<(bool success, string code, string message, int savedCount)> SaveCodesAsync(
-            string pn, string qnum, JArray codesArray, CancellationToken ct = default)
+            string pn, string qnum, JArray codesArray, CancellationToken ct = default, string? lvcode = null)
         {
             if (codesArray == null || codesArray.Count == 0)
             {
@@ -1125,10 +1125,10 @@ namespace SurveyonApi.Services
             // 4. pn_lb 저장 (이전 보기는 result_json_before에 보존)
             int affected = await _repo.SavePnLbAsync(pn, qnum, newResultJson, ct);
 
-            // 5. HData surveyon_labels 테이블에 대/중/소분류 일괄 동기화 (사용자 추가 컬럼: lv1code, lv1, lv2code, lv2, code, label)
+            // 5. HData surveyon_labels 테이블에 대/중/소분류 일괄 동기화 (is_open=true 및 lvcode 단계별 반영)
             try
             {
-                await _repo.SyncCodesToHDataAsync(pn, qnum, codesArray, ct);
+                await _repo.SyncCodesToHDataAsync(pn, qnum, codesArray, ct, lvcode);
             }
             catch (Exception ex)
             {

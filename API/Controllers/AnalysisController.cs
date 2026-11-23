@@ -187,7 +187,7 @@ namespace SurveyonApi.Controllers
                     await _repo.UpdateLvcodeAsync(pn, qnum, req.lvcode, HttpContext.RequestAborted);
                 }
 
-                var (success, code, message, count) = await _service.SaveCodesAsync(pn, qnum, codesArr, HttpContext.RequestAborted);
+                var (success, code, message, count) = await _service.SaveCodesAsync(pn, qnum, codesArr, HttpContext.RequestAborted, req.lvcode);
                 if (!success)
                 {
                     return Ok(new { success = code, message, count = 0 });
