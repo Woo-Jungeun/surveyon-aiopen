@@ -26,8 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="License\**" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="Excel\**" Exclude="Excel\temp\**" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="License\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Excel\**" Exclude="Excel\temp\**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- 레거시 참고 소스(docs/legacy_src)는 분석용이므로 빌드에서 제외하되, 파이썬 워커(worker_0427.exe)는 실행/배포 폴더에 포함 -->

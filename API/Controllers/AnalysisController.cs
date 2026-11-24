@@ -413,20 +413,37 @@ namespace SurveyonApi.Controllers
         // Phase D: 엑셀 다운로드 / 업로드 미리보기 / 보기 불러오기 엔드포인트
         // ══════════════════════════════════════════════════════════════════
 
-        // ── 14. 엑셀 내보내기 [GET/POST /analysis/export/excel] ──
+        // ── 14. 엑셀 내보내기 [GET/POST /analysis/export/excel] (레거시 option_edit_api gb="export_excel" / HR_Sample3.xlsx 기반) ──
         [HttpGet("export/excel")]
+        public async Task<IActionResult> ExportExcelGet([FromQuery] string? projectnum, [FromQuery] string? qnum, [FromQuery] string? user)
+            => await ExecuteExportExcel(projectnum, qnum);
+
         [HttpPost("export/excel")]
-        public async Task<IActionResult> ExportExcel([FromQuery] string? projectnum, [FromQuery] string? qnum, [FromQuery] string? user)
+        public async Task<IActionResult> ExportExcelPost(
+            [FromQuery] string? projectnum,
+            [FromQuery] string? qnum,
+            [FromQuery] string? user,
+            [FromBody] AnalysisRequest? bodyReq = null)
+        {
+            string pn = !string.IsNullOrWhiteSpace(projectnum) ? projectnum : (bodyReq?.projectnum ?? "");
+            string qn = !string.IsNullOrWhiteSpace(qnum) ? qnum : (bodyReq?.qnum ?? "");
+            return await ExecuteExportExcel(pn, qn);
+        }
+
+        private async Task<IActionResult> ExecuteExportExcel(string? projectnum, string? qnum)
         {
             string pn = (projectnum ?? "").Trim();
             string qn = (qnum ?? "").Trim();
-            if (string.IsNullOrEmpty(pn) || string.IsNullOrEmpty(qn))
+            if (string.IsNullOrEmpty(pn) || string.IsNullOrEmpty(qn) || !SafeId.IsMatch(pn) || qn.Length > 200)
                 return await ReturnError("701");
 
+            var ct = HttpContext.RequestAborted;
             try
             {
-                byte[] bytes = await _service.ExportExcelAsync(pn, qn, HttpContext.RequestAborted);
-                string fileName = $"hrcopen_분석_{pn}_{qn}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                int? qid = await _service.ResolveQidAsync(pn, qn, ct);
+                await _newOldJsonService.NewOldCheckAsync(pn, qn, qid?.ToString() ?? "", ct);
+
+                var (bytes, fileName) = await _service.ExportExcelWithFileNameAsync(pn, qn, ct);
                 return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
             }
             catch (Exception ex)
@@ -436,7 +453,65 @@ namespace SurveyonApi.Controllers
             }
         }
 
-        // ── 15. 엑셀 업로드 미리보기 [POST /analysis/import/excel-preview] ──
+        // ── 15. 통합 엑셀 업로드 (응답자+보기항목 일괄 검증 및 반영) [POST /analysis/import/excel] (레거시 gb="import_excel") ──
+        [HttpPost("import/excel")]
+        public async Task<IActionResult> ImportExcel([FromForm] IFormFile? file, [FromForm] string? projectnum, [FromForm] string? qnum)
+        {
+            string pn = (projectnum ?? "").Trim();
+            string qn = (qnum ?? "").Trim();
+            if (file == null || file.Length == 0 || string.IsNullOrEmpty(pn) || string.IsNullOrEmpty(qn) || !SafeId.IsMatch(pn) || qn.Length > 200)
+                return await ReturnError("701", "엑셀 파일 및 프로젝트/문항 정보가 필요합니다.");
+
+            try
+            {
+                var res = await _service.ImportExcelFileAsync(file, pn, qn, HttpContext.RequestAborted);
+                return Ok(new
+                {
+                    ok = res.ok,
+                    success = res.success,
+                    message = res.message,
+                    codeCount = res.codeCount,
+                    responseCount = res.responseCount,
+                    resultjson = res.errors,
+                    errors = res.errors
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[analysis/import/excel] 업로드 처리 실패 pn={Pn} qnum={Qnum}", pn, qn);
+                return await ReturnError("500", "엑셀 업로드 처리 중 오류가 발생했습니다.");
+            }
+        }
+
+        // ── 15-1. 레거시 JSON 형식 엑셀 업로드 [POST /analysis/import/excel-json] ──
+        [HttpPost("import/excel-json")]
+        public async Task<IActionResult> ImportExcelJson([FromBody] AnalysisImportExcelRequest req)
+        {
+            var (error, pn, qnum, _) = await ValidateQuestionRequest(req);
+            if (error != null) return error;
+
+            try
+            {
+                var res = await _service.ImportExcelJsonAsync(pn, qnum, req.data_in, req.data_lb, HttpContext.RequestAborted);
+                return Ok(new
+                {
+                    ok = res.ok,
+                    success = res.success,
+                    message = res.message,
+                    codeCount = res.codeCount,
+                    responseCount = res.responseCount,
+                    resultjson = res.errors,
+                    errors = res.errors
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[analysis/import/excel-json] 업로드 처리 실패 pn={Pn} qnum={Qnum}", pn, qnum);
+                return await ReturnError("500", "엑셀 데이터 반영 중 오류가 발생했습니다.");
+            }
+        }
+
+        // ── 15-2. 엑셀 보기 업로드 미리보기 [POST /analysis/import/excel-preview] ──
         [HttpPost("import/excel-preview")]
         public async Task<IActionResult> PreviewExcel([FromForm] IFormFile? file, [FromForm] string? projectnum, [FromForm] string? qnum)
         {

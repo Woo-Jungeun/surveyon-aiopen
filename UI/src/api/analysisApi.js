@@ -123,11 +123,17 @@ export async function downloadAnalysisExcel(projectnum, qnum, user) {
 
   const blob = await res.blob();
   const disposition = res.headers.get('content-disposition');
-  let filename = `hrcopen_분석_${projectnum}_${qnum}.xlsx`;
-  if (disposition && disposition.includes('filename=')) {
-    const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-    if (match && match[1]) {
-      filename = decodeURIComponent(match[1].replace(/['"]/g, ''));
+  let filename = `hrcopen_(${projectnum})_${qnum}.xlsx`;
+  if (disposition && disposition.includes('filename')) {
+    const utf8Match = disposition.match(/filename\*=UTF-8''([^;\n]+)/i);
+    const asciiMatch = disposition.match(/filename\s*=\s*((['"]).*?\2|[^;\n]*)/i);
+    const rawName = utf8Match?.[1] || asciiMatch?.[1];
+    if (rawName) {
+      try {
+        filename = decodeURIComponent(rawName.trim().replace(/^['"]|['"]$/g, ''));
+      } catch {
+        filename = rawName.trim().replace(/^['"]|['"]$/g, '');
+      }
     }
   }
 

@@ -119,7 +119,8 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
     p.SetIsOriginAllowed(_ => true)
      .AllowAnyHeader()
      .AllowAnyMethod()
-     .AllowCredentials()));
+     .AllowCredentials()
+     .WithExposedHeaders("Content-Disposition")));
 
 // SignalR 실시간 통신 서비스 등록
 builder.Services.AddSignalR();

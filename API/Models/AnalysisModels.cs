@@ -140,6 +140,24 @@ namespace SurveyonApi.Models
         public List<ExcelCodePreviewItem> items { get; set; } = new();
     }
 
+    /// <summary>레거시 import_excel 호환 JSON 요청 모델 (응답자 + 보기 일괄 업로드)</summary>
+    public class AnalysisImportExcelRequest : AnalysisRequest
+    {
+        public Newtonsoft.Json.Linq.JArray? data_in { get; set; }
+        public Newtonsoft.Json.Linq.JArray? data_lb { get; set; }
+    }
+
+    /// <summary>레거시 HR_Sample3.xlsx 기반 응답자+보기 통합 업로드 결과</summary>
+    public class ExcelFullImportResult
+    {
+        public bool ok { get; set; }
+        public string success { get; set; } = "777";
+        public string message { get; set; } = "";
+        public int codeCount { get; set; }
+        public int responseCount { get; set; }
+        public Newtonsoft.Json.Linq.JArray errors { get; set; } = new();
+    }
+
     /// <summary>타 프로젝트 보기 불러오기 프로젝트/문항 항목</summary>
     public class AnalysisImportProjectItem
     {
