@@ -25,8 +25,8 @@ namespace SurveyonApi.Services
         Task<JArray> BuildResponsesAsync(string pn, string qnum, CancellationToken ct = default);
         Task<JArray> BuildRawdataAsync(string pn, string qnum, CancellationToken ct = default);
         Task<JArray> BuildCodesAsync(string pn, string qnum, CancellationToken ct = default);
-        Task<bool> EnsureOptionJsonSavedAsync(string pn, string qnum, string user, JObject? inputSettings, string? actionType, CancellationToken ct = default);
-        Task<bool> SaveInfoAsync(string pn, string qnum, string user, JObject infoObj, CancellationToken ct = default);
+        Task<bool> EnsureOptionJsonSavedAsync(string pn, string qnum, string user, JObject? inputSettings, string? actionType, CancellationToken ct = default, int? targetQid = null);
+        Task<bool> SaveInfoAsync(string pn, string qnum, string user, JObject infoObj, CancellationToken ct = default, int? targetQid = null);
         Task<bool> SaveInfoAsync(string pn, string qnum, JObject infoObj, CancellationToken ct = default);
         Task<(bool success, string code, string message, int savedCount)> SaveCodesAsync(string pn, string qnum, JArray codesArray, CancellationToken ct = default, string? lvcode = null);
         Task<(bool success, string code, string message, int savedCount)> SaveResponsesAsync(string pn, string qnum, string duplicateAnswer, JArray responsesArray, CancellationToken ct = default);
@@ -625,9 +625,18 @@ namespace SurveyonApi.Services
             return EnsureOptionJsonSavedAsync(pn, qnum, "", infoObj, "info", ct);
         }
 
-        public Task<bool> SaveInfoAsync(string pn, string qnum, string user, JObject infoObj, CancellationToken ct = default)
+        public Task<bool> SaveInfoAsync(string pn, string qnum, string user, JObject infoObj, CancellationToken ct = default, int? targetQid = null)
         {
-            return EnsureOptionJsonSavedAsync(pn, qnum, user, infoObj, "info", ct);
+            string? ev = infoObj?["ev"]?.ToString()?.Trim();
+            string actionHint = ev switch
+            {
+                "1" => "translate",
+                "2" => "analyze",
+                "3" => "respondent",
+                "4" => "empty_etc",
+                _ => "info"
+            };
+            return EnsureOptionJsonSavedAsync(pn, qnum, user, infoObj, actionHint, ct, targetQid);
         }
 
         public async Task<bool> EnsureOptionJsonSavedAsync(
@@ -636,9 +645,13 @@ namespace SurveyonApi.Services
             string user,
             JObject? inputSettings,
             string? actionType,
-            CancellationToken ct = default)
+            CancellationToken ct = default,
+            int? targetQid = null)
         {
-            var meta = await _repo.GetQuestionMetaAsync(pn, qnum, ct);
+            var meta = (targetQid.HasValue && targetQid.Value > 0
+                            ? await _repo.GetQuestionMetaByIdAsync(targetQid.Value, ct)
+                            : null)
+                       ?? await _repo.GetQuestionMetaAsync(pn, qnum, ct);
             if (meta == null)
             {
                 return false;
@@ -679,17 +692,27 @@ namespace SurveyonApi.Services
                                      existingOpt["model_select"]?.ToString())
                                  ?? "GPT-5.2";
 
+            static string? ScalarStr(JToken? tok) =>
+                tok != null && (tok.Type == JTokenType.String || tok.Type == JTokenType.Integer || tok.Type == JTokenType.Float)
+                    ? tok.ToString().Trim()
+                    : null;
+
             string resultLang = NonEmpty(
-                                    inputSettings?["result_lang"]?.ToString(),
-                                    existingOpt["result_lang"]?.ToString())
+                                    ScalarStr(inputSettings?["result_lang"]),
+                                    ScalarStr(existingOpt["result_lang"]))
                                 ?? "Korean";
-            resultLang = resultLang switch
+            string resultLangLower = resultLang.Trim().ToLowerInvariant();
+            resultLang = resultLangLower switch
             {
-                "한국어" or "1" => "Korean",
-                "영어" or "2" => "English",
-                "일본어" or "3" => "Japanese",
-                "중국어" or "4" => "Chinese",
-                _ => resultLang
+                "한국어" or "korean" or "ko" or "kr" or "1" => "Korean",
+                "영어" or "english" or "en" or "us" or "2" => "English",
+                "일본어" or "japanese" or "ja" or "jp" or "3" => "Japanese",
+                "중국어" or "chinese" or "zh" or "cn" or "4" => "Chinese",
+                _ when resultLangLower.Contains("english") || resultLangLower.Contains("영어") => "English",
+                _ when resultLangLower.Contains("korean") || resultLangLower.Contains("한국어") => "Korean",
+                _ when resultLangLower.Contains("japanese") || resultLangLower.Contains("일본어") => "Japanese",
+                _ when resultLangLower.Contains("chinese") || resultLangLower.Contains("중국어") => "Chinese",
+                _ => resultLang.Trim()
             };
 
             object temperatureVal = 0.2;
@@ -792,7 +815,8 @@ namespace SurveyonApi.Services
             var jsonArray = new JArray { itemnew };
             string optionJson = jsonArray.ToString(Newtonsoft.Json.Formatting.None);
 
-            // 6. DB 저장 (사용자/그룹 정보 함께 갱신 — 대표 qid 및 merge_pn/merge_qnum 동시 반영)
+            // 6. DB 저장 (사용자/그룹 정보 함께 갱신 — 워커 실행 대상 qid(targetQid ?? meta.id) 및 merge_pn/merge_qnum 동시 반영)
+            int effectiveQid = (targetQid.HasValue && targetQid.Value > 0) ? targetQid.Value : meta.id;
             var (username, usergroup) = await _repo.GetUserAndGroupAsync(user, pn, ct);
             int affected = await _repo.SaveOptionJsonFullAsync(
                 pn,
@@ -804,7 +828,11 @@ namespace SurveyonApi.Services
                 username,
                 usergroup,
                 ct,
-                meta.id);
+                effectiveQid);
+
+            _logger.LogInformation(
+                "[EnsureOptionJsonSavedAsync] option_json 저장 완료 pn={Pn} qnum={Qnum} qid={Qid} action={Action} result_lang={Lang} model={Model} affected={Affected}",
+                pn, qnum, effectiveQid, actionType, resultLang, modelSelect, affected);
 
             if (!string.IsNullOrEmpty(lvcodeVal))
             {

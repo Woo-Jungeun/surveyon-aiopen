@@ -154,9 +154,13 @@ namespace SurveyonApi.Controllers
                 infoObj["lvcode"] = req.lvcode.Trim();
             }
 
+            int? saveQid = (!string.IsNullOrWhiteSpace(req.qid) && int.TryParse(req.qid, out int parsedSaveQid) && parsedSaveQid > 0)
+                ? parsedSaveQid
+                : null;
+
             try
             {
-                bool ok = await _service.SaveInfoAsync(pn, qnum, user, infoObj, HttpContext.RequestAborted);
+                bool ok = await _service.SaveInfoAsync(pn, qnum, user, infoObj, HttpContext.RequestAborted, saveQid);
                 if (!ok) return await ReturnError("500");
                 var info = await _mainRepository.GetErrorCodeAsync("777", "ko", HttpContext.RequestAborted);
                 return Ok(new { success = "777", message = info?.Message ?? "저장되었습니다." });
@@ -355,8 +359,8 @@ namespace SurveyonApi.Controllers
                 // 레거시 option_setting.aspx.cs와 동일: 워커 실행 전 pn_in.answer_origin 원본 데이터 최신 동기화 보장
                 await _newOldJsonService.NewOldCheckAsync(pn, qnum, qid.Value.ToString(), HttpContext.RequestAborted);
 
-                // 레거시 create_json_option()과 동일: 워커 실행 전 "분석 설정"을 option_json에 자동 저장하여 Python 워커의 KeyError('data_type') 방지
-                await _service.EnsureOptionJsonSavedAsync(pn, qnum, user, settingsObj, action, HttpContext.RequestAborted);
+                // 레거시 create_json_option()과 동일: 워커 실행 전 "분석 설정"을 실행 대상 qid의 option_json에 자동 저장하여 Python 워커 설정 불일치 방지
+                await _service.EnsureOptionJsonSavedAsync(pn, qnum, user, settingsObj, action, HttpContext.RequestAborted, qid.Value);
 
                 var flags = new WorkerCustomFlags
                 {

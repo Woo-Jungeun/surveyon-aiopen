@@ -14,6 +14,7 @@ namespace SurveyonApi.Repositories
     public interface IAnalysisRepository
     {
         Task<AnalysisQuestionMeta?> GetQuestionMetaAsync(string pn, string qnum, CancellationToken ct = default);
+        Task<AnalysisQuestionMeta?> GetQuestionMetaByIdAsync(int qid, CancellationToken ct = default);
         Task<string> GetLvcodeAsync(string pn, string qnum, CancellationToken ct = default);
         Task<int> UpdateLvcodeAsync(string pn, string qnum, string lvcode, CancellationToken ct = default);
         Task<(string pythonStatus, string popupCheck)?> GetStatusByQidAsync(int qid, CancellationToken ct = default);
@@ -56,6 +57,17 @@ namespace SurveyonApi.Repositories
         {
             _db = db;
             _logger = logger;
+        }
+
+        public async Task<AnalysisQuestionMeta?> GetQuestionMetaByIdAsync(int qid, CancellationToken ct = default)
+        {
+            if (qid <= 0) return null;
+            const string sql = @"SELECT id, option_json::text AS option_json, servername, projectname, projectpof,
+                                        question_fin, listapikey, lvcode, duplicate_remove_date, load_fin, merge_pn, merge_qnum, qnum, qnum_text
+                                 FROM public.project_list
+                                 WHERE id = @qid
+                                 LIMIT 1";
+            return await _db.QueryFirstOrDefaultAsync<AnalysisQuestionMeta>(sql, new { qid }, HOpen, ct);
         }
 
         // 레거시 select_project_list(gb=111) → 분석 대표행 1건
