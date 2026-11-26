@@ -312,7 +312,6 @@ namespace SurveyonApi.Services
                     state.IsCompleted = true;
                     state.ExitCode = exitCode;
                     state.UpdatedUtc = DateTime.UtcNow;
-                    state.Output.AppendLine($"[Worker Finished] ExitCode: {exitCode}");
                 }
 
                 try
@@ -329,12 +328,6 @@ namespace SurveyonApi.Services
 
             try
             {
-                string startLine = $"[Worker Starting] {Path.GetFileName(exePath)} {arguments}";
-                lock (state.LockObj)
-                {
-                    state.Output.AppendLine(startLine);
-                }
-
                 if (!proc.Start())
                 {
                     lock (state.LockObj)
@@ -352,9 +345,6 @@ namespace SurveyonApi.Services
                 try { proc.StandardInput.Close(); } catch { }
                 proc.BeginOutputReadLine();
                 proc.BeginErrorReadLine();
-
-                // 시작 성공 첫 라인 소켓 발송
-                _ = _hubContext.Clients.Group(state.JobId).SendAsync("onLine", state.JobId, startLine, false);
             }
             catch (Exception ex)
             {
