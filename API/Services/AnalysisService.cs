@@ -30,6 +30,7 @@ namespace SurveyonApi.Services
         Task<bool> SaveInfoAsync(string pn, string qnum, JObject infoObj, CancellationToken ct = default);
         Task<(bool success, string code, string message, int savedCount)> SaveCodesAsync(string pn, string qnum, JArray codesArray, CancellationToken ct = default, string? lvcode = null);
         Task<(bool success, string code, string message, int savedCount)> SaveResponsesAsync(string pn, string qnum, string duplicateAnswer, JArray responsesArray, CancellationToken ct = default);
+        Task<(int syncedLabels, int syncedResponses)> AutoSyncAfterHanqCompleteAsync(string pn, string qnum, string? lvcode = null, CancellationToken ct = default);
         Task<object> CompareResponsesAsync(string pn, string qnum, JArray currentResponses, CancellationToken ct = default);
         Task<byte[]> ExportExcelAsync(string pn, string qnum, CancellationToken ct = default);
         Task<(byte[] bytes, string fileName)> ExportExcelWithFileNameAsync(string pn, string qnum, CancellationToken ct = default);
@@ -1628,6 +1629,69 @@ namespace SurveyonApi.Services
             }
 
             return (true, "777", $"정상 저장되었습니다. (큐 {sentQueueCount}건, HData {syncedHDataCount}건 동기화)", finArray.Count);
+        }
+
+        /// <summary>
+        /// 한큐분석(isHanq=true) 3단계(empty_etc) 정상 완료 시 자동 최종 반영:
+        ///  - 분석 화면 [저장](/analysis/save/codes + /analysis/save/responses)과 100% 동일한 규칙으로
+        ///    HData.surveyon_labels(is_open=true, lvcode 단계별 계층, merge_qnum 매핑) 및
+        ///    HData.surveyon_answer / surveyon_variables / 큐마DB(MSMQ)에 일괄 동기화한다.
+        ///  - 일반 개별 분석(isHanq=false)에서는 호출되지 않는다.
+        /// </summary>
+        public async Task<(int syncedLabels, int syncedResponses)> AutoSyncAfterHanqCompleteAsync(
+            string pn, string qnum, string? lvcode = null, CancellationToken ct = default)
+        {
+            var meta = await _repo.GetQuestionMetaAsync(pn, qnum, ct);
+            string targetPn = !string.IsNullOrWhiteSpace(meta?.merge_pn) ? meta.merge_pn.Trim() : pn.Trim();
+            string targetQnum = !string.IsNullOrWhiteSpace(meta?.merge_qnum) ? meta.merge_qnum.Trim() : qnum.Trim();
+
+            string resolvedLvcode = (lvcode ?? "").Trim();
+            if (resolvedLvcode != "1" && resolvedLvcode != "2" && resolvedLvcode != "3")
+            {
+                resolvedLvcode = (await _repo.GetLvcodeAsync(targetPn, targetQnum, ct)).Trim();
+            }
+            if (resolvedLvcode != "1" && resolvedLvcode != "2" && resolvedLvcode != "3")
+            {
+                resolvedLvcode = meta?.lvcode?.Trim() ?? "";
+            }
+            if (resolvedLvcode != "1" && resolvedLvcode != "2" && resolvedLvcode != "3")
+            {
+                resolvedLvcode = "3";
+            }
+
+            if (!string.IsNullOrWhiteSpace(lvcode))
+            {
+                await _repo.UpdateLvcodeAsync(targetPn, targetQnum, resolvedLvcode, ct);
+            }
+
+            int syncedLabels = 0;
+            int syncedResponses = 0;
+
+            // 1. 최신 보기 코드북(pn_lb) -> HData.surveyon_labels 자동 동기화 (/analysis/save/codes 동일 로직)
+            var pnLb = await _repo.GetPnLbAsync(targetPn, targetQnum, ct)
+                    ?? ((targetPn != pn || targetQnum != qnum) ? await _repo.GetPnLbAsync(pn, qnum, ct) : null);
+            var codesArr = ParseArray(pnLb?.result_json);
+            if (codesArr.Count > 0)
+            {
+                syncedLabels = await _repo.SyncCodesToHDataAsync(targetPn, targetQnum, codesArr, ct, resolvedLvcode);
+            }
+
+            // 2. 최신 응답 코딩(pn_in) -> HData.surveyon_answer / surveyon_variables / 큐마DB(MSMQ) 자동 동기화 (/analysis/save/responses 동일 로직)
+            var pnIn = await _repo.GetPnInAsync(targetPn, targetQnum, ct)
+                    ?? ((targetPn != pn || targetQnum != qnum) ? await _repo.GetPnInAsync(pn, qnum, ct) : null);
+            var respArr = ParseArray(pnIn?.answer_fin);
+            if (respArr.Count > 0)
+            {
+                string dupFlag = !string.IsNullOrWhiteSpace(meta?.duplicate_remove_date) ? "y" : "n";
+                var (_, _, _, savedCnt) = await SaveResponsesAsync(targetPn, targetQnum, dupFlag, respArr, ct);
+                syncedResponses = savedCnt;
+            }
+
+            _logger.LogInformation(
+                "[AutoSyncAfterHanqCompleteAsync] 한큐분석 최종 자동 동기화 완료 pn={Pn} qnum={Qnum} lvcode={Lvcode} labels={Labels} responses={Responses}",
+                targetPn, targetQnum, resolvedLvcode, syncedLabels, syncedResponses);
+
+            return (syncedLabels, syncedResponses);
         }
 
         public async Task<object> CompareResponsesAsync(string pn, string qnum, JArray currentResponses, CancellationToken ct = default)

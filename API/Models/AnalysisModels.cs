@@ -108,6 +108,7 @@ namespace SurveyonApi.Models
         public string? translated_response_yn { get; set; }
         public string? result_lang { get; set; }
         public string? model_select { get; set; }
+        public bool? isHanq { get; set; }
         public Newtonsoft.Json.Linq.JObject? settings { get; set; }
         public Newtonsoft.Json.Linq.JToken? data { get; set; }
     }

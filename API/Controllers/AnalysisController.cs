@@ -362,6 +362,9 @@ namespace SurveyonApi.Controllers
                 // 레거시 create_json_option()과 동일: 워커 실행 전 "분석 설정"을 실행 대상 qid의 option_json에 자동 저장하여 Python 워커 설정 불일치 방지
                 await _service.EnsureOptionJsonSavedAsync(pn, qnum, user, settingsObj, action, HttpContext.RequestAborted, qid.Value);
 
+                bool isHanq = req.isHanq == true || settingsObj["isHanq"]?.Value<bool>() == true;
+                string? lvcodeVal = settingsObj["lvcode"]?.ToString()?.Trim();
+
                 var flags = new WorkerCustomFlags
                 {
                     Classified = action == "analyze" ? (isCategoryFlag ? req.classified?.Trim() : "Y") : req.classified?.Trim(),
@@ -369,7 +372,9 @@ namespace SurveyonApi.Controllers
                     Response = action == "respondent" ? (isResponseFlag ? req.response?.Trim() : "Y") : req.response?.Trim(),
                     OpencodeResponse = action == "respondent" ? (isResponseFlag ? req.opencodeResponse?.Trim() : "Y") : req.opencodeResponse?.Trim(),
                     RecallResponse = action == "empty_etc" ? "Y" : (action == "respondent" ? (!string.IsNullOrWhiteSpace(req.recallResponse) ? req.recallResponse.Trim() : "Y") : req.recallResponse?.Trim()),
-                    TranslateResponse = (action == "translate" || isTranslateFlag) ? "Y" : req.translateResponse?.Trim()
+                    TranslateResponse = (action == "translate" || isTranslateFlag) ? "Y" : req.translateResponse?.Trim(),
+                    IsHanq = isHanq,
+                    Lvcode = lvcodeVal
                 };
 
                 string jobId = await _workerService.StartJobAsync(pn, qnum, qid.Value, action, flags, HttpContext.RequestAborted);

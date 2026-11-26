@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SurveyonApi.Hubs;
 
@@ -19,6 +20,8 @@ namespace SurveyonApi.Services
         public string? OpencodeResponse { get; set; }
         public string? RecallResponse { get; set; }
         public string? TranslateResponse { get; set; }
+        public bool IsHanq { get; set; }
+        public string? Lvcode { get; set; }
     }
 
     public interface IWorkerService
@@ -45,6 +48,11 @@ namespace SurveyonApi.Services
         private class JobState
         {
             public string JobId { get; }
+            public string ProjectNum { get; set; } = "";
+            public string Qnum { get; set; } = "";
+            public string Action { get; set; } = "";
+            public bool IsHanq { get; set; }
+            public string? Lvcode { get; set; }
             public Process? Process { get; set; }
             public StringBuilder Output { get; } = new();
             public string? LastLine { get; set; }
@@ -60,11 +68,16 @@ namespace SurveyonApi.Services
         private static readonly ConcurrentDictionary<string, JobState> Jobs = new();
         private readonly ILogger<WorkerService> _logger;
         private readonly IHubContext<WorkerHub> _hubContext;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        public WorkerService(ILogger<WorkerService> logger, IHubContext<WorkerHub> hubContext)
+        public WorkerService(
+            ILogger<WorkerService> logger,
+            IHubContext<WorkerHub> hubContext,
+            IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
             _hubContext = hubContext;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task<string> StartJobAsync(
@@ -115,7 +128,14 @@ namespace SurveyonApi.Services
 
             string jobId = $"job_{DateTime.Now:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}"[..28];
 
-            var state = new JobState(jobId);
+            var state = new JobState(jobId)
+            {
+                ProjectNum = projectnum,
+                Qnum = qnum,
+                Action = actionNorm,
+                IsHanq = flags?.IsHanq == true,
+                Lvcode = flags?.Lvcode
+            };
             Jobs[jobId] = state;
 
             // Locate worker executable (worker_0427.exe 바이너리 직접 호출)
@@ -245,12 +265,54 @@ namespace SurveyonApi.Services
             // 프로세스 종료 (정상 또는 비정상 종료 완료 통보)
             proc.Exited += async (s, e) =>
             {
+                int exitCode = -1;
+                try { exitCode = proc.ExitCode; } catch { }
+
+                // 한큐분석(isHanq=true) 3단계(empty_etc) 정상 완료 시 HData.surveyon_labels 및 응답/큐 자동 동기화
+                bool shouldHanqAutoSync;
+                lock (state.LockObj)
+                {
+                    shouldHanqAutoSync = state.IsHanq
+                        && (state.Action == "empty_etc" || state.Action == "재분류")
+                        && exitCode == 0
+                        && !state.HasError;
+                }
+
+                if (shouldHanqAutoSync)
+                {
+                    try
+                    {
+                        using var scope = _scopeFactory.CreateScope();
+                        var analysisService = scope.ServiceProvider.GetRequiredService<IAnalysisService>();
+                        await analysisService.AutoSyncAfterHanqCompleteAsync(
+                            state.ProjectNum, state.Qnum, state.Lvcode);
+                    }
+                    catch (Exception syncEx)
+                    {
+                        _logger.LogError(syncEx, "[WorkerService] 한큐분석 완료 후 HData/큐 자동 동기화 실패 jobId={JobId} pn={Pn} qnum={Qnum}",
+                            state.JobId, state.ProjectNum, state.Qnum);
+                        string errLine = $"ERROR: [한큐분석 자동 반영 실패] {syncEx.Message}";
+                        lock (state.LockObj)
+                        {
+                            state.HasError = true;
+                            state.Output.AppendLine(errLine);
+                            state.LastLine = errLine;
+                            state.UpdatedUtc = DateTime.UtcNow;
+                        }
+                        try
+                        {
+                            await _hubContext.Clients.Group(state.JobId).SendAsync("onLine", state.JobId, errLine, true);
+                        }
+                        catch { }
+                    }
+                }
+
                 lock (state.LockObj)
                 {
                     state.IsCompleted = true;
-                    state.ExitCode = proc.ExitCode;
+                    state.ExitCode = exitCode;
                     state.UpdatedUtc = DateTime.UtcNow;
-                    state.Output.AppendLine($"[Worker Finished] ExitCode: {proc.ExitCode}");
+                    state.Output.AppendLine($"[Worker Finished] ExitCode: {exitCode}");
                 }
 
                 try
