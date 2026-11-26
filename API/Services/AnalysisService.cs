@@ -513,22 +513,10 @@ namespace SurveyonApi.Services
                     : s;
             }
 
-            // 레거시 Jsonload.selectPnLb 정렬 규칙 100% 동일:
-            // 1순위: ex_gubun == "survey" || "설문(수정불가)" 먼저
-            // 2순위: lv1code 없는 것 먼저 → 있는 것 숫자 오름차순
-            // 3순위: lv2code 없는 것 먼저 → 있는 것 숫자 오름차순
-            // 4순위: lv123code 숫자 오름차순 (없으면 맨 뒤)
+            // 소코드(lv123code) 숫자 오름차순 정렬 (숫자가 아니면 맨 뒤, 문자열 보조 정렬)
             var sorted = ParseArray(pnLb.result_json).OfType<JObject>()
-                .OrderBy(o =>
-                {
-                    string eg = o["ex_gubun"]?.ToString()?.Trim() ?? "";
-                    return eg != "survey" && eg != "설문(수정불가)";
-                })
-                .ThenBy(o => string.IsNullOrWhiteSpace(CleanCodeStr(o["lv1code"])) ? 0 : 1)
-                .ThenBy(o => int.TryParse(CleanCodeStr(o["lv1code"]), out var v1) ? v1 : int.MaxValue)
-                .ThenBy(o => string.IsNullOrWhiteSpace(CleanCodeStr(o["lv2code"])) ? 0 : 1)
-                .ThenBy(o => int.TryParse(CleanCodeStr(o["lv2code"]), out var v2) ? v2 : int.MaxValue)
-                .ThenBy(o => int.TryParse(CleanCodeStr(o["lv123code"]), out var v3) ? v3 : int.MaxValue);
+                .OrderBy(o => int.TryParse(CleanCodeStr(o["lv123code"]), out var v3) ? v3 : int.MaxValue)
+                .ThenBy(o => CleanCodeStr(o["lv123code"]), StringComparer.Ordinal);
 
             foreach (var row in sorted)
             {
@@ -1984,16 +1972,8 @@ namespace SurveyonApi.Services
                 }
 
                 var sortedLb = lbItems
-                    .OrderBy(o =>
-                    {
-                        string eg = o["ex_gubun"]?.ToString()?.Trim() ?? "";
-                        return eg != "survey" && eg != "설문(수정불가)";
-                    })
-                    .ThenBy(o => string.IsNullOrWhiteSpace(CleanCodeToken(o["lv1code"])) ? 0 : 1)
-                    .ThenBy(o => int.TryParse(CleanCodeToken(o["lv1code"]), out var v1) ? v1 : int.MaxValue)
-                    .ThenBy(o => string.IsNullOrWhiteSpace(CleanCodeToken(o["lv2code"])) ? 0 : 1)
-                    .ThenBy(o => int.TryParse(CleanCodeToken(o["lv2code"]), out var v2) ? v2 : int.MaxValue)
-                    .ThenBy(o => int.TryParse(CleanCodeToken(o["lv123code"]), out var v3) ? v3 : int.MaxValue)
+                    .OrderBy(o => int.TryParse(CleanCodeToken(o["lv123code"]), out var v3) ? v3 : int.MaxValue)
+                    .ThenBy(o => CleanCodeToken(o["lv123code"]), StringComparer.Ordinal)
                     .ToList();
 
                 int rowcount = 0;
